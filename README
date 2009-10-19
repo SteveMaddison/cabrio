@@ -1,0 +1,59 @@
+Cabrio
+======
+
+Cabrio is an emulator front-end primarily designed for use with arcade
+cabinets. It features a simple graphical interface which is easy to use
+with limited controls (e.g. a joystick).
+
+Installation
+------------
+You will need the following libraries and their headers/development packages:
+  * SDL
+  * SDL_image
+  * SDL_gfx
+  * SDL_mixer
+  * SDL_ttf
+  * glut
+  * libxml2
+
+Compile the program by running 'make' in this directory. Install by running
+'make install' (this will usually have to be done as root, but the location
+can be edited in the Makefile).
+
+Configuration
+-------------
+The program is configured by means of the 'config.xml' file located in the
+user's home directory (~/.cabrio/config.xml). If this file does not exist on
+start-up it is created with default settings. Most of the tags are pretty
+self-explanatory. Games can be added in a section '<games>' under the root
+element, e.g.:
+
+<cabrio-config>
+  ...
+  <games>
+    <game>
+      <name>Pac Man</name>
+      <logo-image>/path/to/spacman.png</logo-image>
+      <rom-image>pacman.zip</rom-image>
+      <genre>Maze</genre>
+      <platform>Arcade</platform>
+      <params>
+        <param>
+          <name>-foo</name>
+          <value>bar</value>
+        </param>
+      </params>
+    </game>
+  </games>
+</cabrio-config>
+
+Controls
+--------
+The default controls (which are currently hard-coded - this will change soon)
+are as follows:
+
+  * Cursor/arrow keys: navigate
+  * Enter/return: select
+  * Backspace: Back
+  * Escape: Quit
+
