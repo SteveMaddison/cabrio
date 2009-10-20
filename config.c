@@ -466,7 +466,6 @@ int config_new( void ) {
 			strncpy( emulator->name, "mame", CONFIG_NAME_LENGTH );
 			strncpy( emulator->display_name, "MAME", CONFIG_NAME_LENGTH );
 			strncpy( emulator->executable, "mame", CONFIG_FILE_NAME_LENGTH );
-			strncpy( emulator->display_name, "MAME", CONFIG_NAME_LENGTH );
 			
 			for( i = num_params-1 ; i >= 0 ; i-- ) {
 				struct config_param *param = malloc( sizeof(struct config_emulator) );
@@ -478,6 +477,8 @@ int config_new( void ) {
 				}
 				emulator->params = param;
 			}		
+
+			emulator->next = NULL;
 		}
 		config->emulators = emulator;
 		config->games = NULL;
