@@ -13,6 +13,18 @@ int event_init( void ) {
 	return 0;
 }
 
+void event_free( void ) {
+
+}
+
+void event_pause( void ) {
+	event_free();
+}
+
+int event_resume( void ) {
+	return event_init();
+}
+
 int event_get( void ) {
 	struct config_control *control = config->iface.controls;
 	SDL_Event event;

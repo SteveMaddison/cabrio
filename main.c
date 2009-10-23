@@ -27,9 +27,11 @@ void pause_all( void ) {
 	hint_pause();
 	font_pause();
 	bg_pause();
+	event_pause();
 }
 
 void resume_all( void ) {
+	event_resume();
 	bg_resume();
 	font_resume();
 	hint_resume();
@@ -97,6 +99,9 @@ int main( int argc, char *arvg[] ) {
 	struct game *to_run = NULL;
 
 	if( config_init( NULL ) != 0 )
+		return -1;
+
+	if( event_init() != 0 )
 		return -1;
 
 	if( genre_init() != 0 )
@@ -261,6 +266,7 @@ int main( int argc, char *arvg[] ) {
 	hint_free();
 	font_free();
 	bg_free();
+	event_free();
 	sdl_free();
 
 	return 0;

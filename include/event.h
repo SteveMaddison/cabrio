@@ -14,6 +14,10 @@ enum event_t {
 };
 
 int event_init( void );
+void event_free( void );
+void event_pause( void );
+int event_resume( void );
+
 int event_get( void );
 
 #endif

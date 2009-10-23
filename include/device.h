@@ -2,6 +2,7 @@
 #define _DEVICE_H_ 1
 
 enum device_t {
+	DEV_UNKNOWN,
 	DEV_KEYBOARD,
 	DEV_JOYSTICK,
 	DEV_MOUSE,
@@ -9,6 +10,7 @@ enum device_t {
 };
 
 enum control_t {
+	CTRL_UNKNOWN,
 	CTRL_BUTTON,
 	CTRL_AXIS,
 	CTRL_HAT,
@@ -17,6 +19,7 @@ enum control_t {
 };
 
 enum direction_t {
+	DIR_UNKNOWN,
 	DIR_UP,
 	DIR_DOWN,
 	DIR_LEFT,
