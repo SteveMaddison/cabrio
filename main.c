@@ -14,6 +14,7 @@
 #include "hint.h"
 #include "game_sel.h"
 #include "sound.h"
+#include "event.h"
 
 extern struct config *config;
 static int supress_wait = 0;
@@ -92,8 +93,8 @@ void supress( void ) {
 int main( int argc, char *arvg[] ) {
 	int quit = 0;
 	int menu_level = 0;
+	int event;
 	struct game *to_run = NULL;
-	SDL_Event event;
 
 	if( config_init( NULL ) != 0 )
 		return -1;
@@ -139,41 +140,25 @@ int main( int argc, char *arvg[] ) {
 			submenu_draw();
 		}
 		game_sel_draw();
-		SDL_GL_SwapBuffers();
+		sdl_swap();
 	
-		SDL_PollEvent( &event );
-		if( event.type == SDL_QUIT ) {
-			quit = 1;
-		}
-		if( event.type == SDL_KEYDOWN ) {
+		if (( event = event_get() )) {
 			if( supress_wait == 0 ) {
 				supress();
-				switch( event.key.keysym.sym ) {
-					case SDLK_DOWN:
-						if( menu_level == 2 ) {
-							sound_play_blip();
-							game_sel_skip_forward();
-						}
-						break;
-					case SDLK_UP:
+				switch( event ) {
+					case EVENT_UP:
 						if( menu_level == 2 ) {
 							sound_play_blip();
 							game_sel_skip_back();
 						}
 						break;
-					case SDLK_RIGHT:
-						sound_play_blip();
-						if( menu_level == 0 ) {
-							menu_advance();
-						}
-						else if( menu_level == 1 ) {
-							submenu_advance();
-						}
-						else {
-							game_sel_advance();
+					case EVENT_DOWN:
+						if( menu_level == 2 ) {
+							sound_play_blip();
+							game_sel_skip_forward();
 						}
 						break;
-					case SDLK_LEFT:
+					case EVENT_LEFT:
 						sound_play_blip();
 						if( menu_level == 0 ) {
 							menu_retreat();
@@ -185,10 +170,19 @@ int main( int argc, char *arvg[] ) {
 							game_sel_retreat();
 						}
 						break;
-					case SDLK_ESCAPE:
-						quit = 1;
+					case EVENT_RIGHT:
+						sound_play_blip();
+						if( menu_level == 0 ) {
+							menu_advance();
+						}
+						else if( menu_level == 1 ) {
+							submenu_advance();
+						}
+						else {
+							game_sel_advance();
+						}
 						break;
-					case SDLK_RETURN:
+					case EVENT_SELECT:
 						if( menu_level == 0 ) {
 							sound_play_select();
 							if( submenu_create( menu_selected() ) == 0 ) {
@@ -218,7 +212,7 @@ int main( int argc, char *arvg[] ) {
 							}
 						}
 						break;
-					case SDLK_BACKSPACE:
+					case EVENT_BACK:
 						if( menu_level == 2 ) {
 							sound_play_back();
 							game_sel_hide(HIDE_TARGET_START);
@@ -233,7 +227,11 @@ int main( int argc, char *arvg[] ) {
 							menu_level--;
 						}
 						break;
+					case EVENT_QUIT:
+						quit = 1;
+						break;
 					default:
+						fprintf( stderr, "Error: unknow event %d\n", event );
 						break;
 				}
 			}

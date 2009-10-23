@@ -14,6 +14,7 @@ void sdl_free( void );
 SDL_Surface *sdl_load_image( const char *filename );
 GLuint sdl_create_texture( const char *filename );
 void sdl_frame_delay( void );
+void sdl_swap( void );
 
 #endif
 

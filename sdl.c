@@ -67,3 +67,8 @@ void sdl_frame_delay( void ) {
 	SDL_framerateDelay( &manager );
 }
 
+void sdl_swap( void ) {
+	SDL_GL_SwapBuffers();
+}
+
+

@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include "config.h"
+#include "sdl.h"
 
 #include <libxml2/libxml/parser.h>
 #include <libxml2/libxml/tree.h>
@@ -452,20 +453,36 @@ int config_new( void ) {
 	config = malloc( sizeof(struct config) );
 	if( config == NULL ) {
 		fprintf( stderr, "Error: couldn't allocate config structure\n" );
-		return 1;
+		return -1;
 	}
 	else {
 		struct config_emulator *emulator = malloc( sizeof(struct config_emulator) );
-		if( emulator ) {
+		if( emulator == NULL ) {
+			fprintf( stderr, "Error: couldn't allocate emulator structure\n" );
+			return -1;
+		}
+		else {
 			int i;
 			struct config_param *prev_param = NULL;
 			const int num_params = 4;
 			const char *params[] = { "-nowindow", "-skip_gameinfo", "-switchres", "-joystick" };
+			struct config_control *prev_control = NULL;
+			const int keys[] = {
+				SDLK_UP,		/* EVENT_UP == 1 */
+				SDLK_DOWN,		/* EVENT_DOWN */
+				SDLK_LEFT,  	/* EVENT_LEFT */
+				SDLK_RIGHT, 	/* EVENT_RIGHT */
+				SDLK_RETURN,	/* EVENT_SELECT */
+				SDLK_BACKSPACE,	/* EVENT_BACK */
+				SDLK_ESCAPE		/* EVENT_QUIT */
+			};
 
 			emulator->id = 0;
 			strncpy( emulator->name, "mame", CONFIG_NAME_LENGTH );
 			strncpy( emulator->display_name, "MAME", CONFIG_NAME_LENGTH );
 			strncpy( emulator->executable, "mame", CONFIG_FILE_NAME_LENGTH );
+			emulator->next = NULL;
+			config->emulators = emulator;
 			
 			for( i = num_params-1 ; i >= 0 ; i-- ) {
 				struct config_param *param = malloc( sizeof(struct config_emulator) );
@@ -477,17 +494,32 @@ int config_new( void ) {
 				}
 				emulator->params = param;
 			}		
-
-			emulator->next = NULL;
-		}
-		config->emulators = emulator;
-		config->games = NULL;
-		config->genres = NULL;
-		config->platforms = NULL;
 	
-		config->iface.full_screen = 1;
-		config->iface.screen_width = 640;
-		config->iface.screen_height = 480;
+			config->games = NULL;
+			config->genres = NULL;
+			config->platforms = NULL;
+	
+			config->iface.full_screen = 1;
+			config->iface.screen_width = 640;
+			config->iface.screen_height = 480;
+			
+			for( i = 0 ; i < NUM_EVENTS ; i++ ) {
+				struct config_control *control = malloc( sizeof(struct config_control) );
+				if( control == NULL ) {
+					fprintf( stderr, "Error: couldn't allocate control structure\n" );
+					return -1;
+				}
+				else {
+					memset( control, 0, sizeof(struct config_control) );
+					control->event = i+1;
+					control->device_type = DEV_KEYBOARD;
+					control->value = keys[ i ];
+					control->next = prev_control;
+					prev_control = control;
+				}
+				config->iface.controls = control;
+			}
+		}
 	}
 	return 0;
 }

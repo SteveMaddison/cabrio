@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "device.h"
+#include "event.h"
+
 #define CONFIG_NAME_LENGTH		128
 #define CONFIG_FILE_NAME_LENGTH	256
 #define CONFIG_PARAM_LENGTH		64
@@ -45,10 +48,21 @@ struct config_game {
 	struct config_platform *platform;
 };
 
+struct config_control {
+	struct config_control *next;
+	int event;
+	int device_type;
+	int device_id;
+	int control_type;
+	int control_id;
+	int value;
+};
+
 struct config_iface {
 	int full_screen;
 	int screen_width;
 	int screen_height;
+	struct config_control *controls;
 };
 
 struct config {
@@ -56,7 +70,7 @@ struct config {
 	struct config_platform *platforms;
 	struct config_genre *genres;
 	struct config_game *games;
-	struct config_iface iface;	
+	struct config_iface iface;
 };
 
 int config_init( const char *filename );
