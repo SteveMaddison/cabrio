@@ -140,10 +140,9 @@ int game_sel_populate( struct game *game ) {
 	return 0;
 }
 
-
 void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) {
 	GLfloat alpha = 1.0;
-	if( tile && dest ) {
+	if( tile && tile->game && dest ) {
 		glTranslatef(
 			tile->pos[X] + (((dest->pos[X]-tile->pos[X])/STEPS)*step),
 			tile->pos[Y] + (((dest->pos[Y]-tile->pos[Y])/STEPS)*step),
@@ -246,7 +245,8 @@ void game_sel_hide( int target ) {
 void game_sel_shuffle_forward( void ) {
 	struct game_tile *t = game_tile_start;
 	while( t ) {
-		t->game = t->game->prev;
+		if( t->game )
+			t->game = t->game->prev;
 		t = t->next;	
 	}
 }
@@ -254,7 +254,8 @@ void game_sel_shuffle_forward( void ) {
 void game_sel_shuffle_back( void ) {
 	struct game_tile *t = game_tile_start;
 	while( t ) {
-		t->game = t->game->next;
+		if( t->game )
+			t->game = t->game->next;
 		t = t->next;	
 	}
 }
@@ -279,41 +280,43 @@ void game_sel_do_skip( void ) {
 	struct game *current_game = game_tile_current->game;
 	struct game *pos;
 
-	if( skipping < 0 ) {
-		pos = current_game->prev;
-		game_sel_shuffle_forward();
+	if( current_game ) {
+		if( skipping < 0 ) {
+			pos = current_game->prev;
+			game_sel_shuffle_forward();
 	
-		if( isalpha( current_game->name[0] ) ) {
-			while( strncasecmp( current_game->name, pos->name, 1 ) == 0 && pos != current_game ) {
-				game_sel_shuffle_forward();
-				pos = pos->prev;
+			if( isalpha( current_game->name[0] ) ) {
+				while( strncasecmp( current_game->name, pos->name, 1 ) == 0 && pos != current_game ) {
+					game_sel_shuffle_forward();
+					pos = pos->prev;
+				}
 			}
+			else {
+				while( !isalpha( pos->name[0] ) && pos != current_game ) {
+					game_sel_shuffle_forward();
+					pos = pos->prev;
+				}
+			}	
 		}
 		else {
-			while( !isalpha( pos->name[0] ) && pos != current_game ) {
-				game_sel_shuffle_forward();
-				pos = pos->prev;
-			}
-		}	
-	}
-	else {
-		pos = current_game->next;
-		game_sel_shuffle_back();
+			pos = current_game->next;
+			game_sel_shuffle_back();
 	
-		if( isalpha( current_game->name[0] ) ) {
-			while( strncasecmp( current_game->name, pos->name, 1 ) == 0 && pos != current_game ) {
-				game_sel_shuffle_back();
-				pos = pos->next;
+			if( isalpha( current_game->name[0] ) ) {
+				while( strncasecmp( current_game->name, pos->name, 1 ) == 0 && pos != current_game ) {
+					game_sel_shuffle_back();
+					pos = pos->next;
+				}
 			}
+			else {
+				while( !isalpha( pos->name[0] ) && pos != current_game ) {
+					game_sel_shuffle_back();
+					pos = pos->next;
+				}
+			}	
 		}
-		else {
-			while( !isalpha( pos->name[0] ) && pos != current_game ) {
-				game_sel_shuffle_back();
-				pos = pos->next;
-			}
-		}	
+		skipping = 0;
 	}
-	skipping = 0;
 	game_sel_show();
 }
 
@@ -334,7 +337,7 @@ void game_sel_skip_back( void ) {
 void game_sel_draw( void ) {
 	if( idle_counter && !game_sel_busy() ) {
 		idle_counter--;
-		if( idle_counter == 0 )
+		if( idle_counter == 0 && game_tile_current->game )
 			bg_set( game_tile_current->game->bg_image );
 	}
 	if( visible ) {
