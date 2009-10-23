@@ -3,18 +3,36 @@
 #include "config.h"
 #include "sdl.h"
 
+#define MAX_JOYSTICKS 8
+
 static const int AXIS_THRESHOLD = 8000;
 static const int BALL_THRESHOLD = 100;
 static const int MOUSE_THRESHOLD = 100;
+static int num_joysticks = 0;
+static SDL_Joystick *joysticks[MAX_JOYSTICKS];
 
 extern struct config* config;
 
 int event_init( void ) {
+	int i;
+	
+	num_joysticks = SDL_NumJoysticks();
+	if( num_joysticks > MAX_JOYSTICKS )
+		num_joysticks = MAX_JOYSTICKS;
+
+	for( i = 0 ; i < num_joysticks ; i++ ) {
+		SDL_JoystickOpen( i );
+	}
+	
 	return 0;
 }
 
 void event_free( void ) {
-
+	int i;
+	
+	for( i = 0 ; i < num_joysticks ; i++ ) {
+		SDL_JoystickClose( joysticks[i] );
+	}
 }
 
 void event_pause( void ) {
