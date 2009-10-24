@@ -1,6 +1,5 @@
 #include "event.h"
 #include "control.h"
-#include "config.h"
 #include "sdl.h"
 
 #define MAX_JOYSTICKS 8
@@ -12,8 +11,8 @@ static const char *event_str[] = {
 };
 
 static const int AXIS_THRESHOLD = 8000;
-static const int BALL_THRESHOLD = 100;
-static const int MOUSE_THRESHOLD = 100;
+static const int BALL_THRESHOLD = 10;
+static const int MOUSE_THRESHOLD = 10;
 static int num_joysticks = 0;
 static SDL_Joystick *joysticks[MAX_JOYSTICKS];
 static int event = EVENT_NONE;
@@ -118,10 +117,10 @@ int event_get( void ) {
 				else if ( sdl_event.type == SDL_MOUSEMOTION
 				&& sdl_event.motion.which == control->device_id
 				&& control->control_type == CTRL_AXIS ) {
-					if( control->value == DIR_UP && sdl_event.motion.yrel > MOUSE_THRESHOLD ) {
+					if( control->value == DIR_DOWN && sdl_event.motion.yrel > MOUSE_THRESHOLD ) {
 						event = control->event;
 					}
-					else if( control->value == DIR_DOWN && sdl_event.motion.yrel < -MOUSE_THRESHOLD ) {
+					else if( control->value == DIR_UP && sdl_event.motion.yrel < -MOUSE_THRESHOLD ) {
 						event = control->event;
 					}
 					else if( control->value == DIR_LEFT && sdl_event.motion.xrel < -MOUSE_THRESHOLD ) {
@@ -135,27 +134,87 @@ int event_get( void ) {
 			control = control->next;
 		}
 	}
-	
+
 	return event;
 }
 
-int event_probe( int timeout ) {
-	SDL_Event event;
+int event_probe( int timeout, struct config_control *control ) {
+	SDL_Event sdl_event;
+	
+	control->device_type = DEV_UNKNOWN;
+	control->device_id = 0;
+	control->control_type = CTRL_UNKNOWN;
+	control->control_id = 0;
 	
 	while( timeout ) {
-		SDL_PollEvent( &event );
-		switch( event.type ) {
+		SDL_PollEvent( &sdl_event );
+		switch( sdl_event.type ) {
+			case SDL_KEYDOWN:
+				control->device_type = DEV_KEYBOARD;
+				control->device_id = sdl_event.key.which;
+				control->value = sdl_event.key.keysym.sym;
+				return 1;
 			case SDL_JOYAXISMOTION:
-				printf( "Joy(%d) Axis(%d) Value(%d)\n", event.jaxis.which, event.jaxis.axis, event.jaxis.value );
+				control->device_type = DEV_JOYSTICK;
+				control->device_id = sdl_event.jaxis.which;
+				control->control_type = CTRL_AXIS;
+				control->control_id = sdl_event.jaxis.axis;
+				if( sdl_event.jaxis.value > AXIS_THRESHOLD )
+					control->value = 1;
+				else if( sdl_event.jaxis.value < -AXIS_THRESHOLD )
+					control->value = -1;
+				else
+					return -1;
 				return 1;
 			case SDL_JOYBUTTONDOWN:
-				printf( "Joy(%d) Button(%d)\n", event.jbutton.which, event.jbutton.button );
+				control->device_type = DEV_JOYSTICK;
+				control->device_id = sdl_event.jbutton.which;
+				control->control_type = CTRL_BUTTON;
+				control->value = sdl_event.jbutton.button;
 				return 1;
 			case SDL_JOYHATMOTION:
-				printf( "Joy(%d) Hat(%d) Dir(%d)\n", event.jhat.which, event.jhat.hat, event.jhat.value );
+				control->device_type = DEV_JOYSTICK;
+				control->device_id = sdl_event.jhat.which;
+				control->control_type = CTRL_HAT;
+				control->control_id = sdl_event.jhat.hat;
+				control->value = sdl_event.jhat.value;
 				return 1;
 			case SDL_JOYBALLMOTION:
-				printf( "Joy(%d) Ball(%d) Dir(%d,%d)\n", event.jball.which, event.jball.ball, event.jball.xrel, event.jball.yrel );
+				control->device_type = DEV_JOYSTICK;
+				control->device_id = sdl_event.jball.which;
+				control->control_type = CTRL_BALL;
+				control->control_id = sdl_event.jball.ball;
+				if( sdl_event.jball.xrel > BALL_THRESHOLD )
+					control->value = DIR_LEFT;
+				else if(  sdl_event.jball.xrel < -BALL_THRESHOLD )
+					control->value = DIR_RIGHT;
+				else if( sdl_event.jball.yrel > BALL_THRESHOLD )
+					control->value = DIR_DOWN;
+				else if(  sdl_event.jball.yrel < -BALL_THRESHOLD )
+					control->value = DIR_UP;
+				else
+					return -1;
+				return 1;
+			case SDL_MOUSEBUTTONDOWN:
+				control->device_type = DEV_MOUSE;
+				control->device_id = sdl_event.button.which;
+				control->control_type = CTRL_BUTTON;
+				control->value = sdl_event.button.button;
+				return 1;
+			case SDL_MOUSEMOTION:
+				control->device_type = DEV_MOUSE;
+				control->device_id = sdl_event.motion.which;
+				control->control_type = CTRL_AXIS;
+				if( sdl_event.motion.xrel > MOUSE_THRESHOLD )
+					control->value = DIR_LEFT;
+				else if(  sdl_event.motion.xrel < -MOUSE_THRESHOLD )
+					control->value = DIR_RIGHT;
+				else if( sdl_event.motion.yrel > MOUSE_THRESHOLD )
+					control->value = DIR_DOWN;
+				else if(  sdl_event.motion.yrel < -MOUSE_THRESHOLD )
+					control->value = DIR_UP;
+				else
+					return -1;
 				return 1;
 		}
 		SDL_Delay( 10 );

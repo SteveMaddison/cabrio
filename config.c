@@ -10,6 +10,8 @@
 #include <dirent.h>
 #include "config.h"
 #include "key.h"
+#include "event.h"
+#include "control.h"
 #include "sdl.h"
 
 #include <libxml2/libxml/parser.h>

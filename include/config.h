@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "control.h"
-#include "event.h"
+
 
 #define CONFIG_NAME_LENGTH		128
 #define CONFIG_FILE_NAME_LENGTH	256
