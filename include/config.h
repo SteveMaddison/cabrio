@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "device.h"
+#include "control.h"
 #include "event.h"
 
 #define CONFIG_NAME_LENGTH		128

@@ -1,5 +1,5 @@
 #include "event.h"
-#include "device.h"
+#include "control.h"
 #include "config.h"
 #include "sdl.h"
 
