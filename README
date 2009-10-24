@@ -92,3 +92,9 @@ For joysticks, valid control types are: axis, button, hat, ball
 Valid values are numeric, execpt for keys which can also be expressed as a
 string (any of the SDLK_* macros, minus their prefix).
 
+License
+-------
+Copyright (c) 2009 - Steve Maddison <steve@cosam.org>
+Distributed under the GNU General Public License (see the COPYING file
+for details).
+
