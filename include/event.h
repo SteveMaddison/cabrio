@@ -19,6 +19,7 @@ void event_pause( void );
 int event_resume( void );
 
 int event_get( void );
+int event_id( char *name );
 
 #endif
 

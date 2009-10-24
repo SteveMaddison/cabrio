@@ -5,6 +5,12 @@
 
 #define MAX_JOYSTICKS 8
 
+static const char *event_str[] = {
+	"none",
+	"up", "down", "left", "right",
+	"select", "back", "quit"
+};
+
 static const int AXIS_THRESHOLD = 8000;
 static const int BALL_THRESHOLD = 100;
 static const int MOUSE_THRESHOLD = 100;
@@ -128,6 +134,20 @@ int event_get( void ) {
 		control = control->next;
 	}
 	
+	return EVENT_NONE;
+}
+
+int event_id( char *name ) {
+	int i;
+	if( name == NULL ) {
+		fprintf( stderr, "Warning: Null event name\n" );		
+		return EVENT_NONE;
+	}
+	for( i = 0 ; i < NUM_EVENTS ; i++ ) {
+		if( strcasecmp( name, event_str[i] ) == 0 ) return i;
+	}
+
+	fprintf( stderr, "Warning: Unknown event name '%s'\n", name );
 	return EVENT_NONE;
 }
 

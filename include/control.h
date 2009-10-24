@@ -6,7 +6,7 @@ enum device_t {
 	DEV_KEYBOARD,
 	DEV_JOYSTICK,
 	DEV_MOUSE,
-	NUM_DEVICES
+	NUM_DEVS
 };
 
 enum control_t {
@@ -26,6 +26,18 @@ enum direction_t {
 	DIR_RIGHT,
 	NUM_DIRS
 };
+
+const char *device_name( int device );
+int device_id( char *name );
+
+const char *control_name( int control );
+int control_id( char *name );
+
+const char *direction_name( int dir );
+int direction_id( char *name );
+
+int axis_value( int direction );
+int hat_value( int direction );
 
 #endif
 

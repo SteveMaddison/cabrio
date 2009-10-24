@@ -369,31 +369,11 @@ int config_read_event_name( char *name, struct config_control *control ) {
 	return 0;
 }
 
-int config_read_device_type( char *name, struct config_control *control ) {
-	if( name == NULL ) {
-		fprintf( stderr, "Warning: Null device type\n" );		
-		return -1;	
-	}
-	if( strcasecmp( name, "keyboard" ) == 0 )
-		control->device_type = DEV_KEYBOARD;
-	else if( strcasecmp( name, "joystick" ) == 0 )
-		control->device_type = DEV_JOYSTICK;
-	else if( strcasecmp( name, "mouse" ) == 0 )
-		control->device_type = DEV_MOUSE;
-	else {
-		fprintf( stderr, "Warning: Unknown device type '%s'\n", name );
-		control->event = DEV_UNKNOWN;
-		return -1;
-	}
-
-	return 0;	
-}
-
 int config_read_device( xmlNode *node, struct config_control *control ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, config_tag_type ) == 0 ) {
-				config_read_device_type( (char*)xmlNodeGetContent(node), control );
+				control->device_type = device_id( (char*)xmlNodeGetContent(node) );
 			}
 			else if( strcmp( (char*)node->name, config_tag_id ) == 0 ) {
 				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &control->device_id );
@@ -408,33 +388,11 @@ int config_read_device( xmlNode *node, struct config_control *control ) {
 	return 0;
 }
 
-int config_read_control_type( char *name, struct config_control *control ) {
-	if( name == NULL ) {
-		fprintf( stderr, "Warning: Null control type\n" );		
-		return -1;	
-	}
-	if( strcasecmp( name, "button" ) == 0 )
-		control->control_type = CTRL_BUTTON;
-	else if( strcasecmp( name, "axis" ) == 0 )
-		control->control_type = CTRL_AXIS;
-	else if( strcasecmp( name, "hat" ) == 0 )
-		control->control_type = CTRL_HAT;
-	else if( strcasecmp( name, "ball" ) == 0 )
-		control->control_type = CTRL_BALL;
-	else {
-		fprintf( stderr, "Warning: Unknown control type '%s'\n", name );
-		control->event = CTRL_UNKNOWN;
-		return -1;
-	}
-
-	return 0;	
-}
-
 int config_read_control( xmlNode *node, struct config_control *control ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, config_tag_type ) == 0 ) {
-				config_read_control_type( (char*)xmlNodeGetContent(node), control );
+				control->control_type = control_id( (char*)xmlNodeGetContent(node) );
 			}
 			else if( strcmp( (char*)node->name, config_tag_id ) == 0 ) {
 				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &control->control_id );
@@ -457,7 +415,7 @@ int config_read_event( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
-				if( config_read_event_name( (char*)xmlNodeGetContent(node), &tmp ) != 0 ) {
+				if(!( tmp.event = event_id( (char*)xmlNodeGetContent(node) ) )) {
 					return -1;
 				}
 			}
@@ -481,16 +439,38 @@ int config_read_event( xmlNode *node ) {
 		node = node->next;
 	}
 	
-	/* Decode the key name if necessary */
-	if( tmp.device_type == DEV_KEYBOARD ) {
-		tmp.value = key_id( value );
-		if( tmp.value == 0 ) {
-			fprintf( stderr, "Warning: Unknown key name '%s'\n", value );
-			return -1;
-		}
-	}
-	else {
-		config_read_numeric( (char*)config_tag_id, value, &tmp.value );
+	/* Decode string values if necessary */
+	switch( tmp.device_type ) {
+		case DEV_KEYBOARD:
+			tmp.value = key_id( value );
+			if( tmp.value == 0 ) {
+				fprintf( stderr, "Warning: Unknown key name '%s'\n", value );
+				return -1;
+			}
+			break;
+		case DEV_JOYSTICK:
+			switch( tmp.control_type ) {
+				case CTRL_AXIS:
+					tmp.value = axis_value( direction_id( value ) );
+					break;
+				case CTRL_HAT:
+					tmp.value = hat_value( direction_id( value ) );
+					break;
+				case CTRL_BALL:
+					tmp.value = axis_value( direction_id( value ) );
+					break;
+				default:
+					break;
+			}
+			break;
+		case DEV_MOUSE:
+			if( tmp.control_type == CTRL_AXIS ) {
+				tmp.value = axis_value( direction_id( value ) );
+			}
+			break;
+		default:
+			config_read_numeric( (char*)config_tag_id, value, &tmp.value );
+			break;
 	}
 	
 	/* Replace exisiting control for this event */
