@@ -19,7 +19,9 @@ void event_pause( void );
 int event_resume( void );
 
 int event_get( void );
+int event_probe( int timeout );
 int event_id( char *name );
+const char *event_name( int event );
 
 #endif
 

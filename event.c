@@ -93,10 +93,10 @@ int event_get( void ) {
 			&&  event.jball.which == control->device_id
 			&&  control->control_type == CTRL_BALL
 			&&  event.jball.ball == control->control_id ) {
-				if( control->value == DIR_UP && event.jball.yrel > BALL_THRESHOLD ) {
+				if( control->value == DIR_DOWN && event.jball.yrel > BALL_THRESHOLD ) {
 					return control->event;
 				}
-				else if( control->value == DIR_DOWN && event.jball.yrel < -BALL_THRESHOLD ) {
+				else if( control->value == DIR_UP && event.jball.yrel < -BALL_THRESHOLD ) {
 					return control->event;
 				}
 				else if( control->value == DIR_LEFT && event.jball.xrel < -BALL_THRESHOLD ) {
@@ -137,6 +137,31 @@ int event_get( void ) {
 	return EVENT_NONE;
 }
 
+int event_probe( int timeout ) {
+	SDL_Event event;
+	
+	while( timeout ) {
+		SDL_PollEvent( &event );
+		switch( event.type ) {
+			case SDL_JOYAXISMOTION:
+				printf( "Joy(%d) Axis(%d) Value(%d)\n", event.jaxis.which, event.jaxis.axis, event.jaxis.value );
+				return 1;
+			case SDL_JOYBUTTONDOWN:
+				printf( "Joy(%d) Button(%d)\n", event.jbutton.which, event.jbutton.button );
+				return 1;
+			case SDL_JOYHATMOTION:
+				printf( "Joy(%d) Hat(%d) Dir(%d)\n", event.jhat.which, event.jhat.hat, event.jhat.value );
+				return 1;
+			case SDL_JOYBALLMOTION:
+				printf( "Joy(%d) Ball(%d) Dir(%d,%d)\n", event.jball.which, event.jball.ball, event.jball.xrel, event.jball.yrel );
+				return 1;
+		}
+		SDL_Delay( 10 );
+		timeout -= 10;
+	}
+	return 0;
+}
+
 int event_id( char *name ) {
 	int i;
 	if( name == NULL ) {
@@ -149,5 +174,12 @@ int event_id( char *name ) {
 
 	fprintf( stderr, "Warning: Unknown event name '%s'\n", name );
 	return EVENT_NONE;
+}
+
+const char *event_name( int event ) {
+	if( event < 0 || event > NUM_EVENTS )
+		return NULL;
+	else
+		return event_str[event];
 }
 

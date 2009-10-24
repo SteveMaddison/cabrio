@@ -4,8 +4,8 @@
 #include "sdl.h"
 
 static const char *device_str[] = { "unknown", "keyboard", "joystick", "mouse" };
-static const char *ctrl_str[] = { "button", "axis", "hat", "ball" };
-static const char *dir_str[] = { "up", "down", "left", "right" };
+static const char *ctrl_str[] = { "unknown", "button", "axis", "hat", "ball" };
+static const char *dir_str[] = { "unknown", "up", "down", "left", "right" };
 
 const char *device_name( int device ) {
 	if( device < 0 || device > NUM_DEVS )
@@ -71,9 +71,9 @@ int direction_id( char *name ) {
 }
 
 int axis_value( int direction ) {
-	if( direction == DIR_LEFT || direction == DIR_DOWN )
+	if( direction == DIR_LEFT || direction == DIR_UP )
 		return -1;
-	if( direction == DIR_RIGHT || direction == DIR_UP )
+	if( direction == DIR_RIGHT || direction == DIR_DOWN )
 		return 1;
 	fprintf( stderr, "Warning: Bogus axis direction %d\n", direction );
 	return 0;

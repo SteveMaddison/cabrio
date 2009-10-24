@@ -101,9 +101,6 @@ int main( int argc, char *arvg[] ) {
 	if( config_init( NULL ) != 0 )
 		return -1;
 
-	if( event_init() != 0 )
-		return -1;
-
 	if( genre_init() != 0 )
 		return -1;
 	
@@ -119,6 +116,9 @@ int main( int argc, char *arvg[] ) {
 	if( ogl_init() != 0 )
 		return -1;
 
+	if( event_init() != 0 )
+		return -1;
+
 	if( font_init() != 0 )
 		return -1;	
 
@@ -132,7 +132,6 @@ int main( int argc, char *arvg[] ) {
 		return -1;
 
 	sound_init();
-
 	bg_init();
 
 	while( !quit ) {

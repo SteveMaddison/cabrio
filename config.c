@@ -341,34 +341,6 @@ int config_read_games( xmlNode *node ) {
 	return 0;
 }
 
-int config_read_event_name( char *name, struct config_control *control ) {
-	if( name == NULL ) {
-		fprintf( stderr, "Warning: Null event name\n" );		
-		return -1;	
-	}
-	if( strcasecmp( name, "up" ) == 0 )
-		control->event = EVENT_UP;
-	else if( strcasecmp( name, "down" ) == 0 )
-		control->event = EVENT_DOWN;
-	else if( strcasecmp( name, "left" ) == 0 )
-		control->event = EVENT_LEFT;
-	else if( strcasecmp( name, "right" ) == 0 )
-		control->event = EVENT_RIGHT;
-	else if( strcasecmp( name, "select" ) == 0 )
-		control->event = EVENT_SELECT;
-	else if( strcasecmp( name, "back" ) == 0 )
-		control->event = EVENT_BACK;
-	else if( strcasecmp( name, "quit" ) == 0 )
-		control->event = EVENT_QUIT;
-	else {
-		fprintf( stderr, "Warning: Unknown event name '%s'\n", name );
-		control->event = EVENT_NONE;
-		return -1;
-	}
-
-	return 0;
-}
-
 int config_read_device( xmlNode *node, struct config_control *control ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
@@ -459,6 +431,9 @@ int config_read_event( xmlNode *node ) {
 				case CTRL_BALL:
 					tmp.value = axis_value( direction_id( value ) );
 					break;
+				case CTRL_BUTTON:
+					config_read_numeric( (char*)config_tag_id, value, &tmp.value );
+					break;
 				default:
 					break;
 			}
@@ -466,6 +441,9 @@ int config_read_event( xmlNode *node ) {
 		case DEV_MOUSE:
 			if( tmp.control_type == CTRL_AXIS ) {
 				tmp.value = axis_value( direction_id( value ) );
+			}
+			else {
+				config_read_numeric( (char*)config_tag_id, value, &tmp.value );
 			}
 			break;
 		default:
@@ -547,6 +525,7 @@ int config_read( xmlNode *root ) {
 		}
 		node = node->next;
 	}
+	
 	return 0;
 }
 
@@ -609,10 +588,6 @@ int config_write_interface( void ) {
 	return 0;
 }
 
-int config_write_platforms( void ) {
-	return 0;
-}
-
 int config_write() {
 	config_doc = xmlNewDoc( (xmlChar*)"1.0" );
 	config_root = xmlNewNode( NULL, (xmlChar*)config_tag_root );
@@ -620,7 +595,6 @@ int config_write() {
 	
 	config_write_interface();
 	config_write_emulators();
-	config_write_platforms();
 	config_write_games();
 	
 	xmlSaveFormatFileEnc( config_filename, config_doc, "UTF-8", 1 );
@@ -685,7 +659,7 @@ int config_new( void ) {
 			config->iface.screen_width = 640;
 			config->iface.screen_height = 480;
 			
-			for( i = 0 ; i < NUM_EVENTS ; i++ ) {
+			for( i = 0 ; i < NUM_EVENTS-1 ; i++ ) {
 				struct config_control *control = malloc( sizeof(struct config_control) );
 				if( control == NULL ) {
 					fprintf( stderr, "Error: couldn't allocate control structure\n" );

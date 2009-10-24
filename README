@@ -86,11 +86,14 @@ configuration file thus:
   </interface>
 </cabrio-config>
 
-Valid event names are: up, down, left, right, select, back, quit
-Valid device types are: keyboard, joystick, mouse
-For joysticks, valid control types are: axis, button, hat, ball
-Valid values are numeric, execpt for keys which can also be expressed as a
-string (any of the SDLK_* macros, minus their prefix).
+Valid event names are: up, down, left, right, select, back, quit.
+Valid device types are: keyboard, joystick, mouse.
+For joysticks, valid control types are: axis, button, hat, ball.
+Values for keys which are expressed as a string (any of the SDLK_* macros,
+minus their prefix).
+Values for directional controls (axis, hat or ball) are expressed as up,
+down, left or right.
+Other values (e.g. buttons) are numeric.
 
 License
 -------
