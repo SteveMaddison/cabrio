@@ -89,28 +89,6 @@ int config_read_numeric( char *name, char *value, int *target ) {
 	return 0;
 }
 
-int config_set_control( int event, struct config_control *new ) {
-	struct config_control *control = config->iface.controls;
-	
-	while( control ) {
-		if( control->event == event ) {
-			control->device_type = new->device_type;
-			control->device_id = new->device_id;
-			control->control_type = new->control_type;
-			control->control_id = new->control_id;
-			control->value = new->value;
-			break;
-		}
-		control = control->next;
-	}
-	if( control == NULL ) {
-		fprintf( stderr, "Warning: Couldn't set control for event %d\n", event );
-		return -1;
-	}
-
-	return 0;
-}
-
 struct config_genre *config_genre( const char *name ) {
 	struct config_genre *g = config->genres;
 
@@ -384,12 +362,13 @@ int config_read_control( xmlNode *node, struct config_control *control ) {
 int config_read_event( xmlNode *node ) {
 	struct config_control tmp;
 	char *value = NULL;
+	int event;
 	
 	memset( &tmp, 0, sizeof(struct config_control) );
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
-				if(!( tmp.event = event_id( (char*)xmlNodeGetContent(node) ) )) {
+				if(!( event = event_id( (char*)xmlNodeGetContent(node) ) )) {
 					return -1;
 				}
 			}
@@ -454,7 +433,7 @@ int config_read_event( xmlNode *node ) {
 	}
 	
 	/* Replace exisiting control for this event */
-	config_set_control( tmp.event, &tmp );
+	memcpy( &config->iface.controls[event], &tmp, sizeof(struct config_control) );
 	
 	return 0;	
 }
@@ -582,79 +561,81 @@ int config_write_games( void ) {
 }
 
 int config_write_interface( void ) {
-	struct config_control *ctrl = config->iface.controls;
+	int i;
 	xmlNodePtr interface = xmlNewNode( NULL, (xmlChar*)config_tag_iface );
 	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_full_screen, config_write_boolean( config->iface.screen_width) );
 	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_width, config_write_numeric( config->iface.screen_width ) );
 	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_height, config_write_numeric( config->iface.screen_height ) );
-	
-	if( ctrl ) {
-		xmlNodePtr controls = xmlNewNode( NULL, (xmlChar*)config_tag_iface_controls );
-		while( ctrl ) {
-			xmlNodePtr event = xmlNewNode( NULL, (xmlChar*)config_tag_event );
-			xmlNodePtr device = xmlNewNode( NULL, (xmlChar*)config_tag_device );
-			xmlNodePtr control = NULL;
-			
-			xmlNewChild( event, NULL, (xmlChar*)config_tag_name, (xmlChar*)event_name( ctrl->event ) );
-			xmlNewChild( device, NULL, (xmlChar*)config_tag_type, (xmlChar*)device_name( ctrl->device_type ) );
-			xmlNewChild( device, NULL, (xmlChar*)config_tag_id, config_write_numeric( ctrl->device_id ) );
-			
-			switch( ctrl->device_type ) {
-				case DEV_KEYBOARD:
-					xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( ctrl->value ) );
-					break;
-				case DEV_JOYSTICK:
-					control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
-					xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( ctrl->control_type ) );
-					xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( ctrl->control_id ) );
-					switch( ctrl->control_type ) {
-						case CTRL_BUTTON:
-							xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( ctrl->value ) );
-							break;
-						case CTRL_AXIS:
-							xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( ctrl->value ) );
-							break;
-						case CTRL_HAT:
-						case CTRL_BALL:
-							xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)direction_name( ctrl->value ) );
-							break;
-						default:
-							fprintf( stderr, "Warning: Not sure how write control config for unknown joystick control type %d\n", ctrl->control_type );
-							break;
-					}
-					break;
-				case DEV_MOUSE:
-					control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
-					xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( ctrl->control_type ) );
-					xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( ctrl->control_id ) );
-					switch( ctrl->control_type ) {
-						case CTRL_BUTTON:
-							xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( ctrl->value ) );
-							break;
-						case CTRL_AXIS:
-							xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( ctrl->value ) );
-							break;
-						default:
-							fprintf( stderr, "Warning: Not sure how write control config for unknown mouse control type %d\n", ctrl->control_type );
-							break;
-					}
-					break;
-				default:
-					fprintf( stderr, "Warning: Not sure how write control config for unknown device type %d\n", ctrl->device_type );
-					break;
-			}
+	xmlNodePtr controls = xmlNewNode( NULL, (xmlChar*)config_tag_iface_controls );
 
-			xmlAddChild( event, device );
-			if( control ) {
-				xmlAddChild( event, control );
-			}
-			xmlAddChild( controls, event );
-			ctrl = ctrl->next;
+	for( i = 1 ; i < NUM_EVENTS ; i++ ) {
+		xmlNodePtr event = xmlNewNode( NULL, (xmlChar*)config_tag_event );
+		xmlNodePtr device = xmlNewNode( NULL, (xmlChar*)config_tag_device );
+		xmlNodePtr control = NULL;
+		
+		xmlNewChild( event, NULL, (xmlChar*)config_tag_name, (xmlChar*)event_name( i ) );
+		xmlNewChild( device, NULL, (xmlChar*)config_tag_type, (xmlChar*)device_name( config->iface.controls[i].device_type ) );
+		xmlNewChild( device, NULL, (xmlChar*)config_tag_id, config_write_numeric( config->iface.controls[i].device_id ) );
+		
+		switch( config->iface.controls[i].device_type ) {
+			case DEV_KEYBOARD:
+				xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config->iface.controls[i].value ) );
+				break;
+			case DEV_JOYSTICK:
+				control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
+				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( config->iface.controls[i].control_type ) );
+				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( config->iface.controls[i].control_id ) );
+				switch( config->iface.controls[i].control_type ) {
+					case CTRL_BUTTON:
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config->iface.controls[i].value ) );
+						break;
+					case CTRL_AXIS:
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( config->iface.controls[i].value ) );
+						break;
+					case CTRL_HAT:
+					case CTRL_BALL:
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)direction_name( config->iface.controls[i].value ) );
+						break;
+					default:
+						fprintf( stderr, "Warning: Not sure how write control config for unknown joystick control type %d\n", config->iface.controls[i].control_type );
+						break;
+				}
+				break;
+			case DEV_MOUSE:
+				control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
+				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( config->iface.controls[i].control_type ) );
+				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( config->iface.controls[i].control_id ) );
+				switch( config->iface.controls[i].control_type ) {
+					case CTRL_BUTTON:
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config->iface.controls[i].value ) );
+						break;
+					case CTRL_AXIS:
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( config->iface.controls[i].value ) );
+						break;
+					default:
+						fprintf( stderr, "Warning: Not sure how write control config for unknown mouse control type %d\n", config->iface.controls[i].control_type );
+						break;
+				}
+				break;
+			default:
+				fprintf( stderr, "Warning: Not sure how write control config for unknown device type %d\n", config->iface.controls[i].device_type );
+				break;
 		}
-		xmlAddChild( interface, controls );
+
+		xmlAddChild( event, device );
+		if( control ) {
+			xmlAddChild( event, control );
+		}
+		xmlAddChild( controls, event );
 	}
+	xmlAddChild( interface, controls );
 	
 	xmlAddChild( config_root, interface );
+	return 0;
+}
+
+int config_update( void ) {
+	/* Write anything that may have changed back to the config object */
 	return 0;
 }
 
@@ -669,8 +650,7 @@ int config_write() {
 	
 	xmlSaveFormatFileEnc( config_filename, config_doc, "UTF-8", 1 );
 	xmlFreeDoc( config_doc );
-	printf( "Info: Wrote default configuration to '%s'\n", config_filename );
-
+	
 	return 0;
 }
 
@@ -692,8 +672,8 @@ int config_new( void ) {
 			struct config_param *prev_param = NULL;
 			const int num_params = 4;
 			const char *params[] = { "-nowindow", "-skip_gameinfo", "-switchres", "-joystick" };
-			struct config_control *prev_control = NULL;
 			const int keys[] = {
+				-1,				/* Place holder */
 				SDLK_UP,		/* EVENT_UP == 1 */
 				SDLK_DOWN,		/* EVENT_DOWN */
 				SDLK_LEFT,  	/* EVENT_LEFT */
@@ -729,33 +709,27 @@ int config_new( void ) {
 			config->iface.screen_width = 640;
 			config->iface.screen_height = 480;
 			
-			for( i = 0 ; i < NUM_EVENTS-1 ; i++ ) {
-				struct config_control *control = malloc( sizeof(struct config_control) );
-				if( control == NULL ) {
-					fprintf( stderr, "Error: couldn't allocate control structure\n" );
-					return -1;
-				}
-				else {
-					memset( control, 0, sizeof(struct config_control) );
-					control->event = i+1;
-					control->device_type = DEV_KEYBOARD;
-					control->value = keys[i];
-					control->next = prev_control;
-					prev_control = control;
-				}
-				config->iface.controls = control;
+			for( i = 1 ; i < NUM_EVENTS ; i++ ) {
+				config->iface.controls[i].device_type = DEV_KEYBOARD;
+				config->iface.controls[i].value = keys[i];
 			}
 		}
 	}
 	return 0;
 }
 
-int config_create( const char *home ) {
+int config_create( void ) {
+	struct passwd *passwd = getpwuid(getuid());
 	char dirname[CONFIG_FILE_NAME_LENGTH];
 	DIR *dir;
+
+	if( passwd == NULL ) {
+		fprintf( stderr, "Error: Couldn't fetch user's home directory\n" );
+		return -1;
+	}
 	
 	/* Check if directory exists and attempt to create if not */
-	snprintf( dirname, CONFIG_FILE_NAME_LENGTH, "%s/%s", home, config_default_dir );
+	snprintf( dirname, CONFIG_FILE_NAME_LENGTH, "%s/%s", passwd->pw_dir, config_default_dir );
 	dir = opendir( dirname );
 	if( dir == NULL ) {
 		switch( errno ) {
@@ -780,7 +754,7 @@ int config_create( const char *home ) {
 	return config_write();
 }
 
-int config_init( const char *filename ) {
+int config_open( const char *filename ) {
 	if( config_new() != 0 ) {
 		fprintf( stderr, "Error: Config initialisation failed\n" );
 		return -1;
@@ -801,7 +775,7 @@ int config_init( const char *filename ) {
 
 		if( passwd == NULL ) {
 			fprintf( stderr, "Error: Couldn't fetch user's home directory\n" );
-			return -1;	
+			return -1;
 		}
 	
 		snprintf( config_filename, CONFIG_FILE_NAME_LENGTH, "%s/%s/%s", passwd->pw_dir, config_default_dir, config_default_file );
@@ -813,11 +787,7 @@ int config_init( const char *filename ) {
 					return -1;
 					break;
 				case ENOENT:
-					/* Try to create a default configuration file */
-					if( config_create( passwd->pw_dir ) != 0 ) {
-						fprintf( stderr, "Error: Can't create default config file '%s'\n", config_filename );
-						return -1;
-					}
+					return 1; /* We check for this in main() */
 					break;
 				default:
 					fprintf( stderr, "Error: Can't read config file '%s': errno = %d\n", config_filename, errno );

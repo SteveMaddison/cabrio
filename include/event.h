@@ -15,13 +15,24 @@ enum event_t {
 	NUM_EVENTS
 };
 
+struct event {
+	int device_type;
+	int device_id;
+	int control_type;
+	int control_id;
+	int value;
+};
+
 int event_init( void );
 void event_free( void );
 void event_pause( void );
 int event_resume( void );
 
-int event_get( void );
-int event_probe( int timeout, struct config_control *control );
+int event_set( int id, struct event *event );
+struct event *event_get( int id );
+
+int event_poll( void );
+int event_probe( int timeout, struct event *event );
 int event_id( char *name );
 const char *event_name( int event );
 

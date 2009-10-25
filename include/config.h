@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "control.h"
-
+#include "event.h"
 
 #define CONFIG_NAME_LENGTH		128
 #define CONFIG_FILE_NAME_LENGTH	256
@@ -49,8 +49,6 @@ struct config_game {
 };
 
 struct config_control {
-	struct config_control *next;
-	int event;
 	int device_type;
 	int device_id;
 	int control_type;
@@ -62,7 +60,7 @@ struct config_iface {
 	int full_screen;
 	int screen_width;
 	int screen_height;
-	struct config_control *controls;
+	struct config_control controls[NUM_EVENTS];
 };
 
 struct config {
@@ -73,7 +71,10 @@ struct config {
 	struct config_iface iface;
 };
 
-int config_init( const char *filename );
+int config_open( const char *filename );
+int config_create( void );
+int config_write();
+int config_update( void );
 
 #endif
 

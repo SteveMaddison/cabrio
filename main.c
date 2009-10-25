@@ -15,6 +15,7 @@
 #include "game_sel.h"
 #include "sound.h"
 #include "event.h"
+#include "setup.h"
 
 extern struct config *config;
 static int supress_wait = 0;
@@ -95,19 +96,12 @@ void supress( void ) {
 int main( int argc, char *arvg[] ) {
 	int quit = 0;
 	int menu_level = 0;
+	int config_status = 0;
 	int event;
 	struct game *to_run = NULL;
 
-	if( config_init( NULL ) != 0 )
-		return -1;
-
-	if( genre_init() != 0 )
-		return -1;
-	
-	if( platform_init() != 0 )
-		return -1;
-
-	if( game_sel_init( 1 ) != 0 )
+	config_status = config_open( NULL );
+	if( config_status == -1 )
 		return -1;
 
 	if( sdl_init() != 0 )
@@ -121,6 +115,23 @@ int main( int argc, char *arvg[] ) {
 
 	if( font_init() != 0 )
 		return -1;	
+
+	if( config_status == 1 ) {
+		/* Config file didn't exist, so run the setup utility */
+		if( setup() != 0 )
+			return -1;
+		if( config_create() != 0 )
+			return -1;
+	}
+
+	if( genre_init() != 0 )
+		return -1;
+	
+	if( platform_init() != 0 )
+		return -1;
+
+	if( game_sel_init( 1 ) != 0 )
+		return -1;
 
 	if( menu_init() != 0 )
 		return -1;
@@ -146,7 +157,7 @@ int main( int argc, char *arvg[] ) {
 		game_sel_draw();
 		sdl_swap();
 	
-		if (( event = event_get() )) {
+		if (( event = event_poll() )) {
 			if( supress_wait == 0 ) {
 				supress();
 				switch( event ) {
