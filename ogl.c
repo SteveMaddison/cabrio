@@ -130,6 +130,11 @@ void ogl_free_texture( GLuint *t ) {
 	}
 }
 
+void ogl_clear( void ) {
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glLoadIdentity();
+}
+
 void ogl_flush( void ) {
 	glFlush();
 }

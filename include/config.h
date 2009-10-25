@@ -73,7 +73,7 @@ struct config {
 
 int config_open( const char *filename );
 int config_create( void );
-int config_write();
+int config_write( void );
 int config_update( void );
 
 #endif

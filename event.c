@@ -172,7 +172,7 @@ int event_probe( int timeout, struct event *event ) {
 	event->control_type = CTRL_UNKNOWN;
 	event->control_id = 0;
 	
-	while( timeout ) {
+	while( timeout > 0 ) {
 		SDL_PollEvent( &sdl_event );
 		switch( sdl_event.type ) {
 			case SDL_KEYDOWN:

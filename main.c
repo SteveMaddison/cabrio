@@ -120,6 +120,7 @@ int main( int argc, char *arvg[] ) {
 		/* Config file didn't exist, so run the setup utility */
 		if( setup() != 0 )
 			return -1;
+		config_update();
 		if( config_create() != 0 )
 			return -1;
 	}
@@ -146,8 +147,7 @@ int main( int argc, char *arvg[] ) {
 	bg_init();
 
 	while( !quit ) {
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		glLoadIdentity();
+		ogl_clear();
 		bg_draw();
 		hint_draw( menu_level );
 		menu_draw();

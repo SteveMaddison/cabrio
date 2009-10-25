@@ -12,6 +12,7 @@
 int ogl_init( void ); 
 int ogl_create_texture( SDL_Surface *surface, GLuint *texture );
 void ogl_free_texture( GLuint *t );
+void ogl_clear( void );
 void ogl_flush( void );
 
 #endif
