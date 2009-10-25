@@ -3,9 +3,11 @@
 #include "control.h"
 #include "sdl.h"
 
-static const char *device_str[] = { "unknown", "keyboard", "joystick", "mouse" };
-static const char *ctrl_str[] = { "unknown", "button", "axis", "hat", "ball" };
-static const char *dir_str[] = { "unknown", "up", "down", "left", "right" };
+static const char *device_str[]		= { "unknown", "keyboard", "joystick", "mouse" };
+static const char *ctrl_str[]		= { "unknown", "button", "axis", "hat", "ball" };
+static const char *dir_str[]		= { "unknown", "up", "down", "left", "right" };
+static const char *axis_dir_plus	= "plus";
+static const char *axis_dir_minus	= "minus";
 
 const char *device_name( int device ) {
 	if( device < 0 || device > NUM_DEVS )
@@ -70,28 +72,56 @@ int direction_id( char *name ) {
 	return DIR_UNKNOWN;
 }
 
-int axis_value( int direction ) {
-	if( direction == DIR_LEFT || direction == DIR_UP )
-		return -1;
-	if( direction == DIR_RIGHT || direction == DIR_DOWN )
+int axis_dir_value( char *name ) {
+	int i;
+
+	if( name == NULL ) {
+		fprintf( stderr, "Warning: Null axis value\n" );
+		return DIR_UNKNOWN;
+	}
+	if( strcasecmp( name, axis_dir_plus ) == 0 )
 		return 1;
-	fprintf( stderr, "Warning: Bogus axis direction %d\n", direction );
+	if( strcasecmp( name, axis_dir_minus ) == 0 )
+		return -1;
+		
+	/* direction names are also valid */
+	for( i = 0 ; i < NUM_DIRS ; i++ ) {
+		if( strcasecmp( name, dir_str[i] ) == 0 ) {
+			break;	
+		}
+	}
+	if( i == DIR_LEFT || i == DIR_UP )
+		return -1;
+	if( i == DIR_RIGHT || i == DIR_DOWN )
+		return 1;
+
+	fprintf( stderr, "Warning: Bogus axis direction '%s'\n", name );
 	return 0;
 }
 
-int hat_value( int direction ) {
+const char *axis_dir_name( int axis_dir ) {
+	if( axis_dir < 0 )
+		return axis_dir_minus;
+	else if ( axis_dir > 0 )
+		return axis_dir_plus;
+	
+	fprintf( stderr, "Warning: Bogus axis direction '%d'\n", axis_dir );
+	return "";
+}
+
+int hat_dir_value( int direction ) {
 	switch( direction ) {
-		case DIR_UP:
-			return SDL_HAT_UP;
+		case SDL_HAT_UP:
+			return DIR_UP;
 			break;
-		case DIR_DOWN:
-			return SDL_HAT_DOWN;
+		case SDL_HAT_DOWN:
+			return DIR_DOWN;
 			break;
-		case DIR_LEFT:
-			return SDL_HAT_LEFT;
+		case SDL_HAT_LEFT:
+			return DIR_LEFT;
 			break;
-		case DIR_RIGHT:
-			return SDL_HAT_RIGHT;
+		case SDL_HAT_RIGHT:
+			return DIR_RIGHT;
 			break;
 		default:
 			fprintf( stderr, "Warning: Bogus hat direction %d\n", direction );

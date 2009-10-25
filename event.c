@@ -85,7 +85,7 @@ int event_get( void ) {
 				else if ( sdl_event.type == SDL_JOYHATMOTION
 				&&  sdl_event.jhat.which == control->device_id
 				&&  control->control_type == CTRL_HAT
-				&&  sdl_event.jhat.hat == control->control_id
+				&&  hat_dir_value( sdl_event.jhat.hat ) == control->control_id
 				&&  sdl_event.jhat.value == control->value ) {
 					event = control->event;
 				}
@@ -177,7 +177,7 @@ int event_probe( int timeout, struct config_control *control ) {
 				control->device_id = sdl_event.jhat.which;
 				control->control_type = CTRL_HAT;
 				control->control_id = sdl_event.jhat.hat;
-				control->value = sdl_event.jhat.value;
+				control->value = hat_dir_value( sdl_event.jhat.value );
 				return 1;
 			case SDL_JOYBALLMOTION:
 				control->device_type = DEV_JOYSTICK;

@@ -425,13 +425,13 @@ int config_read_event( xmlNode *node ) {
 		case DEV_JOYSTICK:
 			switch( tmp.control_type ) {
 				case CTRL_AXIS:
-					tmp.value = axis_value( direction_id( value ) );
+					tmp.value = axis_dir_value( value );
 					break;
 				case CTRL_HAT:
-					tmp.value = hat_value( direction_id( value ) );
+					tmp.value = direction_id( value );
 					break;
 				case CTRL_BALL:
-					tmp.value = axis_value( direction_id( value ) );
+					tmp.value = axis_dir_value( value );
 					break;
 				case CTRL_BUTTON:
 					config_read_numeric( (char*)config_tag_id, value, &tmp.value );
@@ -442,7 +442,7 @@ int config_read_event( xmlNode *node ) {
 			break;
 		case DEV_MOUSE:
 			if( tmp.control_type == CTRL_AXIS ) {
-				tmp.value = axis_value( direction_id( value ) );
+				tmp.value = axis_dir_value( value );
 			}
 			else {
 				config_read_numeric( (char*)config_tag_id, value, &tmp.value );
@@ -582,11 +582,79 @@ int config_write_games( void ) {
 }
 
 int config_write_interface( void ) {
-	xmlNodePtr node = xmlNewNode( NULL, (xmlChar*)config_tag_iface );
-	xmlNewChild( node, NULL, (xmlChar*)config_tag_iface_full_screen, config_write_boolean( config->iface.screen_width) );
-	xmlNewChild( node, NULL, (xmlChar*)config_tag_iface_screen_width, config_write_numeric( config->iface.screen_width ) );
-	xmlNewChild( node, NULL, (xmlChar*)config_tag_iface_screen_height, config_write_numeric( config->iface.screen_height ) );
-	xmlAddChild( config_root, node );
+	struct config_control *ctrl = config->iface.controls;
+	xmlNodePtr interface = xmlNewNode( NULL, (xmlChar*)config_tag_iface );
+	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_full_screen, config_write_boolean( config->iface.screen_width) );
+	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_width, config_write_numeric( config->iface.screen_width ) );
+	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_height, config_write_numeric( config->iface.screen_height ) );
+	
+	if( ctrl ) {
+		xmlNodePtr controls = xmlNewNode( NULL, (xmlChar*)config_tag_iface_controls );
+		while( ctrl ) {
+			xmlNodePtr event = xmlNewNode( NULL, (xmlChar*)config_tag_event );
+			xmlNodePtr device = xmlNewNode( NULL, (xmlChar*)config_tag_device );
+			xmlNodePtr control = NULL;
+			
+			xmlNewChild( event, NULL, (xmlChar*)config_tag_name, (xmlChar*)event_name( ctrl->event ) );
+			xmlNewChild( device, NULL, (xmlChar*)config_tag_type, (xmlChar*)device_name( ctrl->device_type ) );
+			xmlNewChild( device, NULL, (xmlChar*)config_tag_id, config_write_numeric( ctrl->device_id ) );
+			
+			switch( ctrl->device_type ) {
+				case DEV_KEYBOARD:
+					xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( ctrl->value ) );
+					break;
+				case DEV_JOYSTICK:
+					control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
+					xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( ctrl->control_type ) );
+					xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( ctrl->control_id ) );
+					switch( ctrl->control_type ) {
+						case CTRL_BUTTON:
+							xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( ctrl->value ) );
+							break;
+						case CTRL_AXIS:
+							xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( ctrl->value ) );
+							break;
+						case CTRL_HAT:
+						case CTRL_BALL:
+							xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)direction_name( ctrl->value ) );
+							break;
+						default:
+							fprintf( stderr, "Warning: Not sure how write control config for unknown joystick control type %d\n", ctrl->control_type );
+							break;
+					}
+					break;
+				case DEV_MOUSE:
+					control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
+					xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( ctrl->control_type ) );
+					xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( ctrl->control_id ) );
+					switch( ctrl->control_type ) {
+						case CTRL_BUTTON:
+							xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( ctrl->value ) );
+							break;
+						case CTRL_AXIS:
+							xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( ctrl->value ) );
+							break;
+						default:
+							fprintf( stderr, "Warning: Not sure how write control config for unknown mouse control type %d\n", ctrl->control_type );
+							break;
+					}
+					break;
+				default:
+					fprintf( stderr, "Warning: Not sure how write control config for unknown device type %d\n", ctrl->device_type );
+					break;
+			}
+
+			xmlAddChild( event, device );
+			if( control ) {
+				xmlAddChild( event, control );
+			}
+			xmlAddChild( controls, event );
+			ctrl = ctrl->next;
+		}
+		xmlAddChild( interface, controls );
+	}
+	
+	xmlAddChild( config_root, interface );
 	return 0;
 }
 
