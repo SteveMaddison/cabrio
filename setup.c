@@ -72,9 +72,9 @@ int setup( void ) {
 		setup_draw_msg( msg_event, -0.8, 0.005 );
 		sdl_swap();
 		/* Clear out any unwanted events */
-		while( event_probe( 1000, &event ) == 1 );
+		while( event_probe( 100, &event ) == 1 );
 		/* Catch out wanted event */
-		while( event_probe( 1000, &event ) != 1 );
+		while( event_probe( 100, &event ) != 1 );
 		event_set( i, &event );
 		font_message_free( msg_event );
 	}
