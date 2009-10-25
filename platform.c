@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 struct platform *platform_start;
-extern struct config *config;
 static int count = 0;
 
 static struct platform platform_unknown = { NULL, NULL, "Unknown" };
