@@ -636,6 +636,19 @@ int config_write_interface( void ) {
 
 int config_update( void ) {
 	/* Write anything that may have changed back to the config object */
+	int i;
+	
+	for( i = 1 ; i < NUM_EVENTS ; i++ ) {
+		struct event *event = event_get(i);
+		if( event ) {
+			config->iface.controls[i].device_type = event->device_type;
+			config->iface.controls[i].device_id = event->device_id;
+			config->iface.controls[i].control_type = event->control_type;
+			config->iface.controls[i].control_id = event->control_id;
+			config->iface.controls[i].value = event->value;
+		}
+	}
+	
 	return 0;
 }
 
