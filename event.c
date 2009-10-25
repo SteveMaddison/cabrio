@@ -19,9 +19,8 @@ static SDL_Joystick *joysticks[MAX_JOYSTICKS];
 static int event = EVENT_NONE;
 static struct event events[NUM_EVENTS];
 
-extern struct config* config;
-
 int event_init( void ) {
+	const struct config* config = config_get();
 	int i;
 	
 	num_joysticks = SDL_NumJoysticks();
@@ -38,6 +37,14 @@ int event_init( void ) {
 		events[i].control_type = config->iface.controls[i].control_type;
 		events[i].control_id = config->iface.controls[i].control_id;
 		events[i].value = config->iface.controls[i].value;
+		printf("%s: %s%d %s%d = %d\n",
+			event_name(i),
+			device_name(events[i].device_type),
+			events[i].device_id,
+			control_name(events[i].control_type),
+			events[i].control_id,
+			events[i].value
+		);
 	}
 	
 	return 0;

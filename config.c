@@ -567,7 +567,7 @@ int config_write_games( void ) {
 int config_write_interface( void ) {
 	int i;
 	xmlNodePtr interface = xmlNewNode( NULL, (xmlChar*)config_tag_iface );
-	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_full_screen, config_write_boolean( config.iface.screen_width) );
+	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_full_screen, config_write_boolean( config.iface.full_screen ) );
 	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_width, config_write_numeric( config.iface.screen_width ) );
 	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_height, config_write_numeric( config.iface.screen_height ) );
 	xmlNodePtr controls = xmlNewNode( NULL, (xmlChar*)config_tag_iface_controls );
@@ -587,11 +587,11 @@ int config_write_interface( void ) {
 				break;
 			case DEV_JOYSTICK:
 				control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
-				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( config.iface.controls[i].control_type ) );
+				xmlNewChild( control, NULL, (xmlChar*)config_tag_type, (xmlChar*)control_name( config.iface.controls[i].control_type ) );
 				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( config.iface.controls[i].control_id ) );
 				switch( config.iface.controls[i].control_type ) {
 					case CTRL_BUTTON:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config.iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, config_write_numeric( config.iface.controls[i].value ) );
 						break;
 					case CTRL_AXIS:
 						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( config.iface.controls[i].value ) );
@@ -607,11 +607,11 @@ int config_write_interface( void ) {
 				break;
 			case DEV_MOUSE:
 				control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
-				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( config.iface.controls[i].control_type ) );
+				xmlNewChild( control, NULL, (xmlChar*)config_tag_type, (xmlChar*)control_name( config.iface.controls[i].control_type ) );
 				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( config.iface.controls[i].control_id ) );
 				switch( config.iface.controls[i].control_type ) {
 					case CTRL_BUTTON:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config.iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, config_write_numeric( config.iface.controls[i].value ) );
 						break;
 					case CTRL_AXIS:
 						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( config.iface.controls[i].value ) );
@@ -716,7 +716,7 @@ int config_new( void ) {
 		config.genres = NULL;
 		config.platforms = NULL;
 
-		config.iface.full_screen = 1;
+		config.iface.full_screen = 0;
 		config.iface.screen_width = 640;
 		config.iface.screen_height = 480;
 		
