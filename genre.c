@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 struct genre *genre_start;
-extern struct config *config;
 static int count = 0;
 
 static struct genre genre_unknown = { NULL, NULL, "Unknown" };
@@ -27,7 +26,7 @@ void genre_add( struct genre *genre, struct genre *after ) {
 }
 
 int genre_init( void ) {
-	struct config_genre *c = config->genres;
+	struct config_genre *c = config_get()->genres;
 	struct genre *genre = NULL;
 	struct genre *prev = NULL;
 	

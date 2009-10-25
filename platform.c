@@ -26,7 +26,7 @@ void platform_add( struct platform *platform, struct platform *after ) {
 }
 
 int platform_init( void ) {
-	struct config_platform *c = config->platforms;
+	struct config_platform *c = config_get()->platforms;
 	struct platform *platform = NULL;
 	struct platform *prev = NULL;
 

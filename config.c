@@ -17,7 +17,7 @@
 #include <libxml2/libxml/parser.h>
 #include <libxml2/libxml/tree.h>
 
-struct config *config;
+struct config config;
 
 static const char *config_default_dir = ".cabrio"; /* Relative to user's home */
 static const char *config_default_file = "config.xml";
@@ -62,6 +62,10 @@ static xmlDocPtr config_doc = NULL;
 static xmlNodePtr config_root = NULL;
 static char scratch[32] = "";
 
+const struct config *config_get( void ) {
+	return (const struct config *)&config;
+}
+
 int config_read_boolean( char *name, char *value, int *target ) {
 	if( strcasecmp( value, "yes" ) == 0 ||  strcasecmp( value, "true" ) == 0 ) {
 		*target = 1;
@@ -90,7 +94,7 @@ int config_read_numeric( char *name, char *value, int *target ) {
 }
 
 struct config_genre *config_genre( const char *name ) {
-	struct config_genre *g = config->genres;
+	struct config_genre *g = config.genres;
 
 	if( name && *name ) {
 		while( g ) {
@@ -106,8 +110,8 @@ struct config_genre *config_genre( const char *name ) {
 			}
 			else {
 				strncpy( g->name, name, CONFIG_NAME_LENGTH );
-				g->next = config->genres;
-				config->genres = g;
+				g->next = config.genres;
+				config.genres = g;
 			}
 		}
 	}
@@ -118,7 +122,7 @@ struct config_genre *config_genre( const char *name ) {
 }
 
 struct config_platform *config_platform( const char *name ) {
-	struct config_platform *p = config->platforms;
+	struct config_platform *p = config.platforms;
 
 	if( name && *name ) {
 		while( p ) {
@@ -134,8 +138,8 @@ struct config_platform *config_platform( const char *name ) {
 			}
 			else {
 				strncpy( p->name, name, CONFIG_NAME_LENGTH );
-				p->next = config->platforms;
-				config->platforms = p;
+				p->next = config.platforms;
+				config.platforms = p;
 			}
 		}
 	}
@@ -221,8 +225,8 @@ int config_read_emulators( xmlNode *node ) {
 				if( emulator ) {
 					memset( emulator, 0, sizeof(struct config_emulator ) );
 					config_read_emulator( node->children, emulator );
-					emulator->next = config->emulators;
-					config->emulators = emulator;
+					emulator->next = config.emulators;
+					config.emulators = emulator;
 				}
 				else {
 					fprintf( stderr, warn_alloc, config_tag_emulator );
@@ -304,8 +308,8 @@ int config_read_games( xmlNode *node ) {
 				if( game ) {
 					memset( game, 0, sizeof(struct config_game ) );
 					config_read_game( node->children, game );
-					game->next = config->games;
-					config->games = game;
+					game->next = config.games;
+					config.games = game;
 				}
 				else {
 					fprintf( stderr, warn_alloc, config_tag_game );
@@ -433,7 +437,7 @@ int config_read_event( xmlNode *node ) {
 	}
 	
 	/* Replace exisiting control for this event */
-	memcpy( &config->iface.controls[event], &tmp, sizeof(struct config_control) );
+	memcpy( &config.iface.controls[event], &tmp, sizeof(struct config_control) );
 	
 	return 0;	
 }
@@ -457,13 +461,13 @@ int config_read_interface( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, config_tag_iface_full_screen ) == 0 ) {
-				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config->iface.full_screen );
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.full_screen );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_screen_width ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config->iface.screen_width );
+				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_width );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_screen_height ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config->iface.screen_height );
+				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_height );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_controls ) == 0 ) {
 				config_read_controls( node->children );
@@ -525,7 +529,7 @@ xmlChar *config_write_numeric( int value ) {
 int config_write_emulators( void ) {
 	xmlNodePtr xml_emulators = xmlNewNode( NULL, (xmlChar*)config_tag_emulators );
 	xmlNodePtr xml_emulator,xml_params,xml_param = NULL;
-	struct config_emulator *emulator = config->emulators;
+	struct config_emulator *emulator = config.emulators;
 	
 	while( emulator ) {
 		struct config_param *param = emulator->params;
@@ -563,9 +567,9 @@ int config_write_games( void ) {
 int config_write_interface( void ) {
 	int i;
 	xmlNodePtr interface = xmlNewNode( NULL, (xmlChar*)config_tag_iface );
-	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_full_screen, config_write_boolean( config->iface.screen_width) );
-	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_width, config_write_numeric( config->iface.screen_width ) );
-	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_height, config_write_numeric( config->iface.screen_height ) );
+	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_full_screen, config_write_boolean( config.iface.screen_width) );
+	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_width, config_write_numeric( config.iface.screen_width ) );
+	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_height, config_write_numeric( config.iface.screen_height ) );
 	xmlNodePtr controls = xmlNewNode( NULL, (xmlChar*)config_tag_iface_controls );
 
 	for( i = 1 ; i < NUM_EVENTS ; i++ ) {
@@ -574,51 +578,51 @@ int config_write_interface( void ) {
 		xmlNodePtr control = NULL;
 		
 		xmlNewChild( event, NULL, (xmlChar*)config_tag_name, (xmlChar*)event_name( i ) );
-		xmlNewChild( device, NULL, (xmlChar*)config_tag_type, (xmlChar*)device_name( config->iface.controls[i].device_type ) );
-		xmlNewChild( device, NULL, (xmlChar*)config_tag_id, config_write_numeric( config->iface.controls[i].device_id ) );
+		xmlNewChild( device, NULL, (xmlChar*)config_tag_type, (xmlChar*)device_name( config.iface.controls[i].device_type ) );
+		xmlNewChild( device, NULL, (xmlChar*)config_tag_id, config_write_numeric( config.iface.controls[i].device_id ) );
 		
-		switch( config->iface.controls[i].device_type ) {
+		switch( config.iface.controls[i].device_type ) {
 			case DEV_KEYBOARD:
-				xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config->iface.controls[i].value ) );
+				xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config.iface.controls[i].value ) );
 				break;
 			case DEV_JOYSTICK:
 				control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
-				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( config->iface.controls[i].control_type ) );
-				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( config->iface.controls[i].control_id ) );
-				switch( config->iface.controls[i].control_type ) {
+				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( config.iface.controls[i].control_type ) );
+				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( config.iface.controls[i].control_id ) );
+				switch( config.iface.controls[i].control_type ) {
 					case CTRL_BUTTON:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config->iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config.iface.controls[i].value ) );
 						break;
 					case CTRL_AXIS:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( config->iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( config.iface.controls[i].value ) );
 						break;
 					case CTRL_HAT:
 					case CTRL_BALL:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)direction_name( config->iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)direction_name( config.iface.controls[i].value ) );
 						break;
 					default:
-						fprintf( stderr, "Warning: Not sure how write control config for unknown joystick control type %d\n", config->iface.controls[i].control_type );
+						fprintf( stderr, "Warning: Not sure how write control config for unknown joystick control type %d\n", config.iface.controls[i].control_type );
 						break;
 				}
 				break;
 			case DEV_MOUSE:
 				control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
-				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( config->iface.controls[i].control_type ) );
-				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( config->iface.controls[i].control_id ) );
-				switch( config->iface.controls[i].control_type ) {
+				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, (xmlChar*)control_name( config.iface.controls[i].control_type ) );
+				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( config.iface.controls[i].control_id ) );
+				switch( config.iface.controls[i].control_type ) {
 					case CTRL_BUTTON:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config->iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config.iface.controls[i].value ) );
 						break;
 					case CTRL_AXIS:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( config->iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( config.iface.controls[i].value ) );
 						break;
 					default:
-						fprintf( stderr, "Warning: Not sure how write control config for unknown mouse control type %d\n", config->iface.controls[i].control_type );
+						fprintf( stderr, "Warning: Not sure how write control config for unknown mouse control type %d\n", config.iface.controls[i].control_type );
 						break;
 				}
 				break;
 			default:
-				fprintf( stderr, "Warning: Not sure how write control config for unknown device type %d\n", config->iface.controls[i].device_type );
+				fprintf( stderr, "Warning: Not sure how write control config for unknown device type %d\n", config.iface.controls[i].device_type );
 				break;
 		}
 
@@ -641,11 +645,11 @@ int config_update( void ) {
 	for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 		struct event *event = event_get(i);
 		if( event ) {
-			config->iface.controls[i].device_type = event->device_type;
-			config->iface.controls[i].device_id = event->device_id;
-			config->iface.controls[i].control_type = event->control_type;
-			config->iface.controls[i].control_id = event->control_id;
-			config->iface.controls[i].value = event->value;
+			config.iface.controls[i].device_type = event->device_type;
+			config.iface.controls[i].device_id = event->device_id;
+			config.iface.controls[i].control_type = event->control_type;
+			config.iface.controls[i].control_id = event->control_id;
+			config.iface.controls[i].value = event->value;
 		}
 	}
 	
@@ -669,63 +673,56 @@ int config_write() {
 
 int config_new( void ) {
 	/* Create a new, default configuration (in memory) */
-	config = malloc( sizeof(struct config) );
-	if( config == NULL ) {
-		fprintf( stderr, "Error: couldn't allocate config structure\n" );
+	struct config_emulator *emulator = malloc( sizeof(struct config_emulator) );
+	if( emulator == NULL ) {
+		fprintf( stderr, "Error: couldn't allocate emulator structure\n" );
 		return -1;
 	}
 	else {
-		struct config_emulator *emulator = malloc( sizeof(struct config_emulator) );
-		if( emulator == NULL ) {
-			fprintf( stderr, "Error: couldn't allocate emulator structure\n" );
-			return -1;
-		}
-		else {
-			int i;
-			struct config_param *prev_param = NULL;
-			const int num_params = 4;
-			const char *params[] = { "-nowindow", "-skip_gameinfo", "-switchres", "-joystick" };
-			const int keys[] = {
-				-1,				/* Place holder */
-				SDLK_UP,		/* EVENT_UP == 1 */
-				SDLK_DOWN,		/* EVENT_DOWN */
-				SDLK_LEFT,  	/* EVENT_LEFT */
-				SDLK_RIGHT, 	/* EVENT_RIGHT */
-				SDLK_RETURN,	/* EVENT_SELECT */
-				SDLK_BACKSPACE,	/* EVENT_BACK */
-				SDLK_ESCAPE		/* EVENT_QUIT */
-			};
+		int i;
+		struct config_param *prev_param = NULL;
+		const int num_params = 4;
+		const char *params[] = { "-nowindow", "-skip_gameinfo", "-switchres", "-joystick" };
+		const int keys[] = {
+			-1,				/* Place holder */
+			SDLK_UP,		/* EVENT_UP == 1 */
+			SDLK_DOWN,		/* EVENT_DOWN */
+			SDLK_LEFT,  	/* EVENT_LEFT */
+			SDLK_RIGHT, 	/* EVENT_RIGHT */
+			SDLK_RETURN,	/* EVENT_SELECT */
+			SDLK_BACKSPACE,	/* EVENT_BACK */
+			SDLK_ESCAPE		/* EVENT_QUIT */
+		};
 
-			emulator->id = 0;
-			strncpy( emulator->name, "mame", CONFIG_NAME_LENGTH );
-			strncpy( emulator->display_name, "MAME", CONFIG_NAME_LENGTH );
-			strncpy( emulator->executable, "mame", CONFIG_FILE_NAME_LENGTH );
-			emulator->next = NULL;
-			config->emulators = emulator;
-			
-			for( i = num_params-1 ; i >= 0 ; i-- ) {
-				struct config_param *param = malloc( sizeof(struct config_emulator) );
-				if( param ) {
-					strncpy( param->name, params[i], CONFIG_PARAM_LENGTH ); 
-					param->value[0] = '\0';
-					param->next = prev_param;
-					prev_param = param;
-				}
-				emulator->params = param;
-			}		
-	
-			config->games = NULL;
-			config->genres = NULL;
-			config->platforms = NULL;
-	
-			config->iface.full_screen = 1;
-			config->iface.screen_width = 640;
-			config->iface.screen_height = 480;
-			
-			for( i = 1 ; i < NUM_EVENTS ; i++ ) {
-				config->iface.controls[i].device_type = DEV_KEYBOARD;
-				config->iface.controls[i].value = keys[i];
+		emulator->id = 0;
+		strncpy( emulator->name, "mame", CONFIG_NAME_LENGTH );
+		strncpy( emulator->display_name, "MAME", CONFIG_NAME_LENGTH );
+		strncpy( emulator->executable, "mame", CONFIG_FILE_NAME_LENGTH );
+		emulator->next = NULL;
+		config.emulators = emulator;
+		
+		for( i = num_params-1 ; i >= 0 ; i-- ) {
+			struct config_param *param = malloc( sizeof(struct config_emulator) );
+			if( param ) {
+				strncpy( param->name, params[i], CONFIG_PARAM_LENGTH ); 
+				param->value[0] = '\0';
+				param->next = prev_param;
+				prev_param = param;
 			}
+			emulator->params = param;
+		}		
+
+		config.games = NULL;
+		config.genres = NULL;
+		config.platforms = NULL;
+
+		config.iface.full_screen = 1;
+		config.iface.screen_width = 640;
+		config.iface.screen_height = 480;
+		
+		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
+			config.iface.controls[i].device_type = DEV_KEYBOARD;
+			config.iface.controls[i].value = keys[i];
 		}
 	}
 	return 0;

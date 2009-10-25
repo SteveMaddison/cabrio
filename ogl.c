@@ -1,12 +1,12 @@
 #include "ogl.h"
 #include "config.h"
 
-extern struct config *config;
-
 #define TEXTURE_MAX_WIDTH 512
 #define TEXTURE_MAX_HEIGHT 256
 
 int ogl_init( void ) {
+	const struct config *config = config_get();
+	
 	GLenum error = GL_NO_ERROR;
 
 	glLoadIdentity();

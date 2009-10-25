@@ -71,6 +71,7 @@ struct config {
 	struct config_iface iface;
 };
 
+const struct config *config_get( void );
 int config_open( const char *filename );
 int config_create( void );
 int config_write( void );

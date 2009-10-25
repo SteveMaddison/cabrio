@@ -5,7 +5,6 @@
 #include "sdl.h"
 #include "ogl.h"
 
-extern struct config *config;
 
 static SDL_Surface *screen = NULL;
 
@@ -15,6 +14,8 @@ static FPSmanager manager;
 
 int sdl_init( void ) {
 	int mode = SDL_SWSURFACE|SDL_OPENGL;
+	const struct config *config = config_get();
+	
 	if( SDL_Init(SDL_INIT_EVERYTHING) < 0 ) {
 		fprintf(stderr, "Error: Unable to initialise SDL: %s\n", SDL_GetError());
 		return 1;

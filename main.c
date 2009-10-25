@@ -17,7 +17,6 @@
 #include "event.h"
 #include "setup.h"
 
-extern struct config *config;
 static int supress_wait = 0;
 
 void pause_all( void ) {
@@ -46,6 +45,7 @@ int run( struct game *game ) {
 	char *params[CONFIG_MAX_PARAMS];
 	struct config_param *param = NULL;
 	int count,i = 0;
+	const struct config *config = config_get();
 	
 	if( config->emulators && config->emulators->executable ) {
 		param = config->emulators->params;

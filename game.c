@@ -4,8 +4,6 @@
 #include "platform.h"
 #include "ogl.h"
 
-extern struct config *config;
-
 struct game *game_start = NULL;
 struct game *game_filter_start = NULL;
 
@@ -103,7 +101,7 @@ int game_list_resume( void ) {
 int game_list_create( void ) {
 	struct game *game = NULL;
 	struct game *prev = NULL;
-	struct config_game *config_game = config->games;
+	struct config_game *config_game = config_get()->games;
 	
 	while( config_game ) {
 		game = malloc(sizeof(struct game));
