@@ -15,7 +15,6 @@ int font_resume( void );
 void font_free( void );
 void font_message_free( struct font_message *m );
 struct font_message *font_message_create( const char *text );
-SDL_Surface *font_render( const char *text );
 
 #endif
 

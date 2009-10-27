@@ -1,6 +1,7 @@
 #include "submenu.h"
 #include "ogl.h"
 #include "sdl.h"
+#include "sdl_ogl.h"
 #include "font.h"
 #include "game.h"
 #include "genre.h"
@@ -27,7 +28,8 @@ int submenu_items( void ) {
 }
 
 int submenu_load_texture( void ) {
-	texture = sdl_create_texture( DATA_DIR "/pixmaps/submenu_item.png" );
+	int x,y;
+	texture = sdl_create_texture( DATA_DIR "/pixmaps/submenu_item.png", &x, &y );
 	if( texture == 0 ) {
 		fprintf( stderr, "Warning: Couldn't create texture for submenu items\n" );
 		return -1;

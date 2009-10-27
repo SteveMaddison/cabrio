@@ -38,7 +38,6 @@ int direction_id( char *name );
 
 int axis_dir_value( char *name );
 const char *axis_dir_name( int axis_dir );
-int hat_dir_value( int direction );
 
 #endif
 

@@ -1,5 +1,5 @@
 #include "key.h"
-#include "sdl.h"
+#include <SDL/SDL.h>
 
 /* Big list o' key names. These are just the SDLK_* macros with their prefix chopped off. */
 static const char *key_name_backspace = "backspace";

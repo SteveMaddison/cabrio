@@ -3,7 +3,6 @@
 #include <sys/wait.h>
 
 #include "sdl.h"
-#include "ogl.h"
 #include "font.h"
 #include "config.h"
 #include "genre.h"
@@ -107,9 +106,6 @@ int main( int argc, char *arvg[] ) {
 	if( sdl_init() != 0 )
 		return -1;
 
-	if( ogl_init() != 0 )
-		return -1;
-
 	if( event_init() != 0 )
 		return -1;
 
@@ -147,7 +143,7 @@ int main( int argc, char *arvg[] ) {
 	bg_init();
 
 	while( !quit ) {
-		ogl_clear();
+		sdl_clear();
 		bg_draw();
 		hint_draw( menu_level );
 		menu_draw();
@@ -261,8 +257,6 @@ int main( int argc, char *arvg[] ) {
 			sdl_free();
 			run( to_run );
 			if( sdl_init() != 0 )
-				return -1;
-			if( ogl_init() != 0 )
 				return -1;
 			resume_all();
 			to_run = NULL;

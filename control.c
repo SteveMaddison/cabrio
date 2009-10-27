@@ -109,24 +109,3 @@ const char *axis_dir_name( int axis_dir ) {
 	return "";
 }
 
-int hat_dir_value( int direction ) {
-	switch( direction ) {
-		case SDL_HAT_UP:
-			return DIR_UP;
-			break;
-		case SDL_HAT_DOWN:
-			return DIR_DOWN;
-			break;
-		case SDL_HAT_LEFT:
-			return DIR_LEFT;
-			break;
-		case SDL_HAT_RIGHT:
-			return DIR_RIGHT;
-			break;
-		default:
-			fprintf( stderr, "Warning: Bogus hat direction %d\n", direction );
-			break;
-	}
-	return 0;
-}
-

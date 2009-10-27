@@ -2,6 +2,7 @@
 #include "config.h"
 #include "event.h"
 #include "sdl.h"
+#include <SDL/SDL.h>
 
 #define MAX_JOYSTICKS 8
 
@@ -37,14 +38,14 @@ int event_init( void ) {
 		events[i].control_type = config->iface.controls[i].control_type;
 		events[i].control_id = config->iface.controls[i].control_id;
 		events[i].value = config->iface.controls[i].value;
-		printf("%s: %s%d %s%d = %d\n",
+		/* printf("%s: %s%d %s%d = %d\n",
 			event_name(i),
 			device_name(events[i].device_type),
 			events[i].device_id,
 			control_name(events[i].control_type),
 			events[i].control_id,
 			events[i].value
-		);
+		); */
 	}
 	
 	return 0;
@@ -119,7 +120,7 @@ int event_poll( void ) {
 				else if ( sdl_event.type == SDL_JOYHATMOTION
 				&&  sdl_event.jhat.which == events[i].device_id
 				&&  events[i].control_type == CTRL_HAT
-				&&  hat_dir_value( sdl_event.jhat.hat ) == events[i].control_id
+				&&  sdl_hat_dir_value( sdl_event.jhat.hat ) == events[i].control_id
 				&&  sdl_event.jhat.value == events[i].value ) {
 					event = i;
 				}
@@ -210,7 +211,7 @@ int event_probe( int timeout, struct event *event ) {
 				event->device_id = sdl_event.jhat.which;
 				event->control_type = CTRL_HAT;
 				event->control_id = sdl_event.jhat.hat;
-				event->value = hat_dir_value( sdl_event.jhat.value );
+				event->value = sdl_hat_dir_value( sdl_event.jhat.value );
 				return 1;
 			case SDL_JOYBALLMOTION:
 				event->device_type = DEV_JOYSTICK;

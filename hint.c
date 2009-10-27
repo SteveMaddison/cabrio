@@ -1,6 +1,7 @@
 #include "hint.h"
 #include "sdl.h"
 #include "font.h"
+#include "sdl_ogl.h"
 
 #define ORIENT_LEFT		0
 #define ORIENT_RIGHT	1
@@ -19,9 +20,10 @@ struct font_message *text_select_message = 0;
 struct font_message *text_back_message = 0;
 
 int hint_init( void ) {
-	arrow_texture = sdl_create_texture( DATA_DIR "/pixmaps/arrow.png" );
-	back_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_blue.png" );
-	select_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_red.png" );
+	int x,y;
+	arrow_texture = sdl_create_texture( DATA_DIR "/pixmaps/arrow.png", &x, &y );
+	back_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_blue.png", &x, &y );
+	select_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_red.png", &x, &y );
 	text_select_message = font_message_create( "Select" );
 	text_back_message = font_message_create( "Back" );
 	return 0;

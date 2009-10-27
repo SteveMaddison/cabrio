@@ -1,4 +1,6 @@
+#include <stdlib.h>
 #include "sdl.h"
+#include "sdl_ogl.h"
 #include "menu.h"
 #include "font.h"
 
@@ -29,7 +31,8 @@ int menu_selected( void ) {
 }
 
 int menu_load_texture( void ) {
-	menu_texture = sdl_create_texture( DATA_DIR "/pixmaps/menu_item.png" );
+	int x,y;
+	menu_texture = sdl_create_texture( DATA_DIR "/pixmaps/menu_item.png", &x ,&y );
 	if( menu_texture == 0 ) {
 		fprintf( stderr, "Warning: Couldn't create texture for menu items\n" );
 		return -1;

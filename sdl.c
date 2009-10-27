@@ -1,10 +1,13 @@
 #include <stdio.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
 #include "config.h"
 #include "sdl.h"
 #include "ogl.h"
+#include "sdl_ogl.h"
 
+#include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
+#include <SDL/SDL_framerate.h>
+#include <SDL/SDL_opengl.h>
 
 static SDL_Surface *screen = NULL;
 
@@ -32,6 +35,10 @@ int sdl_init( void ) {
 	SDL_initFramerate( &manager );
 	SDL_setFramerate( &manager, 60 );
 	SDL_WM_SetCaption( title, NULL );
+	
+	if( ogl_init() != 0 )
+		return -1;
+
 	return 0;
 }
 
@@ -39,37 +46,36 @@ void sdl_free( void ) {
 	SDL_Quit();
 }
 
-SDL_Surface *sdl_load_image( const char *filename ) {
-	SDL_Surface* load = NULL;
-	SDL_Surface* conv = NULL;
-	
-	load = IMG_Load( filename );
-	if( load != NULL ) {
-		conv = SDL_DisplayFormatAlpha( load );
-		SDL_FreeSurface( load );
-	}
-	else {
-		fprintf(stderr, "Error: Unable to load image '%s': %s\n", filename, SDL_GetError());
-	}
-	return conv;
-}
-
-GLuint sdl_create_texture( const char *filename ) {
-	GLuint t = 0;
-	SDL_Surface *s = sdl_load_image( filename );
-	if( s ) {
-		ogl_create_texture( s, &t );
-		SDL_FreeSurface( s );
-	}
-	return t;
-}
-
 void sdl_frame_delay( void ) {
 	SDL_framerateDelay( &manager );
+}
+
+void sdl_clear( void ) {
+	ogl_clear();
 }
 
 void sdl_swap( void ) {
 	SDL_GL_SwapBuffers();
 }
 
+int sdl_hat_dir_value( int direction ) {
+	switch( direction ) {
+		case SDL_HAT_UP:
+			return DIR_UP;
+			break;
+		case SDL_HAT_DOWN:
+			return DIR_DOWN;
+			break;
+		case SDL_HAT_LEFT:
+			return DIR_LEFT;
+			break;
+		case SDL_HAT_RIGHT:
+			return DIR_RIGHT;
+			break;
+		default:
+			fprintf( stderr, "Warning: Bogus hat direction %d\n", direction );
+			break;
+	}
+	return 0;
+}
 

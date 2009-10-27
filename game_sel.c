@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <ctype.h>
 #include "game_sel.h"
 #include "bg.h"
 #include "math.h"

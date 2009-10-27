@@ -4,6 +4,7 @@
 #include "font.h"
 #include "sdl.h"
 #include "ogl.h"
+#include "sdl_ogl.h"
 
 static TTF_Font *font = NULL;
 static SDL_Color col = { 255, 255, 255 };

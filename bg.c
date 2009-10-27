@@ -1,4 +1,5 @@
 #include "bg.h"
+#include "sdl_ogl.h"
 #include "sdl.h"
 #include "ogl.h"
 
@@ -13,15 +14,14 @@ void bg_clear( void ) {
 	bg_texture = bg_clear_texture;
 }
 
-int bg_init( void ) { 
-	SDL_Surface *bg = sdl_load_image( BG_DEFAULT );
-	if( bg == NULL ) {
-		fprintf( stderr, "Warning: couldn't load default background image '%s'\n", BG_DEFAULT );
-		bg_clear_texture = 0;
+int bg_init( void ) {
+	int x,y;
+	bg_clear_texture = sdl_create_texture( BG_DEFAULT, &x, &y );
+	if( bg_clear_texture == 0 ) {
+		fprintf( stderr, "Warning: couldn't create default background texture from '%s'\n", BG_DEFAULT );
 		return -1;
 	}
-	ogl_create_texture( bg, &bg_clear_texture );
-	SDL_FreeSurface( bg );
+
 	bg_clear();
 	return 0;
 }
@@ -43,20 +43,18 @@ int bg_resume( void ) {
 
 int bg_set( const char *filename ) {
 	if( filename && *filename ) {
-		SDL_Surface *bg = sdl_load_image( filename );
-		if( bg == NULL ) {
+		int x,y;
+		if( bg_texture != bg_clear_texture ) {
+			ogl_free_texture( &bg_texture );
+		}
+		bg_texture = sdl_create_texture( filename, &x, &y );
+		if( bg_texture == 0 ) {
 			fprintf( stderr, "Warning: couldn't load background image '%s'\n", filename );
-			bg_texture = 0;
 			return -1;
 		}
-		if( bg_texture != bg_clear_texture ) {
-			glDeleteTextures( 1, &bg_texture );
-		}
-		ogl_create_texture( bg, &bg_texture );
-		SDL_FreeSurface( bg );
 	}
 	else {
-		bg_texture = bg_clear_texture;
+		bg_clear();
 	}
 	return 0;
 }

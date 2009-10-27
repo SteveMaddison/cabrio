@@ -684,14 +684,14 @@ int config_new( void ) {
 		const int num_params = 4;
 		const char *params[] = { "-nowindow", "-skip_gameinfo", "-switchres", "-joystick" };
 		const int keys[] = {
-			-1,				/* Place holder */
-			SDLK_UP,		/* EVENT_UP == 1 */
-			SDLK_DOWN,		/* EVENT_DOWN */
-			SDLK_LEFT,  	/* EVENT_LEFT */
-			SDLK_RIGHT, 	/* EVENT_RIGHT */
-			SDLK_RETURN,	/* EVENT_SELECT */
-			SDLK_BACKSPACE,	/* EVENT_BACK */
-			SDLK_ESCAPE		/* EVENT_QUIT */
+			-1,						/* Place holder */
+			key_id("up"),			/* EVENT_UP == 1 */
+			key_id("down"),			/* EVENT_DOWN */
+			key_id("left"),  		/* EVENT_LEFT */
+			key_id("right"), 		/* EVENT_RIGHT */
+			key_id("return"),		/* EVENT_SELECT */
+			key_id("backspace"),	/* EVENT_BACK */
+			key_id("escape")		/* EVENT_QUIT */
 		};
 
 		emulator->id = 0;

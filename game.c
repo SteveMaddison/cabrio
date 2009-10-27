@@ -1,8 +1,10 @@
+#include <stdlib.h>
 #include "game.h"
 #include "config.h"
 #include "genre.h"
 #include "platform.h"
 #include "ogl.h"
+#include "sdl_ogl.h"
 
 struct game *game_start = NULL;
 struct game *game_filter_start = NULL;
@@ -48,31 +50,28 @@ void game_list_free( void ) {
 }
 
 int game_load_texture( struct game *game ) {
-	SDL_Surface *s = sdl_load_image( game->logo_image );
-	if( s == NULL ) {
+	int x, y;
+	game->texture = sdl_create_texture( game->logo_image, &x, &y );
+	if( game->texture == 0 ) {
 		return -1;
 	}
 	else {
-		if( ogl_create_texture( s, &(game->texture) ) != -1 ) {
-			int x = s->w;
-			int y = s->h;
-			if( x > y ) {
-				/* Landscape */
-				if( x > IMAGE_MAX_WIDTH ) {
-					y = (int)(float)y/((float)x/IMAGE_MAX_WIDTH);
-					x = IMAGE_MAX_WIDTH;
-				}
+		if( x > y ) {
+			/* Landscape */
+			if( x > IMAGE_MAX_WIDTH ) {
+				y = (int)(float)y/((float)x/IMAGE_MAX_WIDTH);
+				x = IMAGE_MAX_WIDTH;
 			}
-			else {
-				/* Portrait (or square) */
-				if( y > IMAGE_MAX_HEIGHT ) {
-					x = (int)(float)x/((float)y/IMAGE_MAX_HEIGHT);
-					y = IMAGE_MAX_HEIGHT;
-				}
-			}
-			game->image_width = x;
-			game->image_height = y;
 		}
+		else {
+			/* Portrait (or square) */
+			if( y > IMAGE_MAX_HEIGHT ) {
+				x = (int)(float)x/((float)y/IMAGE_MAX_HEIGHT);
+				y = IMAGE_MAX_HEIGHT;
+			}
+		}
+		game->image_width = x;
+		game->image_height = y;
 	}
 	return 0;
 }
