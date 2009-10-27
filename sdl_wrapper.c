@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "config.h"
-#include "sdl_ogl.h"
+#include "sdl_wrapper.h"
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
@@ -34,9 +34,6 @@ int sdl_init( void ) {
 	SDL_setFramerate( &manager, 60 );
 	SDL_WM_SetCaption( title, NULL );
 	
-	if( ogl_init() != 0 )
-		return -1;
-
 	return 0;
 }
 
@@ -46,10 +43,6 @@ void sdl_free( void ) {
 
 void sdl_frame_delay( void ) {
 	SDL_framerateDelay( &manager );
-}
-
-void sdl_clear( void ) {
-	ogl_clear();
 }
 
 void sdl_swap( void ) {
