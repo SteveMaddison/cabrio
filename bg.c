@@ -1,7 +1,5 @@
 #include "bg.h"
 #include "sdl_ogl.h"
-#include "sdl.h"
-#include "ogl.h"
 
 static const char *BG_DEFAULT = DATA_DIR "/pixmaps/default_background.jpg";
 

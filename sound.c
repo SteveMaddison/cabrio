@@ -1,5 +1,4 @@
 #include "sound.h"
-#include "sdl.h"
 #include <SDL/SDL_mixer.h>
 
 Mix_Chunk *blip_sound = NULL;

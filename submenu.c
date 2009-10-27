@@ -1,6 +1,4 @@
 #include "submenu.h"
-#include "ogl.h"
-#include "sdl.h"
 #include "sdl_ogl.h"
 #include "font.h"
 #include "game.h"

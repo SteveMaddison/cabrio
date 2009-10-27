@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "control.h"
-#include "sdl.h"
 
 static const char *device_str[]		= { "unknown", "keyboard", "joystick", "mouse" };
 static const char *ctrl_str[]		= { "unknown", "button", "axis", "hat", "ball" };

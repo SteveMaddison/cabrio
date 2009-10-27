@@ -1,7 +1,7 @@
 #include "control.h"
 #include "config.h"
 #include "event.h"
-#include "sdl.h"
+#include "sdl_wrapper.h"
 #include <SDL/SDL.h>
 
 #define MAX_JOYSTICKS 8

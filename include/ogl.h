@@ -2,7 +2,6 @@
 #define _OGL_H_ 1
 
 #include <GL/glu.h>
-#include "sdl.h"
 
 #define X 0
 #define Y 1

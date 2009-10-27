@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include "sdl.h"
 #include "sdl_ogl.h"
 #include "menu.h"
 #include "font.h"

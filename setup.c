@@ -3,7 +3,7 @@
 #include "config.h"
 #include "event.h"
 #include "font.h"
-#include "ogl.h"
+#include "sdl_ogl.h"
 
 static const char *str_setup = "Setup";
 static const char *str_instr1 = "Please follow the on-screen instructions";

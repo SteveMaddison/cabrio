@@ -2,7 +2,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include "sdl.h"
+#include "sdl_wrapper.h"
 #include "font.h"
 #include "config.h"
 #include "genre.h"

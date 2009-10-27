@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include "config.h"
-#include "sdl.h"
-#include "ogl.h"
 #include "sdl_ogl.h"
 
 #include <SDL/SDL.h>

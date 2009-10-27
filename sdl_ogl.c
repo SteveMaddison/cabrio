@@ -1,7 +1,6 @@
 #include <SDL/SDL_gfxPrimitives.h>
 #include <SDL/SDL_rotozoom.h>
 #include <SDL/SDL_image.h>
-#include "sdl.h"
 #include "sdl_ogl.h"
 
 #define TEXTURE_MAX_WIDTH 512

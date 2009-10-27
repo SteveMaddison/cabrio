@@ -1,5 +1,4 @@
 #include "hint.h"
-#include "sdl.h"
 #include "font.h"
 #include "sdl_ogl.h"
 

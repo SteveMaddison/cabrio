@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include "config.h"
 #include "font.h"
-#include "sdl.h"
-#include "ogl.h"
 #include "sdl_ogl.h"
 
 static TTF_Font *font = NULL;
