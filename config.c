@@ -22,6 +22,9 @@ static const char *config_default_dir = ".cabrio"; /* Relative to user's home */
 static const char *config_default_file = "config.xml";
 static char config_filename[CONFIG_FILE_NAME_LENGTH] = "";
 
+/* Defaults */
+static const char *BG_DEFAULT = DATA_DIR "/pixmaps/default_background.jpg";
+
 /* Specific XML tags */
 static const char *config_tag_root					= "cabrio-config";
 static const char *config_tag_emulators				= "emulators";
@@ -34,8 +37,8 @@ static const char *config_tag_game_logo_image		=     "logo-image";
 static const char *config_tag_game_background_image	=     "background-image";
 static const char *config_tag_iface					= "interface";
 static const char *config_tag_iface_full_screen		= 	"full-screen";
-static const char *config_tag_iface_screen_width	= 	"screen-width";
-static const char *config_tag_iface_screen_height	= 	"screen-height";
+static const char *config_tag_iface_screen			=   "screen";
+static const char *config_tag_iface_background		=   "background";
 static const char *config_tag_iface_controls		=   "controls";
 /* General (reused) XML tags */
 static const char *config_tag_name					= "name";
@@ -50,6 +53,11 @@ static const char *config_tag_control				= "control";
 static const char *config_tag_event					= "event";
 static const char *config_tag_device				= "device";
 static const char *config_tag_type					= "type";
+static const char *config_tag_width					= "width";
+static const char *config_tag_height				= "height";
+static const char *config_tag_transparency			= "transparency";
+static const char *config_tag_rotation				= "rotation";
+static const char *config_tag_image_file			= "image-file";
 
 static const char *config_true = "true";
 static const char *config_false = "false";
@@ -88,6 +96,25 @@ int config_read_numeric( char *name, char *value, int *target ) {
 			pos++;
 		}
 		*target = strtol( value, NULL, 10 );
+	}
+	return 0;
+}
+
+int config_read_percentage( char *name, char *value, int *target ) {
+	char *pos = value;
+	if( pos ) {
+		while( *pos ) {
+			if( (*pos < '0' || *pos > '9') && (*pos != '-') && (*pos != '%') ) {
+				fprintf( stderr, "Warning: Element %s requires numeric (percentage) value\n", name );
+				return -1;
+			}
+			pos++;
+		}
+		*target = strtol( value, NULL, 10 );
+		if( *target < 0 || *target > 100 ) {
+			*target = 50;
+			fprintf( stderr, "Warning: Element %s percentage out of range, using 50%%\n", name );
+		}
 	}
 	return 0;
 }
@@ -456,17 +483,63 @@ int config_read_controls( xmlNode *node ) {
 	return 0;	
 }
 
+int config_read_interface_background( xmlNode *node ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_image_file ) == 0 ) {
+				strncpy( config.iface.background_image, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, config_tag_rotation ) == 0 ) {
+				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.background_rotation );
+			}
+			else if( strcmp( (char*)node->name, config_tag_transparency ) == 0 ) {
+				config_read_percentage( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.background_transparency );
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_iface_background, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+int config_read_interface_screen( xmlNode *node ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_width ) == 0 ) {
+				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_width );
+			}
+			else if( strcmp( (char*)node->name, config_tag_height ) == 0 ) {
+				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_height );
+			}
+			else if( strcmp( (char*)node->name, config_tag_rotation ) == 0 ) {
+				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_rotation );
+				if( config.iface.screen_rotation % 90 != 0 ) {
+					config.iface.screen_rotation %= 90;
+					fprintf( stderr, "Warning screen rotation rounded to nearest 90 degrees\n" );
+				}
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_interface( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, config_tag_iface_full_screen ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.full_screen );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_screen_width ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_width );
+			else if( strcmp( (char*)node->name, config_tag_iface_screen ) == 0 ) {
+				config_read_interface_screen( node->children );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_screen_height ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_height );
+			else if( strcmp( (char*)node->name, config_tag_iface_background ) == 0 ) {
+				config_read_interface_background( node->children );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_controls ) == 0 ) {
 				config_read_controls( node->children );
@@ -525,6 +598,11 @@ xmlChar *config_write_numeric( int value ) {
 	return (xmlChar*)scratch;
 }
 
+xmlChar *config_write_percentage( int value ) {
+	sprintf( scratch, "%d%%", value );
+	return (xmlChar*)scratch;
+}
+
 int config_write_emulators( void ) {
 	xmlNodePtr xml_emulators = xmlNewNode( NULL, (xmlChar*)config_tag_emulators );
 	xmlNodePtr xml_emulator,xml_params,xml_param = NULL;
@@ -567,8 +645,19 @@ int config_write_interface( void ) {
 	int i;
 	xmlNodePtr interface = xmlNewNode( NULL, (xmlChar*)config_tag_iface );
 	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_full_screen, config_write_boolean( config.iface.full_screen ) );
-	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_width, config_write_numeric( config.iface.screen_width ) );
-	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_screen_height, config_write_numeric( config.iface.screen_height ) );
+	
+	xmlNodePtr screen = xmlNewNode( NULL, (xmlChar*)config_tag_iface_screen );
+	xmlNewChild( screen, NULL, (xmlChar*)config_tag_width, config_write_numeric( config.iface.screen_width ) );
+	xmlNewChild( screen, NULL, (xmlChar*)config_tag_height, config_write_numeric( config.iface.screen_height ) );
+	xmlNewChild( screen, NULL, (xmlChar*)config_tag_rotation, config_write_numeric( config.iface.screen_rotation ) );
+	xmlAddChild( interface, screen );
+
+	xmlNodePtr background = xmlNewNode( NULL, (xmlChar*)config_tag_iface_background );
+	xmlNewChild( background, NULL, (xmlChar*)config_tag_image_file, (xmlChar*)config.iface.background_image );
+	xmlNewChild( background, NULL, (xmlChar*)config_tag_rotation, config_write_numeric( config.iface.background_rotation ) );
+	xmlNewChild( background, NULL, (xmlChar*)config_tag_transparency, config_write_percentage( config.iface.background_transparency ) );
+	xmlAddChild( interface, background );
+	
 	xmlNodePtr controls = xmlNewNode( NULL, (xmlChar*)config_tag_iface_controls );
 
 	for( i = 1 ; i < NUM_EVENTS ; i++ ) {
@@ -672,6 +761,8 @@ int config_write() {
 
 int config_new( void ) {
 	/* Create a new, default configuration (in memory) */
+	memset( &config, 0, sizeof(struct config) );
+	
 	struct config_emulator *emulator = malloc( sizeof(struct config_emulator) );
 	if( emulator == NULL ) {
 		fprintf( stderr, "Error: couldn't allocate emulator structure\n" );
@@ -682,15 +773,15 @@ int config_new( void ) {
 		struct config_param *prev_param = NULL;
 		const int num_params = 4;
 		const char *params[] = { "-nowindow", "-skip_gameinfo", "-switchres", "-joystick" };
-		const int keys[] = {
-			-1,						/* Place holder */
-			key_id("up"),			/* EVENT_UP == 1 */
-			key_id("down"),			/* EVENT_DOWN */
-			key_id("left"),  		/* EVENT_LEFT */
-			key_id("right"), 		/* EVENT_RIGHT */
-			key_id("return"),		/* EVENT_SELECT */
-			key_id("backspace"),	/* EVENT_BACK */
-			key_id("escape")		/* EVENT_QUIT */
+		const char *keys[] = {
+			"",				/* Place holder */
+			"up",			/* EVENT_UP == 1 */
+			"down",			/* EVENT_DOWN */
+			"left",  		/* EVENT_LEFT */
+			"right", 		/* EVENT_RIGHT */
+			"return",		/* EVENT_SELECT */
+			"backspace",	/* EVENT_BACK */
+			"escape"		/* EVENT_QUIT */
 		};
 
 		emulator->id = 0;
@@ -718,10 +809,15 @@ int config_new( void ) {
 		config.iface.full_screen = 0;
 		config.iface.screen_width = 640;
 		config.iface.screen_height = 480;
+		config.iface.screen_rotation = 0;
+		
+		strncpy( config.iface.background_image, BG_DEFAULT, CONFIG_FILE_NAME_LENGTH );
+		config.iface.background_rotation = 20;
+		config.iface.background_transparency = 75;
 		
 		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 			config.iface.controls[i].device_type = DEV_KEYBOARD;
-			config.iface.controls[i].value = keys[i];
+			config.iface.controls[i].value = key_id( (char*)keys[i] );
 		}
 	}
 	return 0;

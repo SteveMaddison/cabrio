@@ -60,6 +60,10 @@ struct config_iface {
 	int full_screen;
 	int screen_width;
 	int screen_height;
+	int screen_rotation;
+	char background_image[CONFIG_FILE_NAME_LENGTH];
+	int background_rotation;
+	int background_transparency;	
 	struct config_control controls[NUM_EVENTS];
 };
 

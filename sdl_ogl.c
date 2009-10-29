@@ -113,8 +113,8 @@ GLuint sdl_create_texture( const char *filename, int *x, int *y ) {
 	SDL_Surface *s = sdl_load_image( filename );
 	if( s ) {
 		ogl_create_texture( s, &t );
-		*x = s->w;
-		*y = s->h;
+		if( x ) *x = s->w;
+		if( y ) *y = s->h;
 		SDL_FreeSurface( s );
 	}
 	return t;

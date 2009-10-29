@@ -1,24 +1,30 @@
 #include "bg.h"
+#include "config.h"
 #include "sdl_ogl.h"
-
-static const char *BG_DEFAULT = DATA_DIR "/pixmaps/default_background.jpg";
 
 static GLuint bg_clear_texture = 0;
 static GLuint bg_texture = 0;
-static const GLfloat ANGLE_STEP = 0.02;
+static GLfloat angle_step = 0;
 static GLfloat angle = 0;
+static GLfloat alpha = 1.0;
 
 void bg_clear( void ) {
 	bg_texture = bg_clear_texture;
 }
 
 int bg_init( void ) {
-	int x,y;
-	bg_clear_texture = sdl_create_texture( BG_DEFAULT, &x, &y );
-	if( bg_clear_texture == 0 ) {
-		fprintf( stderr, "Warning: couldn't create default background texture from '%s'\n", BG_DEFAULT );
-		return -1;
+	const struct config *config = config_get();
+
+	if( config->iface.background_image[0] != '\0' ) {
+		bg_clear_texture = sdl_create_texture( config->iface.background_image, NULL, NULL );	
+		if( bg_clear_texture == 0 ) {
+			fprintf( stderr, "Warning: couldn't create default background texture from '%s'\n", config->iface.background_image );
+			return -1;
+		}
 	}
+
+	angle_step = (GLfloat)config->iface.background_rotation/1000;
+	alpha = 1.0 - (GLfloat)(config->iface.background_transparency)/100;
 
 	bg_clear();
 	return 0;
@@ -63,7 +69,7 @@ void bg_draw( void ) {
 		glEnable( GL_TEXTURE_2D );
 		glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 		glBindTexture( GL_TEXTURE_2D, bg_texture );
-		glColor4f( 1.0, 1.0, 1.0, 0.25 );
+		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glRotatef( angle, 0.0, 0.0, 1.0 );
 		glTranslatef( 0.0, 0.0, -10.0 );
@@ -74,7 +80,7 @@ void bg_draw( void ) {
 			glTexCoord2f(1.0, 0.0); glVertex3f(  10.0,  10.0, 0.0 );
 		glEnd();
 		glDisable( GL_TEXTURE_2D );
-		angle += ANGLE_STEP;
+		angle -= angle_step;
 	}
 }
 
