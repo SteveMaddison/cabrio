@@ -4,8 +4,8 @@
 static int width = 0;
 static int height = 0;
 static int rotation = 0;
-static GLfloat xflip = 0;
-static GLfloat yflip = 0;
+static GLfloat xscale = 1.0;
+static GLfloat yscale = 1.0;
 
 int ogl_init( void ) {
 	const struct config *config = config_get();
@@ -33,9 +33,9 @@ int ogl_init( void ) {
 	height = config->iface.screen_height;
 	
 	if( config->iface.screen_hflip )
-		xflip = 180.0;
+		yscale = -yscale;
 	if( config->iface.screen_vflip )
-		yflip = 180.0;		
+		xscale = -xscale;
 	
 	ogl_screen_rotate( config->iface.screen_rotation );	
 	ogl_load_alterego();
@@ -92,9 +92,7 @@ void ogl_screen_rotate( int angle ) {
 void ogl_load_alterego( void ) {
 	glLoadIdentity();
 	glRotatef( (GLfloat)rotation, 0.0, 0.0, 1.0 );
-	/* XXX this doesn't work... */
-	glRotatef( xflip, 1.0, 0.0, 0.0 );
-	glRotatef( yflip, 0.0, 1.0, 0.0 );
+	glScalef( xscale, yscale, 1.0 );
 }
 
 void ogl_free_texture( GLuint *t ) {
