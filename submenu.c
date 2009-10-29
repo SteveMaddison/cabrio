@@ -154,17 +154,22 @@ void submenu_free( void ) {
 
 void submenu_draw( void ) {
 	if( type != MENU_ALL ) {
-		GLfloat tx = ((GLfloat)message->width*font_scale)/2;
-		GLfloat ty = ((GLfloat)message->height*font_scale)/2;
-		if( tx > (item_width*0.9)/2 ) {
-			tx = item_width*0.9/2;
+		GLfloat xfactor = ogl_xfactor();
+		GLfloat yfactor = ogl_yfactor();
+		GLfloat width = (item_width/2)*xfactor;
+		GLfloat height = (item_height/2)*xfactor;
+		GLfloat tx = (((GLfloat)message->width*font_scale)/2) * xfactor;
+		GLfloat ty = (((GLfloat)message->height*font_scale)/2) * xfactor;
+		
+		if( tx > ((item_width*0.9)/2)*xfactor  ) {
+			tx = ((item_width*0.9)/2)*xfactor;
 		}
-		if( ty > (item_height*0.9)/2 ) {
-			ty = item_height*0.9/2;
+		if( ty > ((item_height*0.9)/2)*xfactor ) {
+			ty = ((item_height*0.9)/2)*xfactor;
 		}
 		
 		ogl_load_alterego();
-		glTranslatef( (GLfloat)(type-1)*1.18, 0.9, -4 );
+		glTranslatef( (GLfloat)(type-1)*1.18*xfactor, 0.9*yfactor, -4 );
 		glColor4f( 1.0, 1.0, 1.0, 1.0 );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
@@ -172,10 +177,10 @@ void submenu_draw( void ) {
 
 		glBindTexture( GL_TEXTURE_2D, texture );
 		glBegin( GL_QUADS );
-			glTexCoord2f(0.0, 0.0); glVertex3f(-(item_width/2),  (item_height/2), 0.0);
-			glTexCoord2f(0.0, 1.0); glVertex3f(-(item_width/2), -(item_height/2), 0.0);
-			glTexCoord2f(1.0, 1.0); glVertex3f( (item_width/2), -(item_height/2), 0.0);
-			glTexCoord2f(1.0, 0.0); glVertex3f( (item_width/2),  (item_height/2), 0.0);
+			glTexCoord2f(0.0, 0.0); glVertex3f(-width,  height, 0.0);
+			glTexCoord2f(0.0, 1.0); glVertex3f(-width, -height, 0.0);
+			glTexCoord2f(1.0, 1.0); glVertex3f( width, -height, 0.0);
+			glTexCoord2f(1.0, 0.0); glVertex3f( width,  height, 0.0);
 		glEnd();
 
 		glBindTexture( GL_TEXTURE_2D, message->texture );
