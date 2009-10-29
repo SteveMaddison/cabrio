@@ -16,7 +16,7 @@ static struct font_message *msg_instr2 = NULL;
 static struct font_message *msg_press = NULL;
 
 int setup_draw_msg( struct font_message *msg, GLfloat y, GLfloat scale ) {
-	glLoadIdentity();
+	ogl_load_alterego();
 	glTranslatef( 0, y, -6 );
 	glColor4f( 1.0, 1.0, 1.0, 1.0 );
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);

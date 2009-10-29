@@ -65,7 +65,7 @@ int bg_set( const char *filename ) {
 
 void bg_draw( void ) {
 	if( bg_texture ) {
-		glLoadIdentity();
+		ogl_load_alterego();
 		glEnable( GL_TEXTURE_2D );
 		glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 		glBindTexture( GL_TEXTURE_2D, bg_texture );

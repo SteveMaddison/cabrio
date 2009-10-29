@@ -8,6 +8,10 @@
 #define Z 2
 
 int ogl_init( void );
+void ogl_load_alterego( void );
+int ogl_screen_width( void );
+int ogl_screen_height( void );
+void ogl_screen_rotate( int angle );
 void ogl_free_texture( GLuint *t );
 void ogl_clear( void );
 void ogl_flush( void );

@@ -1,6 +1,10 @@
 #include "ogl.h"
 #include "config.h"
 
+static int width = 0;
+static int height = 0;
+static int rotation = 0;
+
 int ogl_init( void ) {
 	const struct config *config = config_get();
 	
@@ -22,7 +26,11 @@ int ogl_init( void ) {
 	gluPerspective( 45.0, (GLfloat)config->iface.screen_width/(GLfloat)config->iface.screen_height, 0.1, 100.0 );
 
 	glMatrixMode( GL_MODELVIEW );
-	glLoadIdentity();
+
+	width = config->iface.screen_width;
+	height = config->iface.screen_height;
+	ogl_screen_rotate( config->iface.screen_rotation );	
+	ogl_load_alterego();
 
 	error = glGetError();
 	if( error == GL_NO_ERROR ) {
@@ -34,6 +42,35 @@ int ogl_init( void ) {
 	}
 }
 
+int ogl_screen_width( void ) {
+	return width;
+}
+
+int ogl_screen_height( void ) {
+	return height;
+}
+
+void ogl_screen_rotate( int angle ) {
+	int tmp = -angle; /* Switch clockwise to anti-clockwise */
+	if( tmp % 90 != 0 ) {
+		tmp -= (tmp % 90);
+		fprintf( stderr, "Warning: Screen rotation rounded down to nearest 90 degrees\n" );
+	}
+	if( (rotation % 180 == 0 && tmp % 180 != 0)
+	||  (rotation % 180 != 0 && tmp % 180 == 0) ) {
+		/* Swap height and width */
+		int swap = width;
+		width = height;
+		height = swap;
+	}
+	rotation = tmp;
+}
+
+void ogl_load_alterego( void ) {
+	glLoadIdentity();
+	glRotatef( (GLfloat)rotation, 0.0, 0.0, 1.0 );
+}
+
 void ogl_free_texture( GLuint *t ) {
 	if( t && *t ) {
 		glDeleteTextures( 1, t );
@@ -42,7 +79,7 @@ void ogl_free_texture( GLuint *t ) {
 
 void ogl_clear( void ) {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	glLoadIdentity();
+	void ogl_load_alterego();
 }
 
 void ogl_flush( void ) {

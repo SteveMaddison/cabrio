@@ -153,7 +153,7 @@ void menu_draw( void ) {
 		}
 		ty = (GLfloat)item->message->height/FONT_SCALE;
 
-		glLoadIdentity();
+		ogl_load_alterego();
 		glTranslatef( (offset*1.3)-(offset*zoom*0.2), 2-(zoom*0.4), -6+zoom );
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);

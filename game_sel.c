@@ -174,7 +174,7 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 				((GLfloat)tile->game->image_height/IMAGE_SCALE)/2, 0.0);		
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
-		glLoadIdentity();
+		ogl_load_alterego();
 	}
 }
 

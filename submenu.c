@@ -163,7 +163,7 @@ void submenu_draw( void ) {
 			ty = item_height*0.9/2;
 		}
 		
-		glLoadIdentity();
+		ogl_load_alterego();
 		glTranslatef( (GLfloat)(type-1)*1.18, 0.9, -4 );
 		glColor4f( 1.0, 1.0, 1.0, 1.0 );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);

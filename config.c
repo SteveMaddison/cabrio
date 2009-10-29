@@ -515,10 +515,6 @@ int config_read_interface_screen( xmlNode *node ) {
 			}
 			else if( strcmp( (char*)node->name, config_tag_rotation ) == 0 ) {
 				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_rotation );
-				if( config.iface.screen_rotation % 90 != 0 ) {
-					config.iface.screen_rotation %= 90;
-					fprintf( stderr, "Warning screen rotation rounded to nearest 90 degrees\n" );
-				}
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
