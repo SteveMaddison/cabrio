@@ -38,6 +38,8 @@ static const char *config_tag_game_background_image	=     "background-image";
 static const char *config_tag_iface					= "interface";
 static const char *config_tag_iface_full_screen		= 	"full-screen";
 static const char *config_tag_iface_screen			=   "screen";
+static const char *config_tag_iface_screen_hflip	=     "flip-horizontal";
+static const char *config_tag_iface_screen_vflip	=     "flip-vertical";
 static const char *config_tag_iface_background		=   "background";
 static const char *config_tag_iface_controls		=   "controls";
 /* General (reused) XML tags */
@@ -516,6 +518,12 @@ int config_read_interface_screen( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, config_tag_rotation ) == 0 ) {
 				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_rotation );
 			}
+			else if( strcmp( (char*)node->name, config_tag_iface_screen_hflip ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_hflip );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_screen_vflip ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_vflip );
+			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
 			}
@@ -646,6 +654,8 @@ int config_write_interface( void ) {
 	xmlNewChild( screen, NULL, (xmlChar*)config_tag_width, config_write_numeric( config.iface.screen_width ) );
 	xmlNewChild( screen, NULL, (xmlChar*)config_tag_height, config_write_numeric( config.iface.screen_height ) );
 	xmlNewChild( screen, NULL, (xmlChar*)config_tag_rotation, config_write_numeric( config.iface.screen_rotation ) );
+	xmlNewChild( screen, NULL, (xmlChar*)config_tag_iface_screen_hflip, config_write_numeric( config.iface.screen_hflip ) );
+	xmlNewChild( screen, NULL, (xmlChar*)config_tag_iface_screen_vflip, config_write_numeric( config.iface.screen_vflip ) );
 	xmlAddChild( interface, screen );
 
 	xmlNodePtr background = xmlNewNode( NULL, (xmlChar*)config_tag_iface_background );

@@ -61,6 +61,8 @@ struct config_iface {
 	int screen_width;
 	int screen_height;
 	int screen_rotation;
+	int screen_hflip;
+	int screen_vflip;
 	char background_image[CONFIG_FILE_NAME_LENGTH];
 	int background_rotation;
 	int background_transparency;	

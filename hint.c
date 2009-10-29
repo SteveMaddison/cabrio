@@ -137,8 +137,8 @@ int hint_draw( int menu_level ) {
 	if( menu_level == 0 ) {
 		hint_draw_button( select_texture, 0 );
 		hint_draw_caption( text_select_message, (text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2) );
-		hint_draw_arrow( -3, 2, ORIENT_LEFT );
-		hint_draw_arrow( 3, 2, ORIENT_RIGHT );
+		hint_draw_arrow( -2.9, 2, ORIENT_LEFT );
+		hint_draw_arrow( 2.9, 2, ORIENT_RIGHT );
 	}
 	else if( menu_level == 1 ) {
 		hint_draw_button( back_texture, -BUTTON_SIZE/2 );
