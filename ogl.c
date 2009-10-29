@@ -92,6 +92,7 @@ void ogl_screen_rotate( int angle ) {
 void ogl_load_alterego( void ) {
 	glLoadIdentity();
 	glRotatef( (GLfloat)rotation, 0.0, 0.0, 1.0 );
+	/* XXX this doesn't work... */
 	glRotatef( xflip, 1.0, 0.0, 0.0 );
 	glRotatef( yflip, 0.0, 1.0, 0.0 );
 }
