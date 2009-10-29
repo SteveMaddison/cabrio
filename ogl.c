@@ -50,6 +50,13 @@ int ogl_screen_height( void ) {
 	return height;
 }
 
+int ogl_screen_orientation( void ) {
+	if( height > width )
+		return PORTRAIT;
+	else
+		return LANDSCAPE;
+}
+
 void ogl_screen_rotate( int angle ) {
 	int tmp = -angle; /* Switch clockwise to anti-clockwise */
 	if( tmp % 90 != 0 ) {
