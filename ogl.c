@@ -50,6 +50,14 @@ int ogl_screen_height( void ) {
 	return height;
 }
 
+GLfloat ogl_xfactor( void ) {
+	return width/(GLfloat)config_get()->iface.screen_width;
+}
+
+GLfloat ogl_yfactor( void ) {
+	return height/(GLfloat)config_get()->iface.screen_height;
+}
+
 int ogl_screen_orientation( void ) {
 	if( height > width )
 		return PORTRAIT;

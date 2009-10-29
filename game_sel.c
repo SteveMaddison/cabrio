@@ -143,10 +143,15 @@ int game_sel_populate( struct game *game ) {
 }
 
 void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) {
+	GLfloat xfactor = ogl_xfactor();
 	GLfloat alpha = 1.0;
+	
 	if( tile && tile->game && dest ) {
+		GLfloat width = (((GLfloat)tile->game->image_width/IMAGE_SCALE)/2) * xfactor;
+		GLfloat height = (((GLfloat)tile->game->image_height/IMAGE_SCALE)/2) * xfactor;
+		
 		glTranslatef(
-			tile->pos[X] + (((dest->pos[X]-tile->pos[X])/STEPS)*step),
+			(tile->pos[X] + (((dest->pos[X]-tile->pos[X])/STEPS)*step)) * xfactor,
 			tile->pos[Y] + (((dest->pos[Y]-tile->pos[Y])/STEPS)*step),
 			tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/STEPS)*step) -5.0
 			);
@@ -164,14 +169,10 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 		glBindTexture( GL_TEXTURE_2D, tile->game->texture );
 		glBegin( GL_QUADS );
-			glTexCoord2f(0.0, 0.0); glVertex3f( -((GLfloat)tile->game->image_width/IMAGE_SCALE)/2,
-				((GLfloat)tile->game->image_height/IMAGE_SCALE)/2, 0.0);
-			glTexCoord2f(0.0, 1.0); glVertex3f( -((GLfloat)tile->game->image_width/IMAGE_SCALE)/2,
-				-((GLfloat)tile->game->image_height/IMAGE_SCALE)/2, 0.0);
-			glTexCoord2f(1.0, 1.0); glVertex3f(  ((GLfloat)tile->game->image_width/IMAGE_SCALE)/2,
-				-((GLfloat)tile->game->image_height/IMAGE_SCALE)/2, 0.0);
-			glTexCoord2f(1.0, 0.0); glVertex3f(  ((GLfloat)tile->game->image_width/IMAGE_SCALE)/2,
-				((GLfloat)tile->game->image_height/IMAGE_SCALE)/2, 0.0);		
+			glTexCoord2f(0.0, 0.0); glVertex3f( -width,  height, 0.0);
+			glTexCoord2f(0.0, 1.0); glVertex3f( -width, -height, 0.0);
+			glTexCoord2f(1.0, 1.0); glVertex3f(  width,	-height, 0.0);
+			glTexCoord2f(1.0, 0.0); glVertex3f(  width,  height, 0.0);		
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 		ogl_load_alterego();

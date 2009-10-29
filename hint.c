@@ -54,8 +54,12 @@ int hint_resume( void ) {
 }
 
 void hint_draw_button( GLuint texture, GLfloat position ) {
+	GLfloat xfactor = ogl_xfactor();
+	GLfloat yfactor = ogl_yfactor();
+	GLfloat size = (BUTTON_SIZE/2) * xfactor;
+	
 	ogl_load_alterego();
-	glTranslatef( position, -1.9, -6 );
+	glTranslatef( position * xfactor, -1.9 * yfactor, -6 );
 	glColor4f( 1.0, 1.0, 1.0, alpha );
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_2D);
@@ -63,16 +67,20 @@ void hint_draw_button( GLuint texture, GLfloat position ) {
 
 	glBindTexture( GL_TEXTURE_2D, texture );
 	glBegin( GL_QUADS );
-		glTexCoord2f(0.0, 0.0); glVertex3f(-BUTTON_SIZE/2,  BUTTON_SIZE/2, 0.0);
-		glTexCoord2f(0.0, 1.0); glVertex3f(-BUTTON_SIZE/2, -BUTTON_SIZE/2, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f( BUTTON_SIZE/2, -BUTTON_SIZE/2, 0.0);
-		glTexCoord2f(1.0, 0.0); glVertex3f( BUTTON_SIZE/2,  BUTTON_SIZE/2, 0.0);
+		glTexCoord2f(0.0, 0.0); glVertex3f(-size,  size, 0.0);
+		glTexCoord2f(0.0, 1.0); glVertex3f(-size, -size, 0.0);
+		glTexCoord2f(1.0, 1.0); glVertex3f( size, -size, 0.0);
+		glTexCoord2f(1.0, 0.0); glVertex3f( size,  size, 0.0);
 	glEnd();
 }
 
 void hint_draw_arrow( GLfloat x, GLfloat y, int orientation ) {
+	GLfloat xfactor = ogl_xfactor();
+	GLfloat yfactor = ogl_yfactor();
+	GLfloat size = (ARROW_SIZE/2) * xfactor;
+
 	ogl_load_alterego();
-	glTranslatef( x, y, -6 );
+	glTranslatef( x * xfactor, y * yfactor, -6 );
 	glColor4f( 1.0, 1.0, 1.0, alpha );
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_2D);
@@ -81,25 +89,28 @@ void hint_draw_arrow( GLfloat x, GLfloat y, int orientation ) {
 	glBindTexture( GL_TEXTURE_2D, arrow_texture );
 	glBegin( GL_QUADS );
 	if( orientation == ORIENT_LEFT ) {
-		glTexCoord2f(1.0, 0.0); glVertex3f(-ARROW_SIZE/2,  ARROW_SIZE/2, 0.0);
-		glTexCoord2f(0.0, 0.0); glVertex3f(-ARROW_SIZE/2, -ARROW_SIZE/2, 0.0);
-		glTexCoord2f(0.0, 1.0); glVertex3f( ARROW_SIZE/2, -ARROW_SIZE/2, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f( ARROW_SIZE/2,  ARROW_SIZE/2, 0.0);	
+		glTexCoord2f(1.0, 0.0); glVertex3f(-size,  size, 0.0);
+		glTexCoord2f(0.0, 0.0); glVertex3f(-size, -size, 0.0);
+		glTexCoord2f(0.0, 1.0); glVertex3f( size, -size, 0.0);
+		glTexCoord2f(1.0, 1.0); glVertex3f( size,  size, 0.0);	
 	}
 	else {
-		glTexCoord2f(0.0, 1.0); glVertex3f(-ARROW_SIZE/2,  ARROW_SIZE/2, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f(-ARROW_SIZE/2, -ARROW_SIZE/2, 0.0);
-		glTexCoord2f(1.0, 0.0); glVertex3f( ARROW_SIZE/2, -ARROW_SIZE/2, 0.0);
-		glTexCoord2f(0.0, 0.0); glVertex3f( ARROW_SIZE/2,  ARROW_SIZE/2, 0.0);
+		glTexCoord2f(0.0, 1.0); glVertex3f(-size,  size, 0.0);
+		glTexCoord2f(1.0, 1.0); glVertex3f(-size, -size, 0.0);
+		glTexCoord2f(1.0, 0.0); glVertex3f( size, -size, 0.0);
+		glTexCoord2f(0.0, 0.0); glVertex3f( size,  size, 0.0);
 	}
 	glEnd();
 }
 
 void hint_draw_caption( struct font_message *message, GLfloat position ) {
-	GLfloat tx = (message->width*FONT_SCALE)/2;
-	GLfloat ty = (message->height*FONT_SCALE)/2;
+	GLfloat xfactor = ogl_xfactor();
+	GLfloat yfactor = ogl_yfactor();
+	GLfloat tx = ((message->width*FONT_SCALE)/2) * xfactor;
+	GLfloat ty = ((message->height*FONT_SCALE)/2) * xfactor;
+	
 	ogl_load_alterego();
-	glTranslatef( position, -1.9, -6 );
+	glTranslatef( position * xfactor, -1.9 * yfactor, -6 );
 	glColor4f( 1.0, 1.0, 1.0, 1.0 );
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_2D);

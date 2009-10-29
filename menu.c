@@ -123,7 +123,9 @@ int menu_init( void ) {
 
 void menu_draw( void ) {
 	struct menu_item *item = menu_start;
-	GLfloat zoom, offset,tx,ty,alpha = 0;
+	GLfloat zoom,offset,tx,ty,alpha = 0;
+	GLfloat xfactor = ogl_xfactor();
+	GLfloat yfactor = ogl_yfactor();
 	int count = 0;
 	
 	while( item ) {
@@ -134,7 +136,7 @@ void menu_draw( void ) {
 			}
 		}
 
-		offset = ((GLfloat)count-((GLfloat)(menu_items-1)/2))/((GLfloat)menu_items/4);
+		offset = ((GLfloat)count-((GLfloat)(menu_items-1)/2))/((GLfloat)menu_items/4)*xfactor;
 		if( item == prev ) {
 			zoom = (0.05*STEPS)-(0.05*(step+1));
 			alpha = 1.0-(((1.0-ALPHA_MIN)/STEPS)*step);
@@ -147,14 +149,14 @@ void menu_draw( void ) {
 			zoom = 0;
 			alpha = ALPHA_MIN;
 		}
-		tx = (GLfloat)item->message->width/FONT_SCALE;
+		tx = ((GLfloat)item->message->width/FONT_SCALE)*xfactor;
 		if( tx > item_width/2 ) {
 			tx = (item_width/2)-(item_width/10);
 		}
-		ty = (GLfloat)item->message->height/FONT_SCALE;
+		ty = ((GLfloat)item->message->height/FONT_SCALE)*xfactor;
 
 		ogl_load_alterego();
-		glTranslatef( (offset*1.3)-(offset*zoom*0.2), 2-(zoom*0.4), -6+zoom );
+		glTranslatef( (offset*1.3)-(offset*zoom*0.2), (2-(zoom*0.4)) * yfactor, -6+zoom );
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
@@ -162,10 +164,10 @@ void menu_draw( void ) {
 
 		glBindTexture( GL_TEXTURE_2D, menu_texture );
 		glBegin( GL_QUADS );
-			glTexCoord2f(0.0, 0.0); glVertex3f(-(item_width/2),  (item_height/2), 0.0);
-			glTexCoord2f(0.0, 1.0); glVertex3f(-(item_width/2), -(item_height/2), 0.0);
-			glTexCoord2f(1.0, 1.0); glVertex3f( (item_width/2), -(item_height/2), 0.0);
-			glTexCoord2f(1.0, 0.0); glVertex3f( (item_width/2),  (item_height/2), 0.0);
+			glTexCoord2f(0.0, 0.0); glVertex3f(-((item_width/2)*xfactor),  ((item_height/2)*xfactor), 0.0);
+			glTexCoord2f(0.0, 1.0); glVertex3f(-((item_width/2)*xfactor), -((item_height/2)*xfactor), 0.0);
+			glTexCoord2f(1.0, 1.0); glVertex3f( ((item_width/2)*xfactor), -((item_height/2)*xfactor), 0.0);
+			glTexCoord2f(1.0, 0.0); glVertex3f( ((item_width/2)*xfactor),  ((item_height/2)*xfactor), 0.0);
 		glEnd();
 
 		glBindTexture( GL_TEXTURE_2D, item->message->texture );
