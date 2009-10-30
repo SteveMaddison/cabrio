@@ -11,6 +11,12 @@
 #define FILTER_GENRE	2
 #define FILTER_PLATFORM	3
 
+struct game_category {
+	struct game_category *next;
+	char *name;
+	char *value;
+};
+
 struct game {
 	struct game *next;
 	struct game *prev;
@@ -18,6 +24,7 @@ struct game {
 	struct game *all_prev;
 	struct genre *genre;
 	struct platform *platform;
+	struct game_category *categories;
 	GLuint texture;
 	unsigned int image_width;
 	unsigned int image_height;

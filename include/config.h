@@ -37,12 +37,30 @@ struct config_genre {
 	char name[CONFIG_NAME_LENGTH];
 };
 
+struct config_category_value {
+	struct config_category_value *next;
+	char name[CONFIG_NAME_LENGTH];
+};
+
+struct config_category {
+	struct config_category *next;
+	char name[CONFIG_NAME_LENGTH];
+	struct config_category_value *values;
+};
+
+struct config_game_category {
+	struct config_game_category *next;
+	struct config_category *category;
+	struct config_category_value *value;
+};
+
 struct config_game {
 	struct config_game *next;
 	char name[CONFIG_NAME_LENGTH];
 	char rom_image[CONFIG_FILE_NAME_LENGTH];
 	char logo_image[CONFIG_FILE_NAME_LENGTH];
 	char background_image[CONFIG_FILE_NAME_LENGTH];
+	struct config_game_category *categories;
 	struct config_param *params;
 	struct config_genre *genre;
 	struct config_platform *platform;
@@ -73,6 +91,7 @@ struct config {
 	struct config_emulator *emulators;
 	struct config_platform *platforms;
 	struct config_genre *genres;
+	struct config_category *categories;
 	struct config_game *games;
 	struct config_iface iface;
 };

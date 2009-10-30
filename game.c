@@ -2,6 +2,7 @@
 #include "game.h"
 #include "config.h"
 #include "genre.h"
+#include "category.h"
 #include "platform.h"
 #include "ogl.h"
 #include "sdl_ogl.h"
@@ -108,6 +109,7 @@ int game_list_create( void ) {
 			return -1;
 		}
 		else {
+			struct config_game_category *config_category = config_game->categories;
 			game->name = config_game->name;
 			game->logo_image = config_game->logo_image;
 			game_load_texture( game );
@@ -116,6 +118,20 @@ int game_list_create( void ) {
 			game->params = config_game->params;
 			game->genre = config_game->genre ? genre_get( config_game->genre->name ) : genre_get( NULL );
 			game->platform = config_game->platform ? platform_get( config_game->platform->name ) : platform_get( NULL );
+			game->categories = NULL;
+			while( config_category ) {
+				struct game_category *gc = malloc( sizeof(struct game_category) );
+				if( gc ) {
+					gc->name = config_category->category->name;
+					gc->value = config_category->value->name;
+					gc->next = game->categories;
+					game->categories = gc;
+				}
+				else {
+					fprintf( stderr, "Warning: Couldn't allocate category for game '%s'\n", game->name );
+				}
+				config_category = config_category->next;
+			}
 			
 			/* insert into list (sort by name) */
 			prev = game_start;
@@ -137,6 +153,21 @@ int game_list_create( void ) {
 	}
 	game_filter_start = game_start;
 
+/*
+	if( game_start ) {
+		struct game *g = game_start;
+		while( g ) {
+			struct game_category *gc = g->categories;
+			printf("Game: %s\n", g->name );
+			while( gc ) {
+				printf("  '%s' = '%s'\n", gc->name, gc->value );
+				gc = gc->next;
+			}
+			g = g->all_next;
+			if( g == game_start ) break;
+		}
+	}
+*/
 	return 0;
 }
 

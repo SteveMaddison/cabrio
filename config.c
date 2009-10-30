@@ -35,6 +35,8 @@ static const char *config_tag_game					=   "game";
 static const char *config_tag_game_rom_image		=     "rom-image";
 static const char *config_tag_game_logo_image		=     "logo-image";
 static const char *config_tag_game_background_image	=     "background-image";
+static const char *config_tag_game_categories		=     "categories";
+static const char *config_tag_game_category			=     "category";
 static const char *config_tag_iface					= "interface";
 static const char *config_tag_iface_full_screen		= 	"full-screen";
 static const char *config_tag_iface_screen			=   "screen";
@@ -270,6 +272,125 @@ int config_read_emulators( xmlNode *node ) {
 	return 0;
 }
 
+struct config_category *config_category( const char *name ) {
+	struct config_category *c = config.categories;
+
+	if( name && *name ) {
+		while( c ) {
+			if( strncasecmp( name, c->name, CONFIG_NAME_LENGTH ) == 0 )
+				break;
+			c = c->next;
+		}
+		if( c == NULL ) {
+			/* add new */
+			c = malloc( sizeof(struct config_category) );
+			if( c == NULL ) {
+				fprintf( stderr, warn_alloc, config_tag_game_category );
+			}
+			else {
+				strncpy( c->name, name, CONFIG_NAME_LENGTH );
+				c->next = config.categories;
+				config.categories = c;
+			}
+		}
+	}
+	else {
+		c = NULL;
+	}
+	return c;
+}
+
+struct config_category_value *config_category_value( struct config_category *category, const char *name ) {
+	if( category ) {
+		struct config_category_value *v = category->values;
+
+		if( name && *name ) {
+			while( v ) {
+				if( strncasecmp( name, v->name, CONFIG_NAME_LENGTH ) == 0 )
+					break;
+				v = v->next;
+			}
+			if( v == NULL ) {
+				/* add new */
+				v = malloc( sizeof(struct config_category_value) );
+				if( v == NULL ) {
+					fprintf( stderr, warn_alloc, "category value" );
+				}
+				else {
+					strncpy( v->name, name, CONFIG_NAME_LENGTH );
+					v->next = category->values;
+					category->values = v;
+				}
+			}
+		}
+		return v;
+	}
+	else {
+		fprintf( stderr, "Warning: Attempt to add value to null category\n" );
+	}
+
+	return NULL;
+}
+
+int config_read_game_category( xmlNode *node, struct config_game_category *gc ) {
+	char *value;
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+				gc->category = config_category( (char*)xmlNodeGetContent(node) );
+			}
+			else if( strcmp( (char*)node->name, config_tag_value ) == 0 ) {
+				/* Save for later, in case name is not yet known. */
+				value = (char*)xmlNodeGetContent(node);
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_game_category, node->name );
+			}
+		}
+		node = node->next;
+	}
+	
+	if( gc->category ) {
+		if( value && *value ) {
+			gc->value = config_category_value( gc->category, value );
+		}
+		else {
+			fprintf( stderr, "Warning: '%s' with '%s' but no '%s'\n", node->name, config_tag_name, config_tag_value );
+			return -1;
+		}
+	}
+	else {
+		fprintf( stderr, "Warning: '%s' with '%s' but no '%s'\n", node->name, config_tag_value, config_tag_name );
+		return -1;
+	}
+	
+	return 0;
+}
+
+int config_read_game_categories( xmlNode *node, struct config_game *game ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_game_category ) == 0 ) {
+				struct config_game_category *gc = malloc( sizeof(struct config_game_category) );
+				if( gc ) {
+					config_read_game_category( node->children, gc );
+					gc->next = game->categories;
+					game->categories = gc;
+				}
+				else {
+					fprintf( stderr, warn_alloc, config_tag_game_category );
+					return -1;					
+				}
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_params, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_game_params( xmlNode *node, struct config_game *game ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
@@ -313,6 +434,9 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 			else if( strcmp( (char*)node->name, config_tag_genre ) == 0 ) {
 				game->genre = config_genre( (char*)xmlNodeGetContent(node) );
 			}
+			else if( strcmp( (char*)node->name, config_tag_game_categories ) == 0 ) {
+				config_read_game_categories( node->children, game );
+			}
 			else if( strcmp( (char*)node->name, config_tag_platform ) == 0 ) {
 				game->platform = config_platform( (char*)xmlNodeGetContent(node) );
 			}
@@ -325,6 +449,24 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 		}
 		node = node->next;
 	}
+	
+{
+	struct config_game_category *gc = game->categories;
+	printf( "Game: %s\n", game->name );
+	while( gc ) {
+		if( !gc->category ) {
+			printf("No category\n");
+			return -1;
+		}
+		if( !gc->value ) {
+			printf("No value\n");
+			return -1;
+		}		
+		printf( "  '%s' = '%s'\n", gc->category->name, gc->value->name );
+		gc = gc->next;
+	}
+}
+
 	return 0;
 }
 

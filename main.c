@@ -7,6 +7,7 @@
 #include "font.h"
 #include "config.h"
 #include "genre.h"
+#include "category.h"
 #include "platform.h"
 #include "bg.h"
 #include "menu.h"
@@ -129,6 +130,9 @@ int main( int argc, char *arvg[] ) {
 		return -1;
 	
 	if( platform_init() != 0 )
+		return -1;
+
+	if( category_init() != 0 )
 		return -1;
 
 	if( game_sel_init( 1 ) != 0 )
