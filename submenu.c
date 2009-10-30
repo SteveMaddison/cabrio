@@ -4,6 +4,7 @@
 #include "game.h"
 #include "genre.h"
 #include "platform.h"
+#include "menu.h"
 
 static GLuint texture = 0;
 static int type = -1;
@@ -13,7 +14,9 @@ static const GLfloat item_width = 1.2;
 static const GLfloat item_height = 0.3;
 static const GLfloat font_scale = 0.0035;
 
-struct genre *genre = NULL;
+struct category *prev_category = NULL;
+struct category *category = NULL;
+struct category_value *category_value = NULL;
 struct platform *platform = NULL;
 struct font_message *message = NULL;
 
@@ -56,8 +59,8 @@ int submenu_resume( void ) {
 	switch( type ) {
 		case( MENU_ALL ):
 			break;
-		case( MENU_GENRE ):
-			message = font_message_create( genre->name );
+		case( MENU_CATEGORY ):
+			message = font_message_create( category_value->name );
 			break;
 		case( MENU_PLATFORM ):
 			message = font_message_create( platform->name );
@@ -69,22 +72,16 @@ int submenu_resume( void ) {
 	return 0;
 }
 
-int submenu_create( int menu_type ) {
+int submenu_create( struct menu_item *item ) {
 	items = 0;
 	
 	if( submenu_load_texture() != 0 )
 		return -1;
 
-	type = menu_type;
+	type = item->type;
 	
-	switch( menu_type ) {
+	switch( type ) {
 		case( MENU_ALL ):
-			break;
-		case( MENU_GENRE ):
-			if( genre == NULL )
-				genre = genre_first();
-			message = font_message_create( genre->name );
-			items = genre_count();
 			break;
 		case( MENU_PLATFORM ):
 			if( platform == NULL )
@@ -92,6 +89,14 @@ int submenu_create( int menu_type ) {
 			message = font_message_create( platform->name );
 			items = platform_count();
 			break;		
+		case( MENU_CATEGORY ):
+			category = item->category;
+			if( category != prev_category )
+				category_value = category->values;
+			message = font_message_create( category_value->name );
+			items = category->value_count;
+			prev_category = category;
+			break;
 		default:
 			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );
 			break;
@@ -107,14 +112,14 @@ void submenu_advance( void ) {
 	switch( type ) {
 		case( MENU_ALL ):
 			break;
-		case( MENU_GENRE ):
-			genre = genre->next;
-			message = font_message_create( genre->name );
-			break;
 		case( MENU_PLATFORM ):
 			platform = platform->next;
 			message = font_message_create( platform->name );
 			break;		
+		case( MENU_CATEGORY ):
+			category_value = category_value->next;
+			message = font_message_create( category_value->name );
+			break;
 		default:
 			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );
 			break;
@@ -129,14 +134,14 @@ void submenu_retreat( void ) {
 	switch( type ) {
 		case( MENU_ALL ):
 			break;
-		case( MENU_GENRE ):
-			genre = genre->prev;
-			message = font_message_create( genre->name );
-			break;
 		case( MENU_PLATFORM ):
 			platform = platform->prev;
 			message = font_message_create( platform->name );
 			break;		
+		case( MENU_CATEGORY ):
+			category_value = category_value->prev;
+			message = font_message_create( category_value->name );
+			break;
 		default:
 			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );
 			break;
@@ -160,6 +165,7 @@ void submenu_draw( void ) {
 		GLfloat height = (item_height/2)*xfactor;
 		GLfloat tx = (((GLfloat)message->width*font_scale)/2) * xfactor;
 		GLfloat ty = (((GLfloat)message->height*font_scale)/2) * xfactor;
+		GLfloat offset = (GLfloat)(menu_selected()->position) - (((GLfloat)menu_item_count()-1)/2);
 		
 		if( tx > ((item_width*0.9)/2)*xfactor  ) {
 			tx = ((item_width*0.9)/2)*xfactor;
@@ -169,7 +175,8 @@ void submenu_draw( void ) {
 		}
 		
 		ogl_load_alterego();
-		glTranslatef( (GLfloat)(type-1)*1.18*xfactor, 0.9*yfactor, -4 );
+		
+		glTranslatef( (GLfloat)(offset)*((3.6/menu_item_count())*xfactor), 0.9*yfactor, -4 );
 		glColor4f( 1.0, 1.0, 1.0, 1.0 );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
@@ -199,11 +206,11 @@ int submenu_do_filter( void ) {
 		case( MENU_ALL ):
 			count = game_list_unfilter();
 			break;
-		case( MENU_GENRE ):
-			count = game_list_filter_genre( genre );
-			break;
 		case( MENU_PLATFORM ):
 			count = game_list_filter_platform( platform );
+			break;
+		case( MENU_CATEGORY ):
+			count = game_list_filter_category( category->name, category_value->name );
 			break;
 		default:
 			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );

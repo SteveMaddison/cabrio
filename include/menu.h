@@ -3,16 +3,21 @@
 
 #include "ogl.h"
 #include "font.h"
+#include "category.h"
 
-#define MENU_ALL		0
-#define MENU_GENRE		1
-#define MENU_PLATFORM	2
+enum menu_t {
+	MENU_ALL,
+	MENU_PLATFORM,
+	MENU_CATEGORY
+};
 
 struct menu_item {
-	int id;
+	int type;
+	int position;
 	struct menu_item *next;
 	struct menu_item *prev;
 	struct font_message *message;
+	struct category *category;
 	char *text;
 };
 
@@ -21,7 +26,8 @@ void menu_free( void );
 void menu_pause( void );
 int menu_resume( void );
 
-int menu_selected( void );
+struct menu_item *menu_selected( void );
+int menu_item_count( void );
 void menu_draw( void );
 void menu_advance( void );
 void menu_retreat( void );

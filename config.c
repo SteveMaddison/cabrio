@@ -450,7 +450,7 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 		node = node->next;
 	}
 	
-{
+/*{
 	struct config_game_category *gc = game->categories;
 	printf( "Game: %s\n", game->name );
 	while( gc ) {
@@ -465,7 +465,7 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 		printf( "  '%s' = '%s'\n", gc->category->name, gc->value->name );
 		gc = gc->next;
 	}
-}
+}*/
 
 	return 0;
 }

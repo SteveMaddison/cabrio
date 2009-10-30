@@ -3,7 +3,7 @@
 
 #include "menu.h"
 
-int submenu_create( int menu_type );
+int submenu_create( struct menu_item *item );
 void submenu_advance( void );
 void submenu_retreat( void );
 int submenu_items( void );

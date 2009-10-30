@@ -100,17 +100,20 @@ int category_init( void ) {
 		c = c->next;
 	}
 	
+/*
 	category = category_start;
 	while( category ) {
 		struct category_value *value = category->values;
 		while( value ) {
+			printf("%s: %s\n", category->name, value->name );
 			value = value->next;
 			if( value == category->values ) break;
 		}
 		category = category->next;
 		if( category == category_start ) break;
 	}
-	
+*/
+
 	return 0;
 }
 

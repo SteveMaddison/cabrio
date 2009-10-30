@@ -11,12 +11,8 @@ static GLfloat item_height = 0.6;
 static GLfloat item_width = 1.0;
 static GLuint menu_texture = 0;
 
-const char *menu_text[] = {
-	"All",
-	"Genre",
-	"Platform",
-	NULL
-};
+const char *menu_text_all = "All";
+const char *menu_text_platform = "Platform";
 
 struct menu_item *menu_start = NULL;
 struct menu_item *menu_end = NULL;
@@ -25,8 +21,12 @@ struct menu_item *prev = NULL;
 static int menu_items = 0;
 static int step = 0;
 
-int menu_selected( void ) {
-	return selected->id;
+struct menu_item *menu_selected( void ) {
+	return selected;
+}
+
+int menu_item_count( void ) {
+	return menu_items;
 }
 
 int menu_load_texture( void ) {
@@ -65,7 +65,7 @@ int menu_resume( void ) {
 		return -1;
 		
 	while( item ) {
-		item->message = font_message_create( menu_text[i] );
+		item->message = font_message_create( item->text );
 		if( item->message == NULL )
 			return -1;
 		item = item->next;
@@ -74,43 +74,53 @@ int menu_resume( void ) {
 	return 0;
 }
 
+int menu_item_add( const char *text, int type, struct category *category ) {
+	struct menu_item *item = malloc( sizeof(struct menu_item) );
+
+	if( item ) {
+		item->text = (char*)text;
+		item->message = font_message_create( text );
+		if( item->message == NULL ) {
+			fprintf( stderr, "Error: Couldn't create message for menu item '%s'\n", text );
+			return -1;
+		}
+		item->type = type;
+		item->category = category;
+		item->position = menu_items;
+
+		item->next = NULL;
+		item->prev = menu_end;
+		if( menu_end ) {
+			menu_end->next = item;
+		}
+		if( menu_items == 0 ) {
+			menu_start = item;
+		}
+		menu_end = item;
+		menu_items++;
+	}
+	else {
+		fprintf( stderr, "Warning: Couldn't allocate memory for menu item '%s'\n", text );
+		return -1;
+	}
+	
+	return 0;
+}
+
 int menu_init( void ) {
-	struct menu_item *item = NULL;
-	struct menu_item *prev = NULL;
+	struct category *category = category_first();
 
 	if( menu_load_texture() != 0 ) {
 		return -1;
 	}
 		
-	menu_items = 0;
-	while( menu_text[menu_items] ) {
-		item = malloc(sizeof(struct menu_item));
-		if( item ) {
-			item->text = (char*)menu_text[menu_items];
-			item->message = font_message_create( menu_text[menu_items] );
-			if( item->message == NULL ) {
-				fprintf( stderr, "Error: Couldn't create message for menu item '%s'\n", menu_text[menu_items] );
-				return -1;
-			}
-			item->next = NULL;
-			item->prev = prev;
-			item->id = menu_items;
-			if( prev ) {
-				prev->next = item;
-			}
-
-			if( menu_items == 0 ) {
-				menu_start = item;
-			}
-			menu_end = item;
-			
-			prev = item;
-			menu_items++;
-		}
-		else {
-			fprintf( stderr, "Warning: Couldn't allocate memory for menu item '%s'\n", menu_text[menu_items] );
-			return -1;
-		}
+	menu_item_add( menu_text_all, MENU_ALL, NULL );
+	menu_item_add( menu_text_platform, MENU_PLATFORM, NULL );
+	if( category ) {
+		do {
+			menu_item_add( category->name, MENU_CATEGORY, category );
+			category = category->next;
+		} while( category != category_first() );
 	}
 
 	item_width = (4.0/menu_items > ITEM_MAX_WIDTH) ? ITEM_MAX_WIDTH : (4.0/menu_items);
