@@ -39,6 +39,7 @@ struct game *game_first( void );
 
 int game_list_create( void );
 int game_list_filter_genre( struct genre *genre );
+int game_list_filter_category( char *name, char *value );
 int game_list_filter_platform( struct platform *platform );
 int game_list_unfilter( void );
 void game_list_pause( void );

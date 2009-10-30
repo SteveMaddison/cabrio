@@ -198,6 +198,39 @@ int game_list_filter_genre( struct genre *genre ) {
 	return count;
 }
 
+int game_list_filter_category( char *name, char *value ) {
+	int count = 0;
+	struct game *game = game_start;
+	struct game_category *category = NULL;
+	
+	game_filter_start = NULL;
+	if( game && game->categories ) {
+		do {
+			category = game->categories;
+			while( category ) {
+				if( strcasecmp( category->value, value ) == 0
+				&&  strcasecmp( category->name, name ) == 0 ) {
+					if( game_filter_start == NULL ) {
+						game_filter_start = game;
+						game->next = game;
+						game->prev = game;
+					}
+					else {
+						game->prev = game_filter_start->prev;
+						game_filter_start->prev->next = game;
+						game_filter_start->prev = game;
+						game->next = game_filter_start;
+					}
+					count++;
+				}
+				category = category->next;
+			}
+			game = game->all_next;
+		} while ( game != game_start );
+	}
+	return count;
+}
+
 int game_list_filter_platform( struct platform *platform ) {
 	int count = 0;
 
