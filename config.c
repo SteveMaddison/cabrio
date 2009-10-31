@@ -332,12 +332,15 @@ int config_read_game_category( xmlNode *node, struct config_game_category *gc ) 
 				gc->value = config_category_value( gc->category, value );
 			}
 			else {
-				fprintf( stderr, "Warning: game category with '%s' but no '%s'\n", config_tag_name, config_tag_value );
+				fprintf( stderr, "Warning: game category with %s '%s' has no %s\n", config_tag_name, gc->category->name, config_tag_value );
 				return -1;
 			}
 		}
 		else {
-			fprintf( stderr, "Warning: game category with '%s' but no '%s'\n", config_tag_value, config_tag_name );
+			if( value && *value ) {
+				fprintf( stderr, "Warning: game category with %s '%s' but no %s\n", config_tag_value, value, config_tag_name );
+			}
+			fprintf( stderr, "Warning: game category with no %s nor %s\n", config_tag_value, config_tag_name );
 			return -1;
 		}
 	}
