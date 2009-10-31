@@ -23,19 +23,18 @@ void category_add( struct category *category, struct category *after ) {
 	count++;
 }
 
-struct category_value *category_value_add( struct category *category, char *name ) {
+int category_value_add( struct category *category, char *name ) {
 	struct category_value *after = category->values;
 	struct category_value *category_value = malloc( sizeof(struct category_value) );
-	struct category_value *prev = NULL;
 
 	if( category_value ) {
 		category_value->name = name;
 	
 		if( after ) {
-			prev = after->prev;
-			while( strcasecmp( prev->name, category_value->name ) > 0 ) {
-				prev = prev->prev;
-				if( prev == category->values->prev ) break;
+			after = after->prev;
+			while( strcasecmp( after->name, category_value->name ) > 0 ) {
+				after = after->prev;
+				if( after == category->values->prev ) break;
 			}
 		}
 
@@ -50,12 +49,17 @@ struct category_value *category_value_add( struct category *category, char *name
 			category_value->prev = after;
 		}
 		category->value_count++;
+
+		if( !category->values || strcasecmp( category_value->name, category->values->name ) < 0 ) {
+			category->values = category_value;
+		}
 	}
 	else {
 		fprintf( stderr, "Warning: Couldn't allocate new category value\n" );
+		return -1;
 	}
 	
-	return category_value;
+	return 0;
 }
 
 int category_init( void ) {
@@ -85,10 +89,7 @@ int category_init( void ) {
 				struct config_category_value *value = c->values;
 				category->values = NULL;
 				while( value ) {
-					struct category_value *new = category_value_add( category, value->name );
-					if( !category->values || strcasecmp( new->name, category->values->name ) < 0 ) {
-						category->values = new;
-					}
+					category_value_add( category, value->name );
 					value = value->next;
 				}
 			}
