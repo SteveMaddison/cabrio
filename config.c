@@ -308,36 +308,40 @@ struct config_category_value *config_category_value( struct config_category *cat
 
 int config_read_game_category( xmlNode *node, struct config_game_category *gc ) {
 	char *value;
-	while( node ) {
-		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
-				gc->category = config_category( (char*)xmlNodeGetContent(node) );
+	
+	gc->category = NULL;
+	if( node ) {
+		while( node ) {
+			if( node->type == XML_ELEMENT_NODE ) {
+				if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+					gc->category = config_category( (char*)xmlNodeGetContent(node) );
+				}
+				else if( strcmp( (char*)node->name, config_tag_value ) == 0 ) {
+					/* Save for later, in case name is not yet known. */
+					value = (char*)xmlNodeGetContent(node);
+				}
+				else {
+					fprintf( stderr, warn_skip, config_tag_game_category, node->name );
+				}
 			}
-			else if( strcmp( (char*)node->name, config_tag_value ) == 0 ) {
-				/* Save for later, in case name is not yet known. */
-				value = (char*)xmlNodeGetContent(node);
+			node = node->next;
+		}
+
+		if( gc->category ) {
+			if( value && *value ) {
+				gc->value = config_category_value( gc->category, value );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_game_category, node->name );
+				fprintf( stderr, "Warning: game category with '%s' but no '%s'\n", config_tag_name, config_tag_value );
+				return -1;
 			}
 		}
-		node = node->next;
-	}
-
-	if( gc->category ) {
-		if( value && *value ) {
-			gc->value = config_category_value( gc->category, value );
-		}
 		else {
-			fprintf( stderr, "Warning: game category with '%s' but no '%s'\n", config_tag_name, config_tag_value );
+			fprintf( stderr, "Warning: game category with '%s' but no '%s'\n", config_tag_value, config_tag_name );
 			return -1;
 		}
 	}
-	else {
-		fprintf( stderr, "Warning: game category with '%s' but no '%s'\n", config_tag_value, config_tag_name );
-		return -1;
-	}
-
+	
 	return 0;
 }
 
