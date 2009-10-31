@@ -3,13 +3,14 @@
 #include "menu.h"
 #include "font.h"
 
-static const int STEPS = 30;
+static const int MAX_STEPS = 50;
 static const int FONT_SCALE = 400;
 static const GLfloat ALPHA_MIN = 0.6;
 static const GLfloat ITEM_MAX_WIDTH = 1.0;
 static GLfloat item_height = 0.6;
 static GLfloat item_width = 1.0;
 static GLuint menu_texture = 0;
+static int steps = 0;
 
 const char *menu_text_all = "All";
 const char *menu_text_platform = "Platform";
@@ -109,6 +110,12 @@ int menu_item_add( const char *text, int type, struct category *category ) {
 
 int menu_init( void ) {
 	struct category *category = category_first();
+	int frame_rate = config_get()->iface.frame_rate;
+	
+	if( frame_rate )
+		steps = frame_rate/4;
+	else
+		steps = MAX_STEPS;
 
 	if( menu_load_texture() != 0 ) {
 		return -1;
@@ -140,7 +147,7 @@ void menu_draw( void ) {
 	
 	while( item ) {
 		if( prev != selected ) {
-			if( step++ > STEPS ) {
+			if( step++ > steps ) {
 				step = 0;
 				prev = selected;
 			}
@@ -148,12 +155,12 @@ void menu_draw( void ) {
 
 		offset = ((GLfloat)count-((GLfloat)(menu_items-1)/2))/((GLfloat)menu_items/4)*xfactor;
 		if( item == prev ) {
-			zoom = (0.05*STEPS)-(0.05*(step+1));
-			alpha = 1.0-(((1.0-ALPHA_MIN)/STEPS)*step);
+			zoom = (0.05*steps)-(0.05*(step+1));
+			alpha = 1.0-(((1.0-ALPHA_MIN)/steps)*step);
 		}
 		else if ( item == selected ) {
 			zoom = 0.05*(step+1);
-			alpha = ALPHA_MIN+(((1.0-ALPHA_MIN)/STEPS)*step);
+			alpha = ALPHA_MIN+(((1.0-ALPHA_MIN)/steps)*step);
 		}
 		else {
 			zoom = 0;

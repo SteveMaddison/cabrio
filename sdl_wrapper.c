@@ -10,8 +10,10 @@
 static SDL_Surface *screen = NULL;
 
 static const int SDL_SCREEN_BPP = 32;
+static const int MAX_FRAME_RATE = 100;
 static const char *title = "Cabrio";
 static FPSmanager manager;
+static int frame_rate = 0;
 
 int sdl_init( void ) {
 	int mode = SDL_SWSURFACE|SDL_OPENGL;
@@ -31,7 +33,19 @@ int sdl_init( void ) {
 		return 1;
 	}
 	SDL_initFramerate( &manager );
-	SDL_setFramerate( &manager, 60 );
+	
+	frame_rate = config->iface.frame_rate;
+	if( frame_rate < 0 ) {
+		frame_rate = 0;
+		fprintf( stderr, "Warning: Negative frame rate, setting to 0 (unlimited)\n" );
+	}
+	if( frame_rate > MAX_FRAME_RATE ) {
+		frame_rate = MAX_FRAME_RATE;
+		fprintf( stderr, "Warning: Frame rate above maximum allowed (%d) setting to maximum\n", MAX_FRAME_RATE );
+	}
+	if( frame_rate ) {
+		SDL_setFramerate( &manager, frame_rate );
+	}
 	SDL_WM_SetCaption( title, NULL );
 	
 	return 0;
@@ -42,7 +56,9 @@ void sdl_free( void ) {
 }
 
 void sdl_frame_delay( void ) {
-	SDL_framerateDelay( &manager );
+	if( frame_rate ) {
+		SDL_framerateDelay( &manager );
+	}
 }
 
 void sdl_swap( void ) {

@@ -1,13 +1,15 @@
 #include <stdlib.h>
 #include <ctype.h>
+#include <math.h>
 #include "game_sel.h"
 #include "bg.h"
-#include "math.h"
+#include "config.h"
 
-static const int STEPS = 15;
 static const int IMAGE_SCALE = 128;
 static const int NUM_GAME_TILES = 11;
 static const int IDLE_TIME = 5;
+static const int MAX_STEPS = 25;
+static int steps = 0;
 
 struct game_tile *game_tile_start = NULL;
 struct game_tile *game_tile_end = NULL;
@@ -25,6 +27,12 @@ static int zoom = 0;
 int game_sel_init( int theme ) {
 	int i;
 	int mid = NUM_GAME_TILES/2;
+	int frame_rate = config_get()->iface.frame_rate;
+	
+	if( frame_rate )
+		steps = frame_rate/4;
+	else
+		steps = MAX_STEPS;
 	
 	for( i = 0 ; i < NUM_GAME_TILES ; i++ ) {
 		struct game_tile *tile = malloc(sizeof(struct game_tile));
@@ -151,18 +159,18 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 		GLfloat height = (((GLfloat)tile->game->image_height/IMAGE_SCALE)/2) * xfactor;
 		
 		glTranslatef(
-			(tile->pos[X] + (((dest->pos[X]-tile->pos[X])/STEPS)*step)) * xfactor,
-			tile->pos[Y] + (((dest->pos[Y]-tile->pos[Y])/STEPS)*step),
-			tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/STEPS)*step) -5.0
+			(tile->pos[X] + (((dest->pos[X]-tile->pos[X])/steps)*step)) * xfactor,
+			tile->pos[Y] + (((dest->pos[Y]-tile->pos[Y])/steps)*step),
+			tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/steps)*step) -5.0
 			);
 		if( zoom && tile == game_tile_current ) {
-			glTranslatef( 0.0, 0.0, (STEPS-zoom)/5 );
-			alpha = (1.0/STEPS)*(zoom);
+			glTranslatef( 0.0, 0.0, (steps-zoom)/5 );
+			alpha = (1.0/steps)*(zoom);
 			zoom--;
 		}
-		glRotatef( tile->angle[X] + (((dest->angle[X]-tile->angle[X])/STEPS)*step), 1.0, 0.0, 0.0 );
-		glRotatef( tile->angle[Y] + (((dest->angle[Y]-tile->angle[Y])/STEPS)*step), 0.0, 1.0, 0.0 );
-		glRotatef( tile->angle[Z] + (((dest->angle[Z]-tile->angle[Z])/STEPS)*step), 0.0, 0.0, 1.0 );
+		glRotatef( tile->angle[X] + (((dest->angle[X]-tile->angle[X])/steps)*step), 1.0, 0.0, 0.0 );
+		glRotatef( tile->angle[Y] + (((dest->angle[Y]-tile->angle[Y])/steps)*step), 0.0, 1.0, 0.0 );
+		glRotatef( tile->angle[Z] + (((dest->angle[Z]-tile->angle[Z])/steps)*step), 0.0, 0.0, 1.0 );
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
@@ -231,7 +239,7 @@ void game_sel_draw_step( int step ) {
 void game_sel_show( void ) {
 	if( !visible && !game_sel_busy() ) {
 		hide_direction = 1;
-		step = STEPS-1;
+		step = steps-1;
 		visible = 1;
 	}
 }
@@ -275,7 +283,7 @@ void game_sel_advance( void ) {
 	if( visible && !game_sel_busy() ) {
 		game_sel_shuffle_back();
 		scroll_direction = -1;
-		step = STEPS-1;
+		step = steps-1;
 	}
 }
 
@@ -346,7 +354,7 @@ void game_sel_draw( void ) {
 	if( visible ) {
 		if( scroll_direction != 0 ) {
 			step += scroll_direction;
-			if( step > STEPS-1 ) {
+			if( step > steps-1 ) {
 				game_sel_shuffle_forward();
 				game_tile_current = game_tile_current->next;
 				step = 0;
@@ -360,7 +368,7 @@ void game_sel_draw( void ) {
 		else {
 			step += -hide_direction;
 			game_sel_draw_step( step );
-			if( step > STEPS-1 || step == 0 ) {
+			if( step > steps-1 || step == 0 ) {
 				if( hide_direction < 0 ) {
 					visible = 0;
 				}
@@ -375,7 +383,7 @@ void game_sel_draw( void ) {
 }
 
 void game_sel_zoom( void ) {
-	zoom = STEPS;
+	zoom = steps;
 }
 
 void game_tile_add( struct game_tile *game ) {

@@ -44,6 +44,7 @@ static const char *config_tag_iface_screen_hflip	=     "flip-horizontal";
 static const char *config_tag_iface_screen_vflip	=     "flip-vertical";
 static const char *config_tag_iface_background		=   "background";
 static const char *config_tag_iface_controls		=   "controls";
+static const char *config_tag_iface_frame_rate		=   "frame-rate";
 /* General (reused) XML tags */
 static const char *config_tag_name					= "name";
 static const char *config_tag_value					= "value";
@@ -674,6 +675,9 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, config_tag_iface_controls ) == 0 ) {
 				config_read_controls( node->children );
 			}
+			else if( strcmp( (char*)node->name, config_tag_iface_frame_rate ) == 0 ) {
+				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.frame_rate );
+			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
 			}
@@ -945,6 +949,8 @@ int config_new( void ) {
 		strncpy( config.iface.background_image, BG_DEFAULT, CONFIG_FILE_NAME_LENGTH );
 		config.iface.background_rotation = 20;
 		config.iface.background_transparency = 75;
+		
+		config.iface.frame_rate = 60;
 		
 		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 			config.iface.controls[i].device_type = DEV_KEYBOARD;
