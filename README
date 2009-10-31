@@ -5,6 +5,7 @@ Cabrio is an emulator front-end primarily designed for use with arcade
 cabinets. It features a simple graphical interface which is easy to use
 with limited controls (e.g. a joystick).
 
+
 Installation
 ------------
 You will need the following libraries and their headers/development packages:
@@ -20,80 +21,11 @@ Compile the program by running 'make' in this directory. Install by running
 'make install' (this will usually have to be done as root, but the location
 can be edited in the Makefile).
 
+
 Configuration
 -------------
-The program is configured by means of the 'config.xml' file located in the
-user's home directory (~/.cabrio/config.xml). If this file does not exist on
-start-up it is created with default settings. Most of the tags are pretty
-self-explanatory. Games can be added in a section '<games>' under the root
-element, e.g.:
+Please see http://www.cabrio-fe.org/support/config.html
 
-<cabrio-config>
-  ...
-  <games>
-    <game>
-      <name>Pac Man</name>
-      <logo-image>/path/to/spacman.png</logo-image>
-      <rom-image>pacman.zip</rom-image>
-      <genre>Maze</genre>
-      <platform>Arcade</platform>
-      <params>
-        <param>
-          <name>-foo</name>
-          <value>bar</value>
-        </param>
-      </params>
-    </game>
-  </games>
-</cabrio-config>
-
-Controls
---------
-The default controls are as follows:
-
-  * Cursor/arrow keys: navigate
-  * Enter/return: select
-  * Backspace: Back
-  * Escape: Quit
-
-Custom controls can be configured by means of a <controls> section in the
-configuration file thus:
-
-<cabrio-config>
-  <interface>
-  ...
-    <controls>
-      <event>
-        <name>left</name>
-        <device>
-          <type>keyboard</type>
-        </device>
-        <value>q</value>
-      </event>
-      <event>
-        <name>select</name>
-        <device>
-          <type>joystick</type>
-          <id>0</id> <!-- this is the default -->
-        </device>
-        <control>
-          <type>hat</type>
-          <id>1</id>
-        </control>
-        <value>2</value>
-      </event>
-    </controls>
-  </interface>
-</cabrio-config>
-
-Valid event names are: up, down, left, right, select, back, quit.
-Valid device types are: keyboard, joystick, mouse.
-For joysticks, valid control types are: axis, button, hat, ball.
-Values for keys which are expressed as a string (any of the SDLK_* macros,
-minus their prefix).
-Values for directional controls (axis, hat or ball) are expressed as up,
-down, left or right.
-Other values (e.g. buttons) are numeric.
 
 License
 -------
