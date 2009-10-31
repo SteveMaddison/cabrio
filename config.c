@@ -138,6 +138,7 @@ struct config_platform *config_platform( const char *name ) {
 				fprintf( stderr, "Error: Couldn't create new platform configuration object" );
 			}
 			else {
+				memset( p, 0, sizeof(struct config_platform) );
 				strncpy( p->name, name, CONFIG_NAME_LENGTH );
 				p->next = config.platforms;
 				config.platforms = p;
@@ -259,6 +260,7 @@ struct config_category *config_category( const char *name ) {
 				fprintf( stderr, warn_alloc, config_tag_game_category );
 			}
 			else {
+				memset( c, 0, sizeof(struct config_category) );
 				strncpy( c->name, name, CONFIG_NAME_LENGTH );
 				c->next = config.categories;
 				config.categories = c;
@@ -288,6 +290,7 @@ struct config_category_value *config_category_value( struct config_category *cat
 					fprintf( stderr, warn_alloc, "category value" );
 				}
 				else {
+					memset( v, 0, sizeof(struct config_category_value) );
 					strncpy( v->name, name, CONFIG_NAME_LENGTH );
 					v->next = category->values;
 					category->values = v;
@@ -320,21 +323,21 @@ int config_read_game_category( xmlNode *node, struct config_game_category *gc ) 
 		}
 		node = node->next;
 	}
-	
+
 	if( gc->category ) {
 		if( value && *value ) {
 			gc->value = config_category_value( gc->category, value );
 		}
 		else {
-			fprintf( stderr, "Warning: '%s' with '%s' but no '%s'\n", node->name, config_tag_name, config_tag_value );
+			fprintf( stderr, "Warning: game category with '%s' but no '%s'\n", config_tag_name, config_tag_value );
 			return -1;
 		}
 	}
 	else {
-		fprintf( stderr, "Warning: '%s' with '%s' but no '%s'\n", node->name, config_tag_value, config_tag_name );
+		fprintf( stderr, "Warning: game category with '%s' but no '%s'\n", config_tag_value, config_tag_name );
 		return -1;
 	}
-	
+
 	return 0;
 }
 
@@ -344,9 +347,15 @@ int config_read_game_categories( xmlNode *node, struct config_game *game ) {
 			if( strcmp( (char*)node->name, config_tag_game_category ) == 0 ) {
 				struct config_game_category *gc = malloc( sizeof(struct config_game_category) );
 				if( gc ) {
-					config_read_game_category( node->children, gc );
-					gc->next = game->categories;
-					game->categories = gc;
+					memset( gc, 0, sizeof(struct config_game_category) );
+					if( config_read_game_category( node->children, gc ) == 0 ) {
+						gc->next = game->categories;
+						game->categories = gc;
+					}
+					else {
+						free( gc );
+						gc = NULL;
+					}
 				}
 				else {
 					fprintf( stderr, warn_alloc, config_tag_game_category );
