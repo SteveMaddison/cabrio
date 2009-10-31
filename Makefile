@@ -8,7 +8,7 @@ INCLUDES=-I./include -I/usr/include/libxml2
 INSTALL=/usr/bin/install -c
 
 cabrio: main.o ogl.o sdl_wrapper.o config.o bg.o menu.o game_sel.o \
-	game.o font.o hint.o genre.o platform.o submenu.o \
+	game.o font.o hint.o platform.o submenu.o \
 	sound.o event.o key.o control.o setup.o sdl_ogl.o \
 	category.o
 	$(CC) -o $@ $(LDFLAGS) $^

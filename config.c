@@ -49,7 +49,6 @@ static const char *config_tag_name					= "name";
 static const char *config_tag_value					= "value";
 static const char *config_tag_id					= "id";
 static const char *config_tag_display_name			= "display-name";
-static const char *config_tag_genre					= "genre";
 static const char *config_tag_platform				= "platform";
 static const char *config_tag_params				= "params";
 static const char *config_tag_param					= "param";
@@ -123,34 +122,6 @@ int config_read_percentage( char *name, char *value, int *target ) {
 	return 0;
 }
 
-struct config_genre *config_genre( const char *name ) {
-	struct config_genre *g = config.genres;
-
-	if( name && *name ) {
-		while( g ) {
-			if( strncasecmp( name, g->name, CONFIG_NAME_LENGTH ) == 0 )
-				break;
-			g = g->next;
-		}
-		if( g == NULL ) {
-			/* add new */
-			g = malloc( sizeof(struct config_genre) );
-			if( g == NULL ) {	
-				fprintf( stderr, "Error: Couldn't create new genre configuration object" );
-			}
-			else {
-				strncpy( g->name, name, CONFIG_NAME_LENGTH );
-				g->next = config.genres;
-				config.genres = g;
-			}
-		}
-	}
-	else {
-		g = NULL;
-	}
-	return g;
-}
-
 struct config_platform *config_platform( const char *name ) {
 	struct config_platform *p = config.platforms;
 
@@ -164,7 +135,7 @@ struct config_platform *config_platform( const char *name ) {
 			/* add new */
 			p = malloc( sizeof(struct config_platform) );
 			if( p == NULL ) {
-				fprintf( stderr, "Error: Couldn't create new genre configuration object" );
+				fprintf( stderr, "Error: Couldn't create new platform configuration object" );
 			}
 			else {
 				strncpy( p->name, name, CONFIG_NAME_LENGTH );
@@ -430,9 +401,6 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 			}
 			else if( strcmp( (char*)node->name, config_tag_game_background_image ) == 0 ) {
 				strncpy( game->background_image, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
-			}
-			else if( strcmp( (char*)node->name, config_tag_genre ) == 0 ) {
-				game->genre = config_genre( (char*)xmlNodeGetContent(node) );
 			}
 			else if( strcmp( (char*)node->name, config_tag_game_categories ) == 0 ) {
 				config_read_game_categories( node->children, game );
@@ -951,7 +919,6 @@ int config_new( void ) {
 		}		
 
 		config.games = NULL;
-		config.genres = NULL;
 		config.platforms = NULL;
 
 		config.iface.full_screen = 0;

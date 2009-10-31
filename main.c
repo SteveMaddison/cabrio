@@ -6,7 +6,6 @@
 #include "ogl.h"
 #include "font.h"
 #include "config.h"
-#include "genre.h"
 #include "category.h"
 #include "platform.h"
 #include "bg.h"
@@ -126,9 +125,6 @@ int main( int argc, char *arvg[] ) {
 			return -1;
 	}
 
-	if( genre_init() != 0 )
-		return -1;
-	
 	if( platform_init() != 0 )
 		return -1;
 

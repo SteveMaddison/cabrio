@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include "game.h"
 #include "config.h"
-#include "genre.h"
 #include "category.h"
 #include "platform.h"
 #include "ogl.h"
@@ -116,7 +115,6 @@ int game_list_create( void ) {
 			game->bg_image = config_game->background_image;
 			game->rom_path = config_game->rom_image;
 			game->params = config_game->params;
-			game->genre = config_game->genre ? genre_get( config_game->genre->name ) : genre_get( NULL );
 			game->platform = config_game->platform ? platform_get( config_game->platform->name ) : platform_get( NULL );
 			game->categories = NULL;
 			while( config_category ) {
@@ -169,33 +167,6 @@ int game_list_create( void ) {
 	}
 */
 	return 0;
-}
-
-int game_list_filter_genre( struct genre *genre ) {
-	int count = 0;
-	struct game *game = game_start;
-	
-	game_filter_start = NULL;
-	if( game && genre ) {
-		do {
-			if( game->genre == genre ) {
-				if( game_filter_start == NULL ) {
-					game_filter_start = game;
-					game->next = game;
-					game->prev = game;
-				}
-				else {
-					game->prev = game_filter_start->prev;
-					game_filter_start->prev->next = game;
-					game_filter_start->prev = game;
-					game->next = game_filter_start;
-				}
-				count++;
-			}
-			game = game->all_next;
-		} while ( game != game_start );
-	}
-	return count;
 }
 
 int game_list_filter_category( char *name, char *value ) {

@@ -2,7 +2,6 @@
 #include "sdl_ogl.h"
 #include "font.h"
 #include "game.h"
-#include "genre.h"
 #include "platform.h"
 #include "menu.h"
 

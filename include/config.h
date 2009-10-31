@@ -32,11 +32,6 @@ struct config_platform {
 	char name[CONFIG_NAME_LENGTH];
 };
 
-struct config_genre {
-	struct config_genre *next;
-	char name[CONFIG_NAME_LENGTH];
-};
-
 struct config_category_value {
 	struct config_category_value *next;
 	char name[CONFIG_NAME_LENGTH];
@@ -62,7 +57,6 @@ struct config_game {
 	char background_image[CONFIG_FILE_NAME_LENGTH];
 	struct config_game_category *categories;
 	struct config_param *params;
-	struct config_genre *genre;
 	struct config_platform *platform;
 };
 
@@ -90,7 +84,6 @@ struct config_iface {
 struct config {
 	struct config_emulator *emulators;
 	struct config_platform *platforms;
-	struct config_genre *genres;
 	struct config_category *categories;
 	struct config_game *games;
 	struct config_iface iface;
