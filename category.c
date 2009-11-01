@@ -23,6 +23,37 @@ void category_add( struct category *category, struct category *after ) {
 	count++;
 }
 
+int category_value_add_unknown( struct category *category ) {
+	if( category->has_unknowns ) {
+		return 1;
+	}
+	else {
+		struct category_value *value = malloc( sizeof(struct category_value) );
+		if( value ) {
+			value->name = NULL;
+			
+			if( category->values == NULL ) {
+				value->prev = value;
+				value->next = value;
+				category->values = value;
+			}
+			else {
+				value->next = category->values;
+				value->prev = category->values->prev;
+				category->values->prev->next = value;
+				category->values->prev = value;
+			}
+			category->value_count++;
+
+			return 0;
+		}
+		else {
+			fprintf( stderr, "Warning: Couldn't allocate new category value\n" );
+			return -1;
+		}
+	}
+}
+
 int category_value_add( struct category *category, char *name ) {
 	struct category_value *after = category->values;
 	struct category_value *category_value = malloc( sizeof(struct category_value) );

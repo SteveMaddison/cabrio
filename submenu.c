@@ -12,6 +12,7 @@ static int items = 0;
 static const GLfloat item_width = 1.2;
 static const GLfloat item_height = 0.3;
 static const GLfloat font_scale = 0.0035;
+static const char *VALUE_UNKNOWN = "???";
 
 struct category *prev_category = NULL;
 struct category *category = NULL;
@@ -59,7 +60,10 @@ int submenu_resume( void ) {
 		case( MENU_ALL ):
 			break;
 		case( MENU_CATEGORY ):
-			message = font_message_create( category_value->name );
+			if( category_value->name )
+				message = font_message_create( category_value->name );
+			else
+				message = font_message_create( VALUE_UNKNOWN );
 			break;
 		case( MENU_PLATFORM ):
 			message = font_message_create( platform->name );
@@ -92,7 +96,10 @@ int submenu_create( struct menu_item *item ) {
 			category = item->category;
 			if( category != prev_category )
 				category_value = category->values;
-			message = font_message_create( category_value->name );
+			if( category_value->name )
+				message = font_message_create( category_value->name );
+			else
+				message = font_message_create( VALUE_UNKNOWN );
 			items = category->value_count;
 			prev_category = category;
 			break;
@@ -117,7 +124,10 @@ void submenu_advance( void ) {
 			break;		
 		case( MENU_CATEGORY ):
 			category_value = category_value->next;
-			message = font_message_create( category_value->name );
+			if( category_value->name )
+				message = font_message_create( category_value->name );
+			else
+				message = font_message_create( VALUE_UNKNOWN );
 			break;
 		default:
 			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );
@@ -139,7 +149,10 @@ void submenu_retreat( void ) {
 			break;		
 		case( MENU_CATEGORY ):
 			category_value = category_value->prev;
-			message = font_message_create( category_value->name );
+			if( category_value->name )
+				message = font_message_create( category_value->name );
+			else
+				message = font_message_create( VALUE_UNKNOWN );
 			break;
 		default:
 			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );

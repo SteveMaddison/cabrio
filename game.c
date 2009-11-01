@@ -97,6 +97,21 @@ int game_list_resume( void ) {
 	return 0;
 }
 
+int game_add_category( struct game *game, char *name, char *value ) {
+	struct game_category *gc = malloc( sizeof(struct game_category) );
+	if( gc ) {
+		gc->name = name;
+		gc->value = value;
+		gc->next = game->categories;
+		game->categories = gc;
+	}
+	else {
+		fprintf( stderr, "Warning: Couldn't allocate category for game '%s'\n", game->name );
+		return -1;
+	}
+	return 0;
+}
+
 int game_list_create( void ) {
 	struct game *game = NULL;
 	struct game *prev = NULL;
@@ -108,7 +123,8 @@ int game_list_create( void ) {
 			return -1;
 		}
 		else {
-			struct config_game_category *config_category = config_game->categories;
+			struct config_game_category *config_game_category = config_game->categories;
+			struct category *category = category_first();
 			game->name = config_game->name;
 			game->logo_image = config_game->logo_image;
 			game_load_texture( game );
@@ -116,20 +132,30 @@ int game_list_create( void ) {
 			game->rom_path = config_game->rom_image;
 			game->params = config_game->params;
 			game->platform = config_game->platform ? platform_get( config_game->platform->name ) : platform_get( NULL );
+			
+			/* Add game categories. */
 			game->categories = NULL;
-			while( config_category ) {
-				struct game_category *gc = malloc( sizeof(struct game_category) );
-				if( gc ) {
-					gc->name = config_category->category->name;
-					gc->value = config_category->value->name;
-					gc->next = game->categories;
-					game->categories = gc;
-				}
-				else {
-					fprintf( stderr, "Warning: Couldn't allocate category for game '%s'\n", game->name );
-				}
-				config_category = config_category->next;
+			while( config_game_category ) {
+				game_add_category( game, config_game_category->category->name, config_game_category->value->name );
+				config_game_category = config_game_category->next;
 			}
+			
+			/* Fill in "unknown" values for categories undefined for this game. */
+			do {
+				struct game_category *gc = game->categories;
+				while( gc ) {
+					if( gc->name == category->name ) {
+						break;
+					}
+					gc = gc->next;
+				}
+				if( gc == NULL ) {
+					/* Category undefine for this game */
+					category_value_add_unknown( category );
+					game_add_category( game, category->name, NULL );
+				}
+				category = category->next;
+			} while( category != category_first() );
 			
 			/* insert into list (sort by name) */
 			prev = game_start;
@@ -179,20 +205,22 @@ int game_list_filter_category( char *name, char *value ) {
 		do {
 			category = game->categories;
 			while( category ) {
-				if( strcasecmp( category->value, value ) == 0
-				&&  strcasecmp( category->name, name ) == 0 ) {
-					if( game_filter_start == NULL ) {
-						game_filter_start = game;
-						game->next = game;
-						game->prev = game;
+				if( strcasecmp( category->name, name ) == 0 ) {
+					if(	(category->value == NULL && value == NULL)
+					||  (category->value && value && strcasecmp( category->value, value ) == 0) ) {
+						if( game_filter_start == NULL ) {
+							game_filter_start = game;
+							game->next = game;
+							game->prev = game;
+						}
+						else {
+							game->prev = game_filter_start->prev;
+							game_filter_start->prev->next = game;
+							game_filter_start->prev = game;
+							game->next = game_filter_start;
+						}
+						count++;
 					}
-					else {
-						game->prev = game_filter_start->prev;
-						game_filter_start->prev->next = game;
-						game_filter_start->prev = game;
-						game->next = game_filter_start;
-					}
-					count++;
 				}
 				category = category->next;
 			}

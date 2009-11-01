@@ -5,7 +5,7 @@
 struct platform *platform_start;
 static int count = 0;
 
-static struct platform platform_unknown = { NULL, NULL, "Unknown" };
+static struct platform platform_unknown = { NULL, NULL, "???" };
 
 int platform_count( void ) {
 	return count;

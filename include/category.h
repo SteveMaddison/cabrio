@@ -14,8 +14,9 @@ struct category_value {
 struct category {
 	struct category *next;
 	struct category *prev;
-	char *name;
 	struct category_value *values;
+	int has_unknowns;
+	char *name;
 	int value_count;
 };
 
@@ -24,6 +25,7 @@ int category_count( void );
 struct category *category_first( void );
 struct category *category_get( const char *name );
 struct category_value *category_get_value( struct category *category, const char *name );
+int category_value_add_unknown( struct category *category );
 
 #endif
 
