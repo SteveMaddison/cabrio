@@ -78,7 +78,9 @@ struct config_iface {
 	int frame_rate;
 	char background_image[CONFIG_FILE_NAME_LENGTH];
 	int background_rotation;
-	int background_transparency;	
+	int background_transparency;
+	char font_file[CONFIG_FILE_NAME_LENGTH];
+	int font_size;
 	struct config_control controls[NUM_EVENTS];
 };
 

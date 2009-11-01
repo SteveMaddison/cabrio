@@ -4,21 +4,39 @@
 #include "font.h"
 #include "sdl_ogl.h"
 
+static const int DEFAULT_FONT_SIZE = 50;
 static TTF_Font *font = NULL;
 static SDL_Color col = { 255, 255, 255 };
 
 int font_init( void ) {
+	const struct config *config = config_get();
+	int size;
+
 	if( TTF_Init() != 0 ) {
 		fprintf( stderr, "Error: Couldn't initialise font library: %s\n", TTF_GetError() );
 		return -1;
 	}
 	
-	font = TTF_OpenFont( DATA_DIR "/fonts/FreeSans.ttf", 50 );
-	if( font == NULL ) {
-		fprintf( stderr, "Error: Couldn't load font: %s\n", TTF_GetError() );
-		return -1;
-	}
 	
+	if( config->iface.font_size > 0 )
+		size = config->iface.font_size;
+	else
+		size = DEFAULT_FONT_SIZE;
+	
+	if( config->iface.font_file && *config->iface.font_file ) {
+		font = TTF_OpenFont( config->iface.font_file, size );
+		if( font == NULL ) {
+			fprintf( stderr, "Error: Couldn't load font '%s': %s\n", config->iface.font_file, TTF_GetError() );
+		}
+	}
+	if( font == NULL ) {
+		font = TTF_OpenFont( DATA_DIR "/fonts/FreeSans.ttf", size );
+		if( font == NULL ) {
+			fprintf( stderr, "Error: Couldn't load default font: %s\n", TTF_GetError() );
+			return -1;
+		}
+	}
+
 	return 0;
 }
 

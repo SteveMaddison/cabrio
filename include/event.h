@@ -31,6 +31,7 @@ int event_resume( void );
 int event_set( int id, struct event *event );
 struct event *event_get( int id );
 
+void event_flush( void );
 int event_poll( void );
 int event_probe( int timeout, struct event *event );
 int event_id( char *name );

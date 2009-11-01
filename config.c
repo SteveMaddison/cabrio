@@ -45,6 +45,8 @@ static const char *config_tag_iface_screen_vflip	=     "flip-vertical";
 static const char *config_tag_iface_background		=   "background";
 static const char *config_tag_iface_controls		=   "controls";
 static const char *config_tag_iface_frame_rate		=   "frame-rate";
+static const char *config_tag_iface_font			=   "font";
+static const char *config_tag_iface_font_file		=     "font-file";
 /* General (reused) XML tags */
 static const char *config_tag_name					= "name";
 static const char *config_tag_value					= "value";
@@ -62,6 +64,7 @@ static const char *config_tag_height				= "height";
 static const char *config_tag_transparency			= "transparency";
 static const char *config_tag_rotation				= "rotation";
 static const char *config_tag_image_file			= "image-file";
+static const char *config_tag_size					= "size";
 
 static const char *config_true = "true";
 static const char *config_false = "false";
@@ -612,6 +615,24 @@ int config_read_controls( xmlNode *node ) {
 	return 0;	
 }
 
+int config_read_font( xmlNode *node ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_iface_font_file ) == 0 ) {
+				strncpy( config.iface.font_file, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, config_tag_size ) == 0 ) {
+				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.font_size );
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_interface_background( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
@@ -677,6 +698,9 @@ int config_read_interface( xmlNode *node ) {
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_frame_rate ) == 0 ) {
 				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.frame_rate );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_font ) == 0 ) {
+				config_read_font( node->children );
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface, node->name );	

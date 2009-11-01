@@ -84,6 +84,11 @@ struct event *event_get( int id ) {
 	return &events[id];
 }
 
+void event_flush( void ) {
+	struct event e;
+	while( event_probe( 100, &e ) == 1 );
+}
+
 int event_poll( void ) {
 	SDL_Event sdl_event;
 	int i;

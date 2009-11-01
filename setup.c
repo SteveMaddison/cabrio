@@ -72,7 +72,7 @@ int setup( void ) {
 		setup_draw_msg( msg_event, -0.8, 0.005 );
 		sdl_swap();
 		/* Clear out any unwanted events */
-		while( event_probe( 100, &event ) == 1 );
+		event_flush();
 		/* Catch out wanted event */
 		while( event_probe( 100, &event ) != 1 );
 		event_set( i, &event );

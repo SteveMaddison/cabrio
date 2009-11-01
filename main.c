@@ -145,6 +145,9 @@ int main( int argc, char *arvg[] ) {
 
 	sound_init();
 	bg_init();
+	
+	/* Clear out any unwanted events before we hit the main loop */
+	event_flush();
 
 	while( !quit ) {
 		ogl_clear();
