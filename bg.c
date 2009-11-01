@@ -23,8 +23,12 @@ int bg_init( void ) {
 		}
 	}
 
-	angle_step = (GLfloat)config->iface.background_rotation/1000;
 	alpha = 1.0 - (GLfloat)(config->iface.background_transparency)/100;
+	
+	if( config->iface.frame_rate )
+		angle_step = (GLfloat)config->iface.background_rotation/((GLfloat)config->iface.frame_rate*20);
+	else 
+		angle_step = (GLfloat)config->iface.background_rotation/1000;
 
 	bg_clear();
 	return 0;

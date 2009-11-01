@@ -10,6 +10,7 @@ static const GLfloat ITEM_MAX_WIDTH = 1.0;
 static GLfloat item_height = 0.6;
 static GLfloat item_width = 1.0;
 static GLuint menu_texture = 0;
+static GLuint zoom_size = 1.6;
 static int steps = 0;
 
 const char *menu_text_all = "All";
@@ -113,7 +114,7 @@ int menu_init( void ) {
 	int frame_rate = config_get()->iface.frame_rate;
 	
 	if( frame_rate )
-		steps = frame_rate/4;
+		steps = frame_rate/3;
 	else
 		steps = MAX_STEPS;
 
@@ -155,11 +156,11 @@ void menu_draw( void ) {
 
 		offset = ((GLfloat)count-((GLfloat)(menu_items-1)/2))/((GLfloat)menu_items/4)*xfactor;
 		if( item == prev ) {
-			zoom = (0.05*steps)-(0.05*(step+1));
+			zoom = zoom_size - ((zoom_size/(GLfloat)steps) * ((GLfloat)step));
 			alpha = 1.0-(((1.0-ALPHA_MIN)/steps)*step);
 		}
 		else if ( item == selected ) {
-			zoom = 0.05*(step+1);
+			zoom = ((zoom_size/(GLfloat)steps) * (GLfloat)step);
 			alpha = ALPHA_MIN+(((1.0-ALPHA_MIN)/steps)*step);
 		}
 		else {

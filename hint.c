@@ -1,5 +1,6 @@
 #include "hint.h"
 #include "font.h"
+#include "config.h"
 #include "sdl_ogl.h"
 
 #define ORIENT_LEFT		0
@@ -10,6 +11,7 @@ static const GLfloat BUTTON_SIZE = 1.0;
 static const GLfloat ALPHA_MIN = 0.5;
 static const GLfloat ALPHA_STEP_SIZE = 0.02;
 static const GLfloat FONT_SCALE = 0.005;
+static const GLfloat ALPHA_STEP_MIN = 0.01;
 static GLfloat alpha = 1.0;
 static GLfloat alpha_step = 0.01;
 static GLuint arrow_texture = 0;
@@ -19,12 +21,19 @@ struct font_message *text_select_message = 0;
 struct font_message *text_back_message = 0;
 
 int hint_init( void ) {
-	int x,y;
-	arrow_texture = sdl_create_texture( DATA_DIR "/pixmaps/arrow.png", &x, &y );
-	back_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_blue.png", &x, &y );
-	select_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_red.png", &x, &y );
+	int frame_rate = config_get()->iface.frame_rate;
+	
+	arrow_texture = sdl_create_texture( DATA_DIR "/pixmaps/arrow.png", NULL, NULL );
+	back_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_blue.png", NULL, NULL );
+	select_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_red.png", NULL, NULL );
 	text_select_message = font_message_create( "Select" );
 	text_back_message = font_message_create( "Back" );
+	
+	if( frame_rate )
+		alpha_step = frame_rate/6000;
+	else
+		alpha_step = ALPHA_STEP_MIN;
+	
 	return 0;
 }
 
