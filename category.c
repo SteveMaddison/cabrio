@@ -45,6 +45,7 @@ int category_value_add_unknown( struct category *category ) {
 			}
 			category->value_count++;
 
+			category->has_unknowns = 1;
 			return 0;
 		}
 		else {
