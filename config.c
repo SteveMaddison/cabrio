@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#ifdef __unix__
 #include <pwd.h>
+#endif
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -985,17 +987,25 @@ int config_new( void ) {
 }
 
 int config_create( void ) {
+#ifdef __unix__
 	struct passwd *passwd = getpwuid(getuid());
+#endif
 	char dirname[CONFIG_FILE_NAME_LENGTH];
 	DIR *dir;
 
+#ifdef __unix__
 	if( passwd == NULL ) {
 		fprintf( stderr, "Error: Couldn't fetch user's home directory\n" );
 		return -1;
 	}
+#endif
 	
 	/* Check if directory exists and attempt to create if not */
+#ifdef __unix__
 	snprintf( dirname, CONFIG_FILE_NAME_LENGTH, "%s/%s", passwd->pw_dir, config_default_dir );
+#else
+	snprintf( dirname, CONFIG_FILE_NAME_LENGTH, "./%s", config_default_dir );
+#endif
 	dir = opendir( dirname );
 	if( dir == NULL ) {
 		switch( errno ) {
@@ -1004,7 +1014,11 @@ int config_create( void ) {
 				return -1;
 				break;
 			case ENOENT:
+#ifdef __unix__
 				if( mkdir( dirname, 0755 ) != 0 ) {
+#else
+				if( mkdir( dirname ) != 0 ) {
+#endif
 					fprintf( stderr, "Warning: Can't create default config directory '%s'\n", dirname );
 					return -1;
 				}
@@ -1036,15 +1050,19 @@ int config_open( const char *filename ) {
 	}
 	else {
 		/* Determine (path to) default config file */
-		struct passwd *passwd = getpwuid(getuid());
 		FILE *file;
+#ifdef __unix__
+		struct passwd *passwd = getpwuid(getuid());
 
 		if( passwd == NULL ) {
 			fprintf( stderr, "Error: Couldn't fetch user's home directory\n" );
 			return -1;
 		}
-	
+
 		snprintf( config_filename, CONFIG_FILE_NAME_LENGTH, "%s/%s/%s", passwd->pw_dir, config_default_dir, config_default_file );
+#else
+		snprintf( config_filename, CONFIG_FILE_NAME_LENGTH, "./%s/%s", config_default_dir, config_default_file );
+#endif
 		file = fopen( config_filename, "r" );
 		if( file == NULL ) {
 			switch( errno ) {

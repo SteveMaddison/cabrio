@@ -44,10 +44,38 @@ SDL_Surface *resize( SDL_Surface *surface ) {
 		y>>=1;
 
 	if( x != surface->w || y != surface->h ) {
-		SDL_Surface *tmp = zoomSurface( surface, (double)x/(double)surface->w, (double)y/(double)surface->h, 0 );
-		resized = SDL_DisplayFormatAlpha( tmp ); 
+		SDL_Surface *tmp = NULL;
+		unsigned int dx,dy;
+		double sx = (double)x/(double)surface->w;
+		double sy = (double)y/(double)surface->h;
+		
+		do {
+			zoomSurfaceSize( surface->w, surface->h, sx, sy, &dx, &dy );
+			printf( "w:%f h:%f -> x:%d y:%d &=%d\n", sx, sy, dx, dy, (dx & (dx-1)) );
+			if( (dx & (dx-1)) != 0 ) {
+				if( (dx & (dx-1)) == 1 ) {
+					sx =- 0.001;
+				}
+				else {
+					sx += 0.001;
+				}
+			}
+			if( (dy & (dy-1)) != 0 ) {
+				if( (dy & (dy-1)) == 1 ) {
+					sy =- 0.001;
+				}
+				else {
+					sy += 0.001;
+				}
+			}
+	    } while( (dx & (dx-1)) != 0 && (dy & (dy-1)) != 0 );
+		
+		tmp = zoomSurface( surface, sx, sy, 0 );
+		printf("resized: %d x %d", tmp->w, tmp->h );
+		resized = SDL_DisplayFormatAlpha( tmp );
 		SDL_FreeSurface( tmp );
 	}
+	
 	return resized;
 }
 

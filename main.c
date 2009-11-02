@@ -1,6 +1,8 @@
 #include <unistd.h>
 #include <sys/types.h>
+#ifdef __unix__
 #include <sys/wait.h>
+#endif
 
 #include "sdl_wrapper.h"
 #include "ogl.h"
@@ -77,6 +79,7 @@ int run( struct game *game ) {
 	}
 	printf( "\n" );
 
+#ifdef __unix__
 	pid_t pid = fork();
 	if (pid == 0) {
 		execvp( config->emulators->executable, params );
@@ -86,6 +89,7 @@ int run( struct game *game ) {
 		return -1;
 	}
 	wait( NULL );
+#endif
 	return 0;
 }
 

@@ -1,0 +1,21 @@
+CC=gcc
+DATA_DIR=data
+CFLAGS=-g -Wall -DDATA_DIR=\"$(DATA_DIR)\"
+LDFLAGS=SDL.dll SDL_gfx.dll SDL_image.dll SDL_mixer.dll SDL_ttf.dll freetype.dll \
+	glut.dll iconv.dll libxml2.dll -lglu32 -lopengl32
+
+INCLUDES=-I./include -I/usr/include/libxml2
+
+INSTALL=/usr/bin/install -c
+
+cabrio: main.o ogl.o sdl_wrapper.o config.o bg.o menu.o game_sel.o \
+	game.o font.o hint.o platform.o submenu.o \
+	sound.o event.o key.o control.o setup.o sdl_ogl.o \
+	category.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+.c.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
+
+clean:
+	rm -f cabrio *.o core
