@@ -4,6 +4,7 @@
 static int width = 0;
 static int height = 0;
 static int rotation = 0;
+static int nopt_textures = 0;
 static GLfloat xscale = 1.0;
 static GLfloat yscale = 1.0;
 
@@ -39,6 +40,9 @@ int ogl_init( void ) {
 	
 	ogl_screen_rotate( config->iface.screen_rotation );	
 	ogl_load_alterego();
+
+	if( strstr( glGetString(GL_EXTENSIONS), "GL_ARB_texture_non_power_of_two" ) != NULL )
+		nopt_textures = 1;
 
 	error = glGetError();
 	if( error == GL_NO_ERROR ) {
@@ -110,3 +114,6 @@ void ogl_flush( void ) {
 	glFlush();
 }
 
+int ogl_nopt_textures( void ) {
+	return nopt_textures;	
+}

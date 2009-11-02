@@ -21,6 +21,7 @@ void ogl_screen_rotate( int angle );
 void ogl_free_texture( GLuint *t );
 void ogl_clear( void );
 void ogl_flush( void );
+int ogl_nopt_textures( void );
 
 #endif
 

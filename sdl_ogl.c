@@ -50,7 +50,7 @@ SDL_Surface *resize( SDL_Surface *surface ) {
 		double sy = (double)y/(double)surface->h;
 		
 		/* Before we resize, check the result is definitely a power
-		   of two, as this can go wrong due to rounding errors. */
+		 * of two, as this can go wrong due to rounding errors. */
 		do {
 			zoomSurfaceSize( surface->w, surface->h, sx, sy, &dx, &dy );
 			if( (dx & (dx-1)) != 0 ) {
@@ -90,7 +90,12 @@ int ogl_create_texture( SDL_Surface* surface, GLuint *texture ) {
 		fprintf(stderr, "Error: Can't create texture from NULL surface.\n" );
 		return -1;
 	}
-	new = resize( surface );
+	if( ogl_nopt_textures() == 0 ) {
+		/* This OpenGL implementation only supports textures with power-of-two
+		 * dimensions, so we need to resize the surface before going further */
+		new = resize( surface );
+	}
+	
 	work = new ? new : surface;
 	
 	/* determine image format */
