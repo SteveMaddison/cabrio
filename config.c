@@ -49,6 +49,10 @@ static const char *config_tag_iface_controls		=   "controls";
 static const char *config_tag_iface_frame_rate		=   "frame-rate";
 static const char *config_tag_iface_font			=   "font";
 static const char *config_tag_iface_font_file		=     "font-file";
+static const char *config_tag_iface_gfx				=   "graphics";
+static const char *config_tag_iface_gfx_quality		=     "quality";
+static const char *config_tag_iface_gfx_max_width	=     "max-width";
+static const char *config_tag_iface_gfx_max_height	=     "max-height";
 /* General (reused) XML tags */
 static const char *config_tag_name					= "name";
 static const char *config_tag_value					= "value";
@@ -68,8 +72,14 @@ static const char *config_tag_rotation				= "rotation";
 static const char *config_tag_image_file			= "image-file";
 static const char *config_tag_size					= "size";
 
-static const char *config_true = "true";
-static const char *config_false = "false";
+static const char *config_empty		= "";
+static const char *config_true		= "true";
+static const char *config_false		= "false";
+static const char *config_yes		= "yes";
+static const char *config_no		= "no";
+static const char *config_low		= "low";
+static const char *config_medium	= "medium";
+static const char *config_high		= "high";
 
 static const char *warn_alloc = "Warning: Couldn't allocate memory for '%s' object\n";
 static const char *warn_skip = "Warning: Skipping unrecognised XML element in '%s': '%s'\n";
@@ -83,12 +93,29 @@ const struct config *config_get( void ) {
 }
 
 int config_read_boolean( char *name, char *value, int *target ) {
-	if( strcasecmp( value, "yes" ) == 0 ||  strcasecmp( value, "true" ) == 0 ) {
+	if( strcasecmp( value, config_yes ) == 0 ||  strcasecmp( value, config_true ) == 0 ) {
 		*target = 1;
 		return 0;
 	}
-	else if( strcasecmp( value, "no" ) == 0 ||  strcasecmp( value, "false" ) == 0 ) {
+	else if( strcasecmp( value, config_no ) == 0 ||  strcasecmp( value, config_false ) == 0 ) {
 		*target = 0;
+		return 0;
+	}
+	return -1;
+}
+
+/* Low, medium, high */
+int config_read_lmh( char *name, char *value, int *target ) {
+	if( strcasecmp( value, config_low ) == 0 ) {
+		*target = CONFIG_LOW;
+		return 0;
+	}
+	else if( strcasecmp( value, config_medium ) == 0 ) {
+		*target = CONFIG_MEDIUM;
+		return 0;
+	}
+	else if( strcasecmp( value, config_high ) == 0 ) {
+		*target = CONFIG_HIGH;
 		return 0;
 	}
 	return -1;
@@ -617,6 +644,27 @@ int config_read_controls( xmlNode *node ) {
 	return 0;	
 }
 
+int config_read_graphics( xmlNode *node ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_iface_gfx_quality ) == 0 ) {
+				config_read_lmh( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_quality );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_gfx_max_width ) == 0 ) {
+				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_max_width );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_gfx_max_height ) == 0 ) {
+				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_max_height );
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_font( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
@@ -704,6 +752,9 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, config_tag_iface_font ) == 0 ) {
 				config_read_font( node->children );
 			}
+			else if( strcmp( (char*)node->name, config_tag_iface_gfx ) == 0 ) {
+				config_read_graphics( node->children );
+			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
 			}
@@ -751,6 +802,16 @@ xmlChar *config_write_boolean( int value ) {
 		return (xmlChar*)config_true;
 	else
 		return (xmlChar*)config_false;
+}
+
+/* Low, medium, high */
+xmlChar *config_write_lmh( int value ) {
+	switch( value ) {
+		case CONFIG_LOW: return (xmlChar*)config_low;
+		case CONFIG_MEDIUM: return (xmlChar*)config_medium;
+		case CONFIG_HIGH: return (xmlChar*)config_high;
+	}
+	return (xmlChar*)config_empty;
 }
 
 xmlChar *config_write_numeric( int value ) {
@@ -819,6 +880,12 @@ int config_write_interface( void ) {
 	xmlNewChild( background, NULL, (xmlChar*)config_tag_rotation, config_write_numeric( config.iface.background_rotation ) );
 	xmlNewChild( background, NULL, (xmlChar*)config_tag_transparency, config_write_percentage( config.iface.background_transparency ) );
 	xmlAddChild( interface, background );
+
+	xmlNodePtr graphics = xmlNewNode( NULL, (xmlChar*)config_tag_iface_gfx );
+	xmlNewChild( graphics, NULL, (xmlChar*)config_tag_iface_gfx_quality, (xmlChar*)config.iface.gfx_quality );
+	xmlNewChild( graphics, NULL, (xmlChar*)config_tag_iface_gfx_max_width, config_write_numeric( config.iface.gfx_max_width ) );
+	xmlNewChild( graphics, NULL, (xmlChar*)config_tag_iface_gfx_max_height, config_write_percentage( config.iface.gfx_max_height ) );
+	xmlAddChild( interface, graphics );
 	
 	xmlNodePtr controls = xmlNewNode( NULL, (xmlChar*)config_tag_iface_controls );
 
@@ -975,6 +1042,10 @@ int config_new( void ) {
 		strncpy( config.iface.background_image, BG_DEFAULT, CONFIG_FILE_NAME_LENGTH );
 		config.iface.background_rotation = 20;
 		config.iface.background_transparency = 75;
+		
+		config.iface.gfx_quality = CONFIG_HIGH;
+		config.iface.gfx_max_width = 512;
+		config.iface.gfx_max_height = 512;
 		
 		config.iface.frame_rate = 60;
 		

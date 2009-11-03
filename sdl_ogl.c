@@ -2,9 +2,7 @@
 #include <SDL/SDL_rotozoom.h>
 #include <SDL/SDL_image.h>
 #include "sdl_ogl.h"
-
-#define TEXTURE_MAX_WIDTH 512
-#define TEXTURE_MAX_HEIGHT 256
+#include "config.h"
 
 unsigned int next_power_of_two( unsigned int x ) {
         int i = 0;
@@ -29,18 +27,19 @@ SDL_Surface *sdl_load_image( const char *filename ) {
 }
 
 SDL_Surface *resize( SDL_Surface *surface ) {
+	const struct config *config = config_get();
 	unsigned int x = surface->w;
 	unsigned int y = surface->h;
 	SDL_Surface *resized = NULL;
 
 	if( (surface->w & (surface->w-1)) != 0 )
 		x = next_power_of_two( surface->w );
-	while( x > TEXTURE_MAX_WIDTH )
+	while( x > config->iface.gfx_max_width )
 		x>>=1;
 
 	if( (surface->h & (surface->h-1)) != 0 )
 		y = next_power_of_two( surface->w );
-	while( y > TEXTURE_MAX_HEIGHT )
+	while( y > config->iface.gfx_max_height )
 		y>>=1;
 
 	if( x != surface->w || y != surface->h ) {
@@ -80,11 +79,16 @@ SDL_Surface *resize( SDL_Surface *surface ) {
 }
 
 int ogl_create_texture( SDL_Surface* surface, GLuint *texture ) {
+	const struct config *config = config_get();
 	SDL_Surface *new = NULL;
 	SDL_Surface *work = NULL;
 	GLint bpp;
 	GLenum format = 0;
 	GLenum error = GL_NO_ERROR;
+	GLuint filter = GL_LINEAR;
+	
+	if( config->iface.gfx_quality != CONFIG_HIGH )
+		filter = GL_NEAREST;
 	
 	if( surface == NULL ) {
 		fprintf(stderr, "Error: Can't create texture from NULL surface.\n" );
@@ -126,8 +130,8 @@ int ogl_create_texture( SDL_Surface* surface, GLuint *texture ) {
 	glBindTexture( GL_TEXTURE_2D, *texture );
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter );
 	glTexImage2D( GL_TEXTURE_2D, 0, bpp, work->w, work->h, 0, format, GL_UNSIGNED_BYTE, work->pixels );
 
 	if( work != surface )

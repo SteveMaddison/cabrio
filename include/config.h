@@ -12,6 +12,12 @@
 #define CONFIG_PARAM_LENGTH		64
 #define CONFIG_MAX_PARAMS		32
 
+enum lhm_t {
+	CONFIG_LOW,
+	CONFIG_MEDIUM,
+	CONFIG_HIGH
+};
+
 struct config_param {
 	struct config_param *next;
 	char name[CONFIG_PARAM_LENGTH];
@@ -81,6 +87,9 @@ struct config_iface {
 	int background_transparency;
 	char font_file[CONFIG_FILE_NAME_LENGTH];
 	int font_size;
+	int gfx_quality;
+	int gfx_max_width;
+	int gfx_max_height;
 	struct config_control controls[NUM_EVENTS];
 };
 
