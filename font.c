@@ -26,12 +26,6 @@ int font_init( void ) {
 		font = TTF_OpenFont( config->iface.font_file, size );
 		if( font == NULL ) {
 			fprintf( stderr, "Error: Couldn't load font '%s': %s\n", config->iface.font_file, TTF_GetError() );
-		}
-	}
-	if( font == NULL ) {
-		font = TTF_OpenFont( DATA_DIR "/fonts/FreeSans.ttf", size );
-		if( font == NULL ) {
-			fprintf( stderr, "Error: Couldn't load default font: %s\n", TTF_GetError() );
 			return -1;
 		}
 	}

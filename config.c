@@ -20,10 +20,14 @@
 
 struct config config;
 
-#ifdef __unix__
+#ifdef __WIN32__
+static const char *config_default_font = "\\fonts\\FreeSans.ttf";
+#else
 static const char *config_default_dir = ".cabrio"; /* Relative to user's home */
+static const char *config_default_font = "/fonts/FreeSans.ttf";
 #endif
 static const char *config_default_file = "config.xml";
+
 static char config_filename[CONFIG_FILE_NAME_LENGTH] = "";
 
 /* Defaults */
@@ -1044,6 +1048,9 @@ int config_new( void ) {
 		strncpy( config.iface.background_image, BG_DEFAULT, CONFIG_FILE_NAME_LENGTH );
 		config.iface.background_rotation = 20;
 		config.iface.background_transparency = 75;
+		
+		snprintf( config.iface.font_file, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_font );
+		config.iface.font_size = 50;
 		
 		config.iface.gfx_quality = CONFIG_HIGH;
 		config.iface.gfx_max_width = 512;
