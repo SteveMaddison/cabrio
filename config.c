@@ -20,7 +20,9 @@
 
 struct config config;
 
+#ifdef __unix__
 static const char *config_default_dir = ".cabrio"; /* Relative to user's home */
+#endif
 static const char *config_default_file = "config.xml";
 static char config_filename[CONFIG_FILE_NAME_LENGTH] = "";
 
@@ -882,11 +884,11 @@ int config_write_interface( void ) {
 	xmlAddChild( interface, background );
 
 	xmlNodePtr graphics = xmlNewNode( NULL, (xmlChar*)config_tag_iface_gfx );
-	xmlNewChild( graphics, NULL, (xmlChar*)config_tag_iface_gfx_quality, (xmlChar*)config.iface.gfx_quality );
+	xmlNewChild( graphics, NULL, (xmlChar*)config_tag_iface_gfx_quality, config_write_lmh( config.iface.gfx_quality ) );
 	xmlNewChild( graphics, NULL, (xmlChar*)config_tag_iface_gfx_max_width, config_write_numeric( config.iface.gfx_max_width ) );
-	xmlNewChild( graphics, NULL, (xmlChar*)config_tag_iface_gfx_max_height, config_write_percentage( config.iface.gfx_max_height ) );
+	xmlNewChild( graphics, NULL, (xmlChar*)config_tag_iface_gfx_max_height, config_write_numeric( config.iface.gfx_max_height ) );
 	xmlAddChild( interface, graphics );
-	
+
 	xmlNodePtr controls = xmlNewNode( NULL, (xmlChar*)config_tag_iface_controls );
 
 	for( i = 1 ; i < NUM_EVENTS ; i++ ) {
@@ -1075,7 +1077,7 @@ int config_create( void ) {
 #ifdef __unix__
 	snprintf( dirname, CONFIG_FILE_NAME_LENGTH, "%s/%s", passwd->pw_dir, config_default_dir );
 #else
-	snprintf( dirname, CONFIG_FILE_NAME_LENGTH, "./%s", config_default_dir );
+	strcpy( dirname, "." );
 #endif
 	dir = opendir( dirname );
 	if( dir == NULL ) {
@@ -1132,7 +1134,7 @@ int config_open( const char *filename ) {
 
 		snprintf( config_filename, CONFIG_FILE_NAME_LENGTH, "%s/%s/%s", passwd->pw_dir, config_default_dir, config_default_file );
 #else
-		snprintf( config_filename, CONFIG_FILE_NAME_LENGTH, "./%s/%s", config_default_dir, config_default_file );
+		strcpy( config_filename, config_default_file );
 #endif
 		file = fopen( config_filename, "r" );
 		if( file == NULL ) {

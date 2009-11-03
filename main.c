@@ -208,6 +208,8 @@ int main( int argc, char *arvg[] ) {
 	sound_init();
 	bg_init();
 
+	event_flush();
+
 	while( !quit ) {
 		ogl_clear();
 		bg_draw();

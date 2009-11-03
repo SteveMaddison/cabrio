@@ -61,6 +61,10 @@ int setup( void ) {
 		return -1;
 	}
 
+	ogl_clear();
+	sdl_swap();
+	event_flush();
+	SDL_Delay( 500 );
 
 	for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 		msg_event = font_message_create( event_name(i) );
