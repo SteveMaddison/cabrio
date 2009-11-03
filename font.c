@@ -12,16 +12,16 @@ int font_init( void ) {
 	const struct config *config = config_get();
 	int size;
 
-	if( TTF_Init() != 0 ) {
-		fprintf( stderr, "Error: Couldn't initialise font library: %s\n", TTF_GetError() );
-		return -1;
-	}
-	
 	if( config->iface.font_size > 0 )
 		size = config->iface.font_size;
 	else
 		size = DEFAULT_FONT_SIZE;
-	
+
+	if( TTF_Init() != 0 ) {
+		fprintf( stderr, "Error: Couldn't initialise font library: %s\n", TTF_GetError() );
+		return -1;
+	}
+		
 	if( config->iface.font_file && *config->iface.font_file ) {
 		font = TTF_OpenFont( config->iface.font_file, size );
 		if( font == NULL ) {
@@ -69,6 +69,7 @@ void font_message_free( struct font_message *m ) {
 
 struct font_message *font_message_create( const char *text ) {
 	struct font_message *m = malloc( sizeof(struct font_message) );
+
 	if( m == NULL ) {
 		fprintf( stderr, "Error: Couldn't allocate meneory for text object '%s'\n", text );
 		return NULL;
