@@ -42,7 +42,7 @@ int ogl_init( void ) {
 	ogl_screen_rotate( config->iface.screen_rotation );	
 	ogl_load_alterego();
 
-	if( strstr( glGetString(GL_EXTENSIONS), "GL_ARB_texture_non_power_of_two" ) != NULL )
+	if( strstr( (char*)glGetString(GL_EXTENSIONS), "GL_ARB_texture_non_power_of_two" ) != NULL )
 		nopt_textures = 1;
 
 	error = glGetError();

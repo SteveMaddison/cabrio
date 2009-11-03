@@ -44,7 +44,7 @@ SDL_Surface *resize( SDL_Surface *surface ) {
 
 	if( x != surface->w || y != surface->h ) {
 		SDL_Surface *tmp = NULL;
-		unsigned int dx,dy;
+		int dx,dy;
 		double sx = (double)x/(double)surface->w;
 		double sy = (double)y/(double)surface->h;
 		
