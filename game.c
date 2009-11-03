@@ -141,21 +141,23 @@ int game_list_create( void ) {
 			}
 			
 			/* Fill in "unknown" values for categories undefined for this game. */
-			do {
-				struct game_category *gc = game->categories;
-				while( gc ) {
-					if( gc->name == category->name ) {
-						break;
+			if( category) {
+				do {
+					struct game_category *gc = game->categories;
+					while( gc ) {
+						if( gc->name == category->name ) {
+							break;
+						}
+						gc = gc->next;
 					}
-					gc = gc->next;
-				}
-				if( gc == NULL ) {
-					/* Category undefine for this game */
-					category_value_add_unknown( category );
-					game_add_category( game, category->name, NULL );
-				}
-				category = category->next;
-			} while( category != category_first() );
+					if( gc == NULL ) {
+						/* Category undefine for this game */
+						category_value_add_unknown( category );
+						game_add_category( game, category->name, NULL );
+					}
+					category = category->next;
+				} while( category != category_first() );
+			}			
 			
 			/* insert into list (sort by name) */
 			prev = game_start;
