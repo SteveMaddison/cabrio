@@ -32,8 +32,7 @@ int menu_item_count( void ) {
 }
 
 int menu_load_texture( void ) {
-	int x,y;
-	menu_texture = sdl_create_texture( DATA_DIR "/pixmaps/menu_item.png", &x ,&y );
+	menu_texture = sdl_create_texture( DATA_DIR "/pixmaps/menu_item.png", NULL ,NULL );
 	if( menu_texture == 0 ) {
 		fprintf( stderr, "Warning: Couldn't create texture for menu items\n" );
 		return -1;

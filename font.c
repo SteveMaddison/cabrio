@@ -17,7 +17,6 @@ int font_init( void ) {
 		return -1;
 	}
 	
-	
 	if( config->iface.font_size > 0 )
 		size = config->iface.font_size;
 	else
@@ -72,8 +71,9 @@ struct font_message *font_message_create( const char *text ) {
 	struct font_message *m = malloc( sizeof(struct font_message) );
 	if( m == NULL ) {
 		fprintf( stderr, "Error: Couldn't allocate meneory for text object '%s'\n", text );
+		return NULL;
 	}
-	else {	
+	else {
 		SDL_Surface *s = font_render( text );
 		if( s ) {
 			ogl_create_texture( s, &m->texture );

@@ -3,6 +3,9 @@
 #ifdef __unix__
 #include <sys/wait.h>
 #endif
+#ifdef __WIN32__
+#include <windows.h>
+#endif
 
 #include "sdl_wrapper.h"
 #include "ogl.h"
@@ -32,23 +35,39 @@ void pause_all( void ) {
 	event_pause();
 }
 
-void resume_all( void ) {
-	event_resume();
-	bg_resume();
-	font_resume();
-	hint_resume();
-	menu_resume();
-	submenu_resume();
-	game_list_resume();
-	sound_resume();
+int resume_all( void ) {
+	if( event_resume() != 0 )
+		return -1;
+	if( bg_resume() != 0 )
+		return -2;
+	if( font_resume() != 0 )
+		return -3;
+	if( hint_resume() != 0 )
+		return -4;
+	if( menu_resume() != 0 )
+		return -5;
+	if( submenu_resume() != 0 )
+		return -6;
+	if( game_list_resume() != 0 )
+		return -7;
+	if( sound_resume() != 0 )
+		return -8;
+
+	return 0;
 }
 
 int run( struct game *game ) {
 	char *params[CONFIG_MAX_PARAMS];
 	struct config_param *param = NULL;
-	int count,i = 0;
+	int i;
+	int count = 0;
 	const struct config *config = config_get();
-	
+#ifdef __WIN32__
+	PROCESS_INFORMATION pi;
+	STARTUPINFO si;
+	char cmdline[CONFIG_MAX_CMD_LENGTH];
+#endif
+
 	if( config->emulators && config->emulators->executable ) {
 		param = config->emulators->params;
 		while( param ) {
@@ -69,17 +88,27 @@ int run( struct game *game ) {
 	}
 	else {
 		fprintf(stderr, "Error: No suitable emulator found in configuration\n");
+		return -1;
 	}
-	params[count++] = game->rom_path;
-	params[count] = NULL;
 	
+	if( game && game->rom_path && game->rom_path[0] ) {
+		params[count++] = game->rom_path;
+	}
+	else {
+		fprintf(stderr, "Error: No ROM image specified for game\n");
+		return -1;		
+	}
+	
+#ifdef __unix__
+	/* Terminate param list */
+	params[count] = NULL;
+
 	printf( "Executing: %s", config->emulators->executable );
 	for( i = 0 ; i < count ; i++ ) {
 		printf( " %s", params[i] );
 	}
 	printf( "\n" );
 
-#ifdef __unix__
 	pid_t pid = fork();
 	if (pid == 0) {
 		execvp( config->emulators->executable, params );
@@ -89,6 +118,35 @@ int run( struct game *game ) {
 		return -1;
 	}
 	wait( NULL );
+#endif
+#ifdef __WIN32__
+	memset( &pi, 0, sizeof(PROCESS_INFORMATION));
+	memset( &si, 0, sizeof(STARTUPINFO));
+
+	strncpy( cmdline, config->emulators->executable, CONFIG_MAX_CMD_LENGTH );
+	for( i = 0 ; i < count ; i++ ) {
+		if( strlen(cmdline) + strlen(params[i]) + 2 <= CONFIG_MAX_CMD_LENGTH ) {
+			strcat( cmdline, " " );
+			strcat( cmdline, params[i] );
+		}
+		else {
+			fprintf( stderr, "Warning: No spcae for parameter: '%s'\n", params[i] );
+			break;
+		}
+	}
+	printf( "Executing: %s\n", cmdline );
+	
+	if( CreateProcess( NULL, cmdline, 0, 0, 0, 0, 0, 0, &si, &pi ) ) {
+		WaitForSingleObject(pi.hProcess, INFINITE);
+	    CloseHandle(pi.hProcess);
+	    CloseHandle(pi.hThread);
+	}
+	else {
+		LPTSTR s;
+		FormatMessage( (FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM),
+            NULL, GetLastError(), 0, (LPTSTR)&s, 0, NULL );
+		fprintf( stderr, "Warning: failed to execute: %s\n", s );
+	}
 #endif
 	return 0;
 }
@@ -261,6 +319,7 @@ int main( int argc, char *arvg[] ) {
 		sdl_frame_delay();
 
 		if( to_run && !game_sel_busy() ) {
+			int err = 0;
 			pause_all();
 			sdl_free();
 			run( to_run );
@@ -268,7 +327,9 @@ int main( int argc, char *arvg[] ) {
 				return -1;
 			if( ogl_init() != 0 )
 				return -1;
-			resume_all();
+			err = resume_all();
+			if( err != 0 )
+				fprintf( stderr, "Warning: resume_all() failed: %d\n", err );
 			to_run = NULL;
 		}
 	}

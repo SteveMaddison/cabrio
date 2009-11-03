@@ -26,9 +26,11 @@ int hint_init( void ) {
 	arrow_texture = sdl_create_texture( DATA_DIR "/pixmaps/arrow.png", NULL, NULL );
 	back_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_blue.png", NULL, NULL );
 	select_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_red.png", NULL, NULL );
-	text_select_message = font_message_create( "Select" );
-	text_back_message = font_message_create( "Back" );
-	
+	if(!( text_select_message = font_message_create( "Select" ) ))
+		return -1;
+	if(!( text_back_message = font_message_create( "Back" ) ))
+		return -1;
+
 	if( frame_rate )
 		alpha_step = frame_rate/6000;
 	else
