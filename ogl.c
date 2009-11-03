@@ -23,7 +23,8 @@ int ogl_init( void ) {
 	glDepthFunc( GL_LEQUAL );
 	
 	glEnable( GL_BLEND );
-	glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );
+	if( config->iface.gfx_quality > CONFIG_LOW )
+		glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
 	gluPerspective( 45.0, (GLfloat)config->iface.screen_width/(GLfloat)config->iface.screen_height, 0.1, 100.0 );

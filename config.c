@@ -51,8 +51,8 @@ static const char *config_tag_iface_font			=   "font";
 static const char *config_tag_iface_font_file		=     "font-file";
 static const char *config_tag_iface_gfx				=   "graphics";
 static const char *config_tag_iface_gfx_quality		=     "quality";
-static const char *config_tag_iface_gfx_max_width	=     "max-width";
-static const char *config_tag_iface_gfx_max_height	=     "max-height";
+static const char *config_tag_iface_gfx_max_width	=     "max-image-width";
+static const char *config_tag_iface_gfx_max_height	=     "max-image-height";
 /* General (reused) XML tags */
 static const char *config_tag_name					= "name";
 static const char *config_tag_value					= "value";
