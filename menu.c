@@ -21,6 +21,7 @@ static int steps = 0;
 static int step = 0;
 static GLfloat spacing = 1.0;
 static GLfloat min_alpha = 1.0;
+static GLfloat zoom = 1.0;
 
 struct menu_item *menu_selected( void ) {
 	return selected;
@@ -116,14 +117,21 @@ int menu_init( void ) {
 	else
 		steps = MAX_STEPS;
 
+	zoom = (GLfloat)config->iface.menu.zoom;
+	if( zoom < 1 ) {
+		fprintf( stderr, "Warning: Menu zoom parameter less than 1 - setting to 1\n" );
+		zoom = 1;
+	}
+
 	spacing = (GLfloat)config->iface.menu.spacing;
 	if( spacing < 0 ) {
 		/* auto spacing */
 		if( config->iface.menu.orientation == CONFIG_LANDSCAPE )
-			spacing = (GLfloat)config->iface.menu.item_width * config->iface.menu.zoom * SPACING_FACTOR;
+			spacing = (GLfloat)config->iface.menu.item_width * zoom * SPACING_FACTOR;
 		else
-			spacing = (GLfloat)config->iface.menu.item_height * config->iface.menu.zoom * SPACING_FACTOR;
+			spacing = (GLfloat)config->iface.menu.item_height * zoom * SPACING_FACTOR;
 	}
+	
 
 	min_alpha = 1.0 - (GLfloat)(config->iface.menu.transparency)/100;
 
@@ -151,7 +159,7 @@ int menu_init( void ) {
 
 void menu_draw( void ) {
 	struct menu_item *item = menu_start;
-	GLfloat zoom,offset,tx,ty,mx,my,alpha = 0;
+	GLfloat item_zoom,offset,tx,ty,mx,my,alpha = 0;
 	GLfloat xfactor = ogl_xfactor();
 	GLfloat yfactor = ogl_yfactor();
 	const struct config_menu *config = &config_get()->iface.menu;
@@ -166,15 +174,15 @@ void menu_draw( void ) {
 		}
 
 		if( item == prev ) {
-			zoom = config->zoom - (((config->zoom - 1)/(GLfloat)steps) * (GLfloat)step);
+			item_zoom = zoom - (((zoom - 1)/(GLfloat)steps) * (GLfloat)step);
 			alpha = 1.0-(((1.0-min_alpha)/steps)*step);
 		}
 		else if ( item == selected ) {
-			zoom = 1 + ((config->zoom - 1)/(GLfloat)steps) * (GLfloat)step;
+			item_zoom = 1 + ((zoom - 1)/(GLfloat)steps) * (GLfloat)step;
 			alpha = min_alpha+(((1.0-min_alpha)/steps)*step);
 		}
 		else {
-			zoom = 1;
+			item_zoom = 1;
 			alpha = min_alpha;
 		}
 		
@@ -183,15 +191,15 @@ void menu_draw( void ) {
 		if( tx > config->item_width/2 ) {
 			tx = ((config->item_width/2)-(config->item_width)) / 10;
 		}
-		tx *= zoom;
+		tx *= item_zoom;
 		ty = ((GLfloat)item->message->height * config->font_scale) * xfactor;
 		if( ty > config->item_height/2 ) {
 			ty = ((config->item_height/2)-(config->item_height)) / 10;
 		}
-		ty *= zoom;
+		ty *= item_zoom;
 
-		mx = (config->item_width/2) * xfactor * zoom;
-		my = (config->item_height/2) * xfactor * zoom;
+		mx = (config->item_width/2) * xfactor * item_zoom;
+		my = (config->item_height/2) * xfactor * item_zoom;
 
 		ogl_load_alterego();
 		offset = (((GLfloat)(item->position - scroll) - ( ((GLfloat)items_visible-1)/2 )) * spacing);

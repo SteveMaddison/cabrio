@@ -101,6 +101,7 @@ static const char *config_medium	= "medium";
 static const char *config_high		= "high";
 static const char *config_portrait	= "portrait";
 static const char *config_landscape	= "landscape";
+static const char *config_auto		= "auto";
 
 static const char *warn_alloc = "Warning: Couldn't allocate memory for '%s' object\n";
 static const char *warn_skip = "Warning: Skipping unrecognised XML element in '%s': '%s'\n";
@@ -723,7 +724,10 @@ int config_read_menu( xmlNode *node ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.max_visible );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_menu_spacing ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.spacing );
+				if( strcasecmp( (char*)xmlNodeGetContent(node), config_auto ) == 0 )
+					config.iface.menu.spacing = -1;
+				else
+					config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.spacing );
 			}
 			else if( strcmp( (char*)node->name, config_tag_orientation ) == 0 ) {
 				config_read_orientation( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.orientation );
