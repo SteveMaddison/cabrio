@@ -693,44 +693,44 @@ int config_read_controls( xmlNode *node ) {
 	return 0;	
 }
 
-int config_read_menu( xmlNode *node ) {
+int config_read_menu( xmlNode *node, struct config_menu *menu ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, config_tag_image_file ) == 0 ) {
-				strncpy( config.iface.menu.texture, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+				strncpy( menu->texture, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_menu_item_width ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.item_width );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->item_width );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_menu_item_height ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.item_height );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->item_height );
 			}
 			else if( strcmp( (char*)node->name, config_tag_font_scale ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.font_scale );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->font_scale );
 			}
 			else if( strcmp( (char*)node->name, config_tag_zoom ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.zoom );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->zoom );
 			}
 			else if( strcmp( (char*)node->name, config_tag_transparency ) == 0 ) {
-				config_read_percentage( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.transparency );
+				config_read_percentage( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->transparency );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_menu_offset1 ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.offset1 );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->offset1 );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_menu_offset2 ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.offset2 );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->offset2 );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_menu_items_visible ) == 0 ) {
-				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.max_visible );
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->max_visible );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_menu_spacing ) == 0 ) {
 				if( strcasecmp( (char*)xmlNodeGetContent(node), config_auto ) == 0 )
-					config.iface.menu.spacing = -1;
+					menu->spacing = -1;
 				else
-					config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.spacing );
+					config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->spacing );
 			}
 			else if( strcmp( (char*)node->name, config_tag_orientation ) == 0 ) {
-				config_read_orientation( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.orientation );
+				config_read_orientation( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->orientation );
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
@@ -853,7 +853,7 @@ int config_read_interface( xmlNode *node ) {
 				config_read_graphics( node->children );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_menu ) == 0 ) {
-				config_read_menu( node->children );
+				config_read_menu( node->children, &config.iface.menu );
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
