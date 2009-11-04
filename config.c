@@ -1,6 +1,6 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #ifdef __unix__
@@ -180,7 +180,7 @@ int config_read_float( char *name, char *value, float *target ) {
 			}
 			pos++;
 		}
-		*target = strtof( value, NULL );
+		*target = atof( value );
 	}
 	return 0;
 }
