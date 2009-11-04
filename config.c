@@ -21,10 +21,12 @@
 struct config config;
 
 #ifdef __WIN32__
-static const char *config_default_font = "\\fonts\\FreeSans.ttf";
+static const char *config_default_font			= "\\fonts\\FreeSans.ttf";
+static const char *config_default_menu_texture	= "\\pixmaps\\menu_item.png";
 #else
 static const char *config_default_dir = ".cabrio"; /* Relative to user's home */
 static const char *config_default_font = "/fonts/FreeSans.ttf";
+static const char *config_default_menu_texture	= "/pixmaps/menu_item.png";
 #endif
 static const char *config_default_file = "config.xml";
 
@@ -34,31 +36,39 @@ static char config_filename[CONFIG_FILE_NAME_LENGTH] = "";
 static const char *BG_DEFAULT = DATA_DIR "/pixmaps/default_background.jpg";
 
 /* Specific XML tags */
-static const char *config_tag_root					= "cabrio-config";
-static const char *config_tag_emulators				= "emulators";
-static const char *config_tag_emulator				= 	"emulator";
-static const char *config_tag_emulator_executable	= 		"executable";
-static const char *config_tag_games					= "games";
-static const char *config_tag_game					=   "game";
-static const char *config_tag_game_rom_image		=     "rom-image";
-static const char *config_tag_game_logo_image		=     "logo-image";
-static const char *config_tag_game_background_image	=     "background-image";
-static const char *config_tag_game_categories		=     "categories";
-static const char *config_tag_game_category			=     "category";
-static const char *config_tag_iface					= "interface";
-static const char *config_tag_iface_full_screen		= 	"full-screen";
-static const char *config_tag_iface_screen			=   "screen";
-static const char *config_tag_iface_screen_hflip	=     "flip-horizontal";
-static const char *config_tag_iface_screen_vflip	=     "flip-vertical";
-static const char *config_tag_iface_background		=   "background";
-static const char *config_tag_iface_controls		=   "controls";
-static const char *config_tag_iface_frame_rate		=   "frame-rate";
-static const char *config_tag_iface_font			=   "font";
-static const char *config_tag_iface_font_file		=     "font-file";
-static const char *config_tag_iface_gfx				=   "graphics";
-static const char *config_tag_iface_gfx_quality		=     "quality";
-static const char *config_tag_iface_gfx_max_width	=     "max-image-width";
-static const char *config_tag_iface_gfx_max_height	=     "max-image-height";
+static const char *config_tag_root						= "cabrio-config";
+static const char *config_tag_emulators					= "emulators";
+static const char *config_tag_emulator					= 	"emulator";
+static const char *config_tag_emulator_executable		= 		"executable";
+static const char *config_tag_games						= "games";
+static const char *config_tag_game						=   "game";
+static const char *config_tag_game_rom_image			=     "rom-image";
+static const char *config_tag_game_logo_image			=     "logo-image";
+static const char *config_tag_game_background_image		=     "background-image";
+static const char *config_tag_game_categories			=     "categories";
+static const char *config_tag_game_category				=     "category";
+static const char *config_tag_iface						= "interface";
+static const char *config_tag_iface_full_screen			= 	"full-screen";
+static const char *config_tag_iface_screen				=   "screen";
+static const char *config_tag_iface_screen_hflip		=     "flip-horizontal";
+static const char *config_tag_iface_screen_vflip		=     "flip-vertical";
+static const char *config_tag_iface_background			=   "background";
+static const char *config_tag_iface_controls			=   "controls";
+static const char *config_tag_iface_frame_rate			=   "frame-rate";
+static const char *config_tag_iface_font				=   "font";
+static const char *config_tag_iface_font_file			=     "font-file";
+static const char *config_tag_iface_gfx					=   "graphics";
+static const char *config_tag_iface_gfx_quality			=     "quality";
+static const char *config_tag_iface_gfx_max_width		=     "max-image-width";
+static const char *config_tag_iface_gfx_max_height		=     "max-image-height";
+static const char *config_tag_iface_menu				=   "menu";
+static const char *config_tag_iface_menu_item_width		=     "item-width";
+static const char *config_tag_iface_menu_item_height	=     "item-height";
+static const char *config_tag_iface_menu_x_offset		=     "x-offset";
+static const char *config_tag_iface_menu_y_offset		=     "y-offset";
+static const char *config_tag_iface_menu_items_visible	=     "items-visible";
+static const char *config_tag_iface_menu_spacing		=     "spacing";
+
 /* General (reused) XML tags */
 static const char *config_tag_name					= "name";
 static const char *config_tag_value					= "value";
@@ -74,9 +84,12 @@ static const char *config_tag_type					= "type";
 static const char *config_tag_width					= "width";
 static const char *config_tag_height				= "height";
 static const char *config_tag_transparency			= "transparency";
+static const char *config_tag_zoom					= "zoom";
 static const char *config_tag_rotation				= "rotation";
 static const char *config_tag_image_file			= "image-file";
 static const char *config_tag_size					= "size";
+static const char *config_tag_font_scale			= "font-scale";
+static const char *config_tag_orientation			= "orientation";
 
 static const char *config_empty		= "";
 static const char *config_true		= "true";
@@ -86,6 +99,8 @@ static const char *config_no		= "no";
 static const char *config_low		= "low";
 static const char *config_medium	= "medium";
 static const char *config_high		= "high";
+static const char *config_portrait	= "portrait";
+static const char *config_landscape	= "landscape";
 
 static const char *warn_alloc = "Warning: Couldn't allocate memory for '%s' object\n";
 static const char *warn_skip = "Warning: Skipping unrecognised XML element in '%s': '%s'\n";
@@ -127,17 +142,44 @@ int config_read_lmh( char *name, char *value, int *target ) {
 	return -1;
 }
 
-int config_read_numeric( char *name, char *value, int *target ) {
+int config_read_orientation( char *name, char *value, int *target ) {
+	if( strcasecmp( value, config_portrait ) == 0 ) {
+		*target = CONFIG_PORTRAIT;
+		return 0;
+	}
+	else if( strcasecmp( value, config_landscape ) == 0 ) {
+		*target = CONFIG_LANDSCAPE;
+		return 0;
+	}
+	return -1;
+}
+
+int config_read_integer( char *name, char *value, int *target ) {
 	char *pos = value;
 	if( pos ) {
 		while( *pos ) {
 			if( (*pos < '0' || *pos > '9') && (*pos != '-') ) {
-				fprintf( stderr, "Warning: Element %s requires numeric value\n", name );
+				fprintf( stderr, "Warning: Element %s requires numeric (integer) value\n", name );
 				return -1;
 			}
 			pos++;
 		}
 		*target = strtol( value, NULL, 10 );
+	}
+	return 0;
+}
+
+int config_read_float( char *name, char *value, float *target ) {
+	char *pos = value;
+	if( pos ) {
+		while( *pos ) {
+			if( (*pos < '0' || *pos > '9') && (*pos != '-') && (*pos != '.') ) {
+				fprintf( stderr, "Warning: Element %s requires numeric (floating point) value\n", name );
+				return -1;
+			}
+			pos++;
+		}
+		*target = strtof( value, NULL );
 	}
 	return 0;
 }
@@ -525,7 +567,7 @@ int config_read_device( xmlNode *node, struct config_control *control ) {
 				control->device_type = device_id( (char*)xmlNodeGetContent(node) );
 			}
 			else if( strcmp( (char*)node->name, config_tag_id ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &control->device_id );
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &control->device_id );
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_device, node->name );	
@@ -544,7 +586,7 @@ int config_read_control( xmlNode *node, struct config_control *control ) {
 				control->control_type = control_id( (char*)xmlNodeGetContent(node) );
 			}
 			else if( strcmp( (char*)node->name, config_tag_id ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &control->control_id );
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &control->control_id );
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_device, node->name );	
@@ -610,7 +652,7 @@ int config_read_event( xmlNode *node ) {
 					tmp.value = axis_dir_value( value );
 					break;
 				case CTRL_BUTTON:
-					config_read_numeric( (char*)config_tag_id, value, &tmp.value );
+					config_read_integer( (char*)config_tag_id, value, &tmp.value );
 					break;
 				default:
 					break;
@@ -621,11 +663,11 @@ int config_read_event( xmlNode *node ) {
 				tmp.value = axis_dir_value( value );
 			}
 			else {
-				config_read_numeric( (char*)config_tag_id, value, &tmp.value );
+				config_read_integer( (char*)config_tag_id, value, &tmp.value );
 			}
 			break;
 		default:
-			config_read_numeric( (char*)config_tag_id, value, &tmp.value );
+			config_read_integer( (char*)config_tag_id, value, &tmp.value );
 			break;
 	}
 	
@@ -650,6 +692,51 @@ int config_read_controls( xmlNode *node ) {
 	return 0;	
 }
 
+int config_read_menu( xmlNode *node ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_image_file ) == 0 ) {
+				strncpy( config.iface.menu.texture, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_menu_item_width ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.item_width );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_menu_item_height ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.item_height );
+			}
+			else if( strcmp( (char*)node->name, config_tag_font_scale ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.font_scale );
+			}
+			else if( strcmp( (char*)node->name, config_tag_zoom ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.zoom );
+			}
+			else if( strcmp( (char*)node->name, config_tag_transparency ) == 0 ) {
+				config_read_percentage( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.transparency );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_menu_x_offset ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.x_offset );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_menu_y_offset ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.y_offset );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_menu_items_visible ) == 0 ) {
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.max_visible );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_menu_spacing ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.spacing );
+			}
+			else if( strcmp( (char*)node->name, config_tag_orientation ) == 0 ) {
+				config_read_orientation( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.orientation );
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_graphics( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
@@ -657,10 +744,10 @@ int config_read_graphics( xmlNode *node ) {
 				config_read_lmh( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_quality );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_gfx_max_width ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_max_width );
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_max_width );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_gfx_max_height ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_max_height );
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_max_height );
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
@@ -678,7 +765,7 @@ int config_read_font( xmlNode *node ) {
 				strncpy( config.iface.font_file, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
 			else if( strcmp( (char*)node->name, config_tag_size ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.font_size );
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.font_size );
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
@@ -696,7 +783,7 @@ int config_read_interface_background( xmlNode *node ) {
 				strncpy( config.iface.background_image, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
 			else if( strcmp( (char*)node->name, config_tag_rotation ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.background_rotation );
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.background_rotation );
 			}
 			else if( strcmp( (char*)node->name, config_tag_transparency ) == 0 ) {
 				config_read_percentage( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.background_transparency );
@@ -714,13 +801,13 @@ int config_read_interface_screen( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, config_tag_width ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_width );
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_width );
 			}
 			else if( strcmp( (char*)node->name, config_tag_height ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_height );
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_height );
 			}
 			else if( strcmp( (char*)node->name, config_tag_rotation ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_rotation );
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_rotation );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_screen_hflip ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_hflip );
@@ -753,13 +840,16 @@ int config_read_interface( xmlNode *node ) {
 				config_read_controls( node->children );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_frame_rate ) == 0 ) {
-				config_read_numeric( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.frame_rate );
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.frame_rate );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_font ) == 0 ) {
 				config_read_font( node->children );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_gfx ) == 0 ) {
 				config_read_graphics( node->children );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_menu ) == 0 ) {
+				config_read_menu( node->children );
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
@@ -816,6 +906,14 @@ xmlChar *config_write_lmh( int value ) {
 		case CONFIG_LOW: return (xmlChar*)config_low;
 		case CONFIG_MEDIUM: return (xmlChar*)config_medium;
 		case CONFIG_HIGH: return (xmlChar*)config_high;
+	}
+	return (xmlChar*)config_empty;
+}
+
+xmlChar *config_write_orientation( int value ) {
+	switch( value ) {
+		case CONFIG_PORTRAIT: return (xmlChar*)config_portrait;
+		case CONFIG_LANDSCAPE: return (xmlChar*)config_landscape;
 	}
 	return (xmlChar*)config_empty;
 }
@@ -1057,6 +1155,18 @@ int config_new( void ) {
 		config.iface.gfx_max_height = 512;
 		
 		config.iface.frame_rate = 60;
+		
+		snprintf( config.iface.menu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_menu_texture );
+		config.iface.menu.item_width = 1.0;
+		config.iface.menu.item_height = 0.6;
+		config.iface.menu.font_scale = 0.0025;
+		config.iface.menu.zoom = 1.2;
+		config.iface.menu.transparency = 40;
+		config.iface.menu.x_offset = 0;
+		config.iface.menu.y_offset = 2.0;
+		config.iface.menu.max_visible = 4;
+		config.iface.menu.spacing = -1;
+		config.iface.menu.orientation = CONFIG_LANDSCAPE;
 		
 		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 			config.iface.controls[i].device_type = DEV_KEYBOARD;

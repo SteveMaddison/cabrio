@@ -4,15 +4,6 @@
 #include "font.h"
 
 static const int MAX_STEPS = 50;
-static const int FONT_SCALE = 400;
-static const GLfloat ALPHA_MIN = 0.6;
-static const GLfloat ITEM_MAX_WIDTH = 1.0;
-static GLfloat item_height = 0.6;
-static GLfloat item_width = 1.0;
-static GLuint menu_texture = 0;
-static GLuint zoom_size = 1.6;
-static int steps = 0;
-
 const char *menu_text_all = "All";
 const char *menu_text_platform = "Platform";
 
@@ -20,8 +11,14 @@ struct menu_item *menu_start = NULL;
 struct menu_item *menu_end = NULL;
 struct menu_item *selected = NULL;
 struct menu_item *prev = NULL;
+static GLuint menu_texture = 0;
 static int menu_items = 0;
+static int items_visible = 0;
+static int scroll = 0;
+static int steps = 0;
 static int step = 0;
+static GLfloat spacing = 1.0;
+static GLfloat min_alpha = 1.0;
 
 struct menu_item *menu_selected( void ) {
 	return selected;
@@ -32,7 +29,7 @@ int menu_item_count( void ) {
 }
 
 int menu_load_texture( void ) {
-	menu_texture = sdl_create_texture( DATA_DIR "/pixmaps/menu_item.png", NULL ,NULL );
+	menu_texture = sdl_create_texture( config_get()->iface.menu.texture, NULL ,NULL );
 	if( menu_texture == 0 ) {
 		fprintf( stderr, "Warning: Couldn't create texture for menu items\n" );
 		return -1;
@@ -110,17 +107,28 @@ int menu_item_add( const char *text, int type, struct category *category ) {
 
 int menu_init( void ) {
 	struct category *category = category_first();
-	int frame_rate = config_get()->iface.frame_rate;
+	const struct config *config = config_get();
 	
-	if( frame_rate )
-		steps = frame_rate/3;
+	if( config->iface.frame_rate )
+		steps = config->iface.frame_rate/3;
 	else
 		steps = MAX_STEPS;
+
+	spacing = (GLfloat)config->iface.menu.spacing;
+	if( spacing < 0 ) {
+		/* auto spacing */
+		if( config->iface.menu.orientation == CONFIG_LANDSCAPE )
+			spacing = (GLfloat)(config->iface.menu.item_width * config->iface.menu.zoom * 1.2);
+		else
+			spacing = (GLfloat)(config->iface.menu.item_height * config->iface.menu.zoom * 1.2);
+	}
+
+	min_alpha = 1.0 - (GLfloat)(config->iface.menu.transparency)/100;
 
 	if( menu_load_texture() != 0 ) {
 		return -1;
 	}
-		
+
 	menu_item_add( menu_text_all, MENU_ALL, NULL );
 	menu_item_add( menu_text_platform, MENU_PLATFORM, NULL );
 	if( category ) {
@@ -130,9 +138,10 @@ int menu_init( void ) {
 		} while( category != category_first() );
 	}
 
-	item_width = (4.0/menu_items > ITEM_MAX_WIDTH) ? ITEM_MAX_WIDTH : (4.0/menu_items);
-	item_height = item_width*0.6;
-	
+	items_visible = menu_items;
+	if( menu_items > config->iface.menu.max_visible )
+		items_visible = config->iface.menu.max_visible;
+
 	selected = menu_start;
 	prev = selected;
 	return 0;
@@ -140,10 +149,10 @@ int menu_init( void ) {
 
 void menu_draw( void ) {
 	struct menu_item *item = menu_start;
-	GLfloat zoom,offset,tx,ty,alpha = 0;
+	GLfloat zoom,offset,tx,ty,mx,my,alpha = 0;
 	GLfloat xfactor = ogl_xfactor();
 	GLfloat yfactor = ogl_yfactor();
-	int count = 0;
+	const struct config_menu *config = &config_get()->iface.menu;
 	
 	while( item ) {
 		if( prev != selected ) {
@@ -153,27 +162,30 @@ void menu_draw( void ) {
 			}
 		}
 
-		offset = ((GLfloat)count-((GLfloat)(menu_items-1)/2))/((GLfloat)menu_items/4)*xfactor;
 		if( item == prev ) {
-			zoom = zoom_size - ((zoom_size/(GLfloat)steps) * ((GLfloat)step));
-			alpha = 1.0-(((1.0-ALPHA_MIN)/steps)*step);
+			zoom = config->zoom - (((config->zoom - 1)/(GLfloat)steps) * (GLfloat)step);
+			alpha = 1.0-(((1.0-min_alpha)/steps)*step);
 		}
 		else if ( item == selected ) {
-			zoom = ((zoom_size/(GLfloat)steps) * (GLfloat)step);
-			alpha = ALPHA_MIN+(((1.0-ALPHA_MIN)/steps)*step);
+			zoom = 1 + ((config->zoom - 1)/(GLfloat)steps) * (GLfloat)step;
+			alpha = min_alpha+(((1.0-min_alpha)/steps)*step);
 		}
 		else {
-			zoom = 0;
-			alpha = ALPHA_MIN;
+			zoom = 1;
+			alpha = min_alpha;
 		}
-		tx = ((GLfloat)item->message->width/FONT_SCALE)*xfactor;
-		if( tx > item_width/2 ) {
-			tx = (item_width/2)-(item_width/10);
+		tx = ((GLfloat)item->message->width * config->font_scale)*xfactor;
+		if( tx > config->item_width/2 ) {
+			tx = (config->item_width/2)-(config->item_width/10);
 		}
-		ty = ((GLfloat)item->message->height/FONT_SCALE)*xfactor;
+		ty = ((GLfloat)item->message->height * config->font_scale)*xfactor;
+
+		mx = (config->item_width/2)*xfactor*zoom;
+		my = (config->item_height/2)*xfactor*zoom;
 
 		ogl_load_alterego();
-		glTranslatef( (offset*1.3)-(offset*zoom*0.2), (2-(zoom*0.4)) * yfactor, -6+zoom );
+		offset = (((GLfloat)(item->position - scroll) - ( ((GLfloat)items_visible-1)/2 )) * spacing) * xfactor;
+		glTranslatef( offset, config->y_offset * yfactor, -6 );
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
@@ -181,10 +193,10 @@ void menu_draw( void ) {
 
 		glBindTexture( GL_TEXTURE_2D, menu_texture );
 		glBegin( GL_QUADS );
-			glTexCoord2f(0.0, 0.0); glVertex3f(-((item_width/2)*xfactor),  ((item_height/2)*xfactor), 0.0);
-			glTexCoord2f(0.0, 1.0); glVertex3f(-((item_width/2)*xfactor), -((item_height/2)*xfactor), 0.0);
-			glTexCoord2f(1.0, 1.0); glVertex3f( ((item_width/2)*xfactor), -((item_height/2)*xfactor), 0.0);
-			glTexCoord2f(1.0, 0.0); glVertex3f( ((item_width/2)*xfactor),  ((item_height/2)*xfactor), 0.0);
+			glTexCoord2f(0.0, 0.0); glVertex3f(-mx,  my, 0.0);
+			glTexCoord2f(0.0, 1.0); glVertex3f(-mx, -my, 0.0);
+			glTexCoord2f(1.0, 1.0); glVertex3f( mx, -my, 0.0);
+			glTexCoord2f(1.0, 0.0); glVertex3f( mx,  my, 0.0);
 		glEnd();
 
 		glBindTexture( GL_TEXTURE_2D, item->message->texture );
@@ -196,7 +208,6 @@ void menu_draw( void ) {
 		glEnd();
 		
 		item = item->next;
-		count++;
 	}
 }
 

@@ -7,9 +7,6 @@
 #define Y 1
 #define Z 2
 
-#define LANDSCAPE 0
-#define PORTRAIT  1
-
 int ogl_init( void );
 void ogl_load_alterego( void );
 int ogl_screen_width( void );

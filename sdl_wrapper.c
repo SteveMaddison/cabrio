@@ -3,6 +3,9 @@
 #include "sdl_wrapper.h"
 
 #include <SDL/SDL.h>
+#ifdef __WIN32__
+#define _WINCON_H 1 /* Avoid inclusion of wincon.h */
+#endif
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_framerate.h>
 #include <SDL/SDL_opengl.h>

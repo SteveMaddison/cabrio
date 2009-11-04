@@ -19,6 +19,11 @@ enum lhm_t {
 	CONFIG_HIGH
 };
 
+enum orient_t {
+	CONFIG_LANDSCAPE,
+	CONFIG_PORTRAIT
+};
+
 struct config_param {
 	struct config_param *next;
 	char name[CONFIG_PARAM_LENGTH];
@@ -75,6 +80,20 @@ struct config_control {
 	int value;
 };
 
+struct config_menu {
+	char texture[CONFIG_FILE_NAME_LENGTH];
+	float item_width;
+	float item_height;
+	float font_scale;
+	float zoom;
+	int transparency;
+	float x_offset;
+	float y_offset;
+	int max_visible;
+	float spacing;
+	int orientation;
+};
+
 struct config_iface {
 	int full_screen;
 	int screen_width;
@@ -92,6 +111,7 @@ struct config_iface {
 	int gfx_max_width;
 	int gfx_max_height;
 	struct config_control controls[NUM_EVENTS];
+	struct config_menu menu;
 };
 
 struct config {
@@ -99,7 +119,7 @@ struct config {
 	struct config_platform *platforms;
 	struct config_category *categories;
 	struct config_game *games;
-	struct config_iface iface;
+	struct config_iface iface;	
 };
 
 const struct config *config_get( void );

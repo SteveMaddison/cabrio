@@ -73,9 +73,9 @@ GLfloat ogl_yfactor( void ) {
 
 int ogl_screen_orientation( void ) {
 	if( height > width )
-		return PORTRAIT;
+		return CONFIG_PORTRAIT;
 	else
-		return LANDSCAPE;
+		return CONFIG_LANDSCAPE;
 }
 
 void ogl_screen_rotate( int angle ) {
