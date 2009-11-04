@@ -2,8 +2,8 @@
 #include "config.h"
 #include "sdl_ogl.h"
 
-static GLuint bg_clear_texture = 0;
-static GLuint bg_texture = 0;
+static struct texture *bg_clear_texture = NULL;
+static struct texture *bg_texture = NULL;
 static GLfloat angle_step = 0;
 static GLfloat angle = 0;
 static GLfloat alpha = 1.0;
@@ -16,8 +16,8 @@ int bg_init( void ) {
 	const struct config *config = config_get();
 
 	if( config->iface.background_image[0] != '\0' ) {
-		bg_clear_texture = sdl_create_texture( config->iface.background_image, NULL, NULL );	
-		if( bg_clear_texture == 0 ) {
+		bg_clear_texture = sdl_create_texture( config->iface.background_image );	
+		if( bg_clear_texture == NULL ) {
 			fprintf( stderr, "Warning: couldn't create default background texture from '%s'\n", config->iface.background_image );
 			return -1;
 		}
@@ -36,9 +36,9 @@ int bg_init( void ) {
 
 void bg_free( void ) {
 	if( bg_texture != bg_clear_texture ) {
-		ogl_free_texture( &bg_clear_texture );
+		ogl_free_texture( bg_clear_texture );
 	}
-	ogl_free_texture( &bg_texture );
+	ogl_free_texture( bg_texture );
 }
 
 void bg_pause( void ) {
@@ -51,11 +51,10 @@ int bg_resume( void ) {
 
 int bg_set( const char *filename ) {
 	if( filename && *filename ) {
-		int x,y;
 		if( bg_texture != bg_clear_texture ) {
-			ogl_free_texture( &bg_texture );
+			ogl_free_texture( bg_texture );
 		}
-		bg_texture = sdl_create_texture( filename, &x, &y );
+		bg_texture = sdl_create_texture( filename );
 		if( bg_texture == 0 ) {
 			fprintf( stderr, "Warning: couldn't load background image '%s'\n", filename );
 			return -1;
@@ -72,7 +71,7 @@ void bg_draw( void ) {
 		ogl_load_alterego();
 		glEnable( GL_TEXTURE_2D );
 		glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-		glBindTexture( GL_TEXTURE_2D, bg_texture );
+		glBindTexture( GL_TEXTURE_2D, bg_texture->id );
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glRotatef( angle, 0.0, 0.0, 1.0 );

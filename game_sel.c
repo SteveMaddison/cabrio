@@ -155,8 +155,8 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 	GLfloat alpha = 1.0;
 	
 	if( tile && tile->game && dest ) {
-		GLfloat width = (((GLfloat)tile->game->image_width/IMAGE_SCALE)/2) * xfactor;
-		GLfloat height = (((GLfloat)tile->game->image_height/IMAGE_SCALE)/2) * xfactor;
+		GLfloat width = (((GLfloat)tile->game->texture->width/IMAGE_SCALE)/2) * xfactor;
+		GLfloat height = (((GLfloat)tile->game->texture->height/IMAGE_SCALE)/2) * xfactor;
 		
 		glTranslatef(
 			(tile->pos[X] + (((dest->pos[X]-tile->pos[X])/steps)*step)) * xfactor,
@@ -175,7 +175,7 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-		glBindTexture( GL_TEXTURE_2D, tile->game->texture );
+		glBindTexture( GL_TEXTURE_2D, tile->game->texture->id );
 		glBegin( GL_QUADS );
 			glTexCoord2f(0.0, 0.0); glVertex3f( -width,  height, 0.0);
 			glTexCoord2f(0.0, 1.0); glVertex3f( -width, -height, 0.0);

@@ -9,8 +9,8 @@
 #include "sdl_wrapper.h"
 #include "ogl.h"
 
-int ogl_create_texture( SDL_Surface *surface, GLuint *texture );
-GLuint sdl_create_texture( const char *filename, int *x, int *y );
+struct texture *ogl_create_texture( SDL_Surface *surface );
+struct texture *sdl_create_texture( const char *filename );
 
 #endif
 

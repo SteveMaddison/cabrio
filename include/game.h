@@ -18,9 +18,7 @@ struct game {
 	struct game *all_prev;
 	struct platform *platform;
 	struct game_category *categories;
-	GLuint texture;
-	unsigned int image_width;
-	unsigned int image_height;
+	struct texture *texture;
 	char *name;
 	char *logo_image;
 	char *bg_image;

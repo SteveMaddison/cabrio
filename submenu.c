@@ -5,7 +5,7 @@
 #include "platform.h"
 #include "menu.h"
 
-static GLuint texture = 0;
+static struct texture *texture = NULL;
 static int type = -1;
 static int selected = 0;
 static int items = 0;
@@ -18,7 +18,7 @@ struct category *prev_category = NULL;
 struct category *category = NULL;
 struct category_value *category_value = NULL;
 struct platform *platform = NULL;
-struct font_message *message = NULL;
+struct texture *message = NULL;
 
 int submenu_selected( void ) {
 	return selected;
@@ -29,9 +29,8 @@ int submenu_items( void ) {
 }
 
 int submenu_load_texture( void ) {
-	int x,y;
-	texture = sdl_create_texture( DATA_DIR "/pixmaps/submenu_item.png", &x, &y );
-	if( texture == 0 ) {
+	texture = sdl_create_texture( DATA_DIR "/pixmaps/submenu_item.png" );
+	if( texture == NULL ) {
 		fprintf( stderr, "Warning: Couldn't create texture for submenu items\n" );
 		return -1;
 	}
@@ -40,14 +39,12 @@ int submenu_load_texture( void ) {
 
 void submenu_free_texture( void ) {
 	if( texture )
-		ogl_free_texture( &texture );
+		ogl_free_texture( texture );
 }
 
 void submenu_pause( void ) {
-	if( message ) {
-		font_message_free( message );
-		message = NULL;	
-	}
+	if( message )
+		ogl_free_texture( message );
 	if( texture )
 		submenu_free_texture();
 }
@@ -61,12 +58,12 @@ int submenu_resume( void ) {
 			break;
 		case( MENU_CATEGORY ):
 			if( category_value->name )
-				message = font_message_create( category_value->name );
+				message = font_create_texture( category_value->name );
 			else
-				message = font_message_create( VALUE_UNKNOWN );
+				message = font_create_texture( VALUE_UNKNOWN );
 			break;
 		case( MENU_PLATFORM ):
-			message = font_message_create( platform->name );
+			message = font_create_texture( platform->name );
 			break;		
 		default:
 			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );
@@ -89,7 +86,7 @@ int submenu_create( struct menu_item *item ) {
 		case( MENU_PLATFORM ):
 			if( platform == NULL )
 				platform = platform_first();
-			message = font_message_create( platform->name );
+			message = font_create_texture( platform->name );
 			items = platform_count();
 			break;		
 		case( MENU_CATEGORY ):
@@ -97,9 +94,9 @@ int submenu_create( struct menu_item *item ) {
 			if( category != prev_category )
 				category_value = category->values;
 			if( category_value->name )
-				message = font_message_create( category_value->name );
+				message = font_create_texture( category_value->name );
 			else
-				message = font_message_create( VALUE_UNKNOWN );
+				message = font_create_texture( VALUE_UNKNOWN );
 			items = category->value_count;
 			prev_category = category;
 			break;
@@ -113,21 +110,21 @@ int submenu_create( struct menu_item *item ) {
 
 void submenu_advance( void ) {
 	if( message ) {
-		font_message_free( message );
+		ogl_free_texture( message );
 	}
 	switch( type ) {
 		case( MENU_ALL ):
 			break;
 		case( MENU_PLATFORM ):
 			platform = platform->next;
-			message = font_message_create( platform->name );
+			message = font_create_texture( platform->name );
 			break;		
 		case( MENU_CATEGORY ):
 			category_value = category_value->next;
 			if( category_value->name )
-				message = font_message_create( category_value->name );
+				message = font_create_texture( category_value->name );
 			else
-				message = font_message_create( VALUE_UNKNOWN );
+				message = font_create_texture( VALUE_UNKNOWN );
 			break;
 		default:
 			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );
@@ -137,22 +134,21 @@ void submenu_advance( void ) {
 
 void submenu_retreat( void ) {
 	if( message ) {
-		font_message_free( message );
-		message = NULL;
+		ogl_free_texture( message );
 	}
 	switch( type ) {
 		case( MENU_ALL ):
 			break;
 		case( MENU_PLATFORM ):
 			platform = platform->prev;
-			message = font_message_create( platform->name );
+			message = font_create_texture( platform->name );
 			break;		
 		case( MENU_CATEGORY ):
 			category_value = category_value->prev;
 			if( category_value->name )
-				message = font_message_create( category_value->name );
+				message = font_create_texture( category_value->name );
 			else
-				message = font_message_create( VALUE_UNKNOWN );
+				message = font_create_texture( VALUE_UNKNOWN );
 			break;
 		default:
 			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );
@@ -161,12 +157,10 @@ void submenu_retreat( void ) {
 }
 
 void submenu_free( void ) {
-	if( message ) {
-		font_message_free( message );
-		message = NULL;
-	}
+	if( message )
+		ogl_free_texture( message );
 	if( texture )
-		ogl_free_texture( &texture );
+		ogl_free_texture( texture );
 }
 
 void submenu_draw( void ) {
@@ -194,7 +188,7 @@ void submenu_draw( void ) {
 		glEnable(GL_TEXTURE_2D);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
-		glBindTexture( GL_TEXTURE_2D, texture );
+		glBindTexture( GL_TEXTURE_2D, texture->id );
 		glBegin( GL_QUADS );
 			glTexCoord2f(0.0, 0.0); glVertex3f(-width,  height, 0.0);
 			glTexCoord2f(0.0, 1.0); glVertex3f(-width, -height, 0.0);
@@ -202,7 +196,7 @@ void submenu_draw( void ) {
 			glTexCoord2f(1.0, 0.0); glVertex3f( width,  height, 0.0);
 		glEnd();
 
-		glBindTexture( GL_TEXTURE_2D, message->texture );
+		glBindTexture( GL_TEXTURE_2D, message->id );
 		glBegin( GL_QUADS );
 			glTexCoord2f(0.0, 0.0); glVertex3f(-tx,  ty, 0.0);
 			glTexCoord2f(0.0, 1.0); glVertex3f(-tx, -ty, 0.0);

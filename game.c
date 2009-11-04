@@ -5,6 +5,7 @@
 #include "platform.h"
 #include "ogl.h"
 #include "sdl_ogl.h"
+#include "font.h"
 
 struct game *game_start = NULL;
 struct game *game_filter_start = NULL;
@@ -31,7 +32,7 @@ void game_add( struct game *game, struct game *after ) {
 
 void game_free( struct game* game ) {
 	if( game ) {
-		ogl_free_texture( &game->texture );
+		ogl_free_texture( game->texture );
 		game->all_prev->all_next = game->all_next;
 		game->all_next->all_prev = game->all_prev;
 		game_start = game->all_next;
@@ -50,28 +51,31 @@ void game_list_free( void ) {
 }
 
 int game_load_texture( struct game *game ) {
-	int x, y;
-	game->texture = sdl_create_texture( game->logo_image, &x, &y );
-	if( game->texture == 0 ) {
+	if( game && game->logo_image && game->logo_image[0] ) {
+		game->texture = sdl_create_texture( game->logo_image );
+	}
+	else {
+		game->texture = font_create_texture( "<No Image>" );
+	}
+	
+	if( game->texture == NULL ) {
 		return -1;
 	}
 	else {
-		if( x > y ) {
+		if( game->texture->width > game->texture->height ) {
 			/* Landscape */
-			if( x > IMAGE_MAX_WIDTH ) {
-				y = (int)(float)y/((float)x/IMAGE_MAX_WIDTH);
-				x = IMAGE_MAX_WIDTH;
+			if( game->texture->width > IMAGE_MAX_WIDTH ) {
+				game->texture->height = (int)(float)game->texture->height/((float)game->texture->width/IMAGE_MAX_WIDTH);
+				game->texture->width = IMAGE_MAX_WIDTH;
 			}
 		}
 		else {
 			/* Portrait (or square) */
-			if( y > IMAGE_MAX_HEIGHT ) {
-				x = (int)(float)x/((float)y/IMAGE_MAX_HEIGHT);
-				y = IMAGE_MAX_HEIGHT;
+			if( game->texture->height > IMAGE_MAX_HEIGHT ) {
+				game->texture->width = (int)(float)game->texture->width/((float)game->texture->height/IMAGE_MAX_HEIGHT);
+				game->texture->height = IMAGE_MAX_HEIGHT;
 			}
 		}
-		game->image_width = x;
-		game->image_height = y;
 	}
 	return 0;
 }
@@ -80,7 +84,7 @@ void game_list_pause( void ) {
 	struct game *g = game_start;
 	if( g ) {
 		do {
-			ogl_free_texture( &g->texture );
+			ogl_free_texture( g->texture );
 			g = g->all_next;
 		} while( g != game_start );
 	}

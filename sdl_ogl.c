@@ -78,82 +78,86 @@ SDL_Surface *resize( SDL_Surface *surface ) {
 	return resized;
 }
 
-int ogl_create_texture( SDL_Surface* surface, GLuint *texture ) {
-	const struct config *config = config_get();
-	SDL_Surface *new = NULL;
-	SDL_Surface *work = NULL;
-	GLint bpp;
-	GLenum format = 0;
-	GLenum error = GL_NO_ERROR;
-	GLuint filter = GL_LINEAR;
+struct texture *ogl_create_texture( SDL_Surface* surface ) {
+	struct texture *texture = malloc( sizeof(struct texture) );
 	
-	if( config->iface.gfx_quality != CONFIG_HIGH )
-		filter = GL_NEAREST;
+	if( texture ) {
+		const struct config *config = config_get();
+		SDL_Surface *new = NULL;
+		SDL_Surface *work = NULL;
+		GLint bpp;
+		GLenum format = 0;
+		GLenum error = GL_NO_ERROR;
+		GLuint filter = GL_LINEAR;
+		
+		texture->width = surface->w;
+		texture->height = surface->h;
+		
+		if( config->iface.gfx_quality != CONFIG_HIGH )
+			filter = GL_NEAREST;
+		
+		if( surface == NULL ) {
+			fprintf(stderr, "Error: Can't create texture from NULL surface.\n" );
+			return NULL;
+		}
+		if( ogl_nopt_textures() == 0 ) {
+			/* This OpenGL implementation only supports textures with power-of-two
+			 * dimensions, so we need to resize the surface before going further */
+			new = resize( surface );
+		}
+		
+		work = new ? new : surface;
+		
+		/* determine image format */
+		bpp = work->format->BytesPerPixel;
+		switch( bpp ) {
+			case 4:
+				if (work->format->Rmask == 0x000000ff)
+					format = GL_RGBA;
+				else
+					format = GL_BGRA;
+				break;
+			case 3:
+				if (work->format->Rmask == 0x000000ff)
+					format = GL_RGB;
+				else
+					format = GL_BGR;
+				break;
+			default:
+				fprintf(stderr, "Error: image is not true colour (%d bpp).\n", bpp );
+				if( work != surface )
+					SDL_FreeSurface( work );
+				return NULL;
+				break;
+		}
+		
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glGenTextures( 1, &texture->id );
+		glBindTexture( GL_TEXTURE_2D, texture->id );
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter );
+		glTexImage2D( GL_TEXTURE_2D, 0, bpp, work->w, work->h, 0, format, GL_UNSIGNED_BYTE, work->pixels );
 	
-	if( surface == NULL ) {
-		fprintf(stderr, "Error: Can't create texture from NULL surface.\n" );
-		return -1;
+		if( work != surface )
+			SDL_FreeSurface( work );
+	
+		error = glGetError();
+		if( error != GL_NO_ERROR ) {
+			fprintf(stderr, "Error: couldn't create texture: %s.\n", gluErrorString(error) );
+			return NULL;
+		}
 	}
-	if( ogl_nopt_textures() == 0 ) {
-		/* This OpenGL implementation only supports textures with power-of-two
-		 * dimensions, so we need to resize the surface before going further */
-		new = resize( surface );
-	}
-	
-	work = new ? new : surface;
-	
-	/* determine image format */
-	bpp = work->format->BytesPerPixel;
-	switch( bpp ) {
-		case 4:
-			if (work->format->Rmask == 0x000000ff)
-				format = GL_RGBA;
-			else
-				format = GL_BGRA;
-			break;
-		case 3:
-			if (work->format->Rmask == 0x000000ff)
-				format = GL_RGB;
-			else
-				format = GL_BGR;
-			break;
-		default:
-			fprintf(stderr, "Error: image is not true colour (%d bpp).\n", bpp );
-			if( work != surface )
-				SDL_FreeSurface( work );
-			return -1;
-			break;
-	}
-	
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glGenTextures( 1, texture );
-	glBindTexture( GL_TEXTURE_2D, *texture );
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter );
-	glTexImage2D( GL_TEXTURE_2D, 0, bpp, work->w, work->h, 0, format, GL_UNSIGNED_BYTE, work->pixels );
-
-	if( work != surface )
-		SDL_FreeSurface( work );
-
-	error = glGetError();
-	if( error != GL_NO_ERROR ) {
-		fprintf(stderr, "Error: couldn't create texture: %s.\n", gluErrorString(error) );
-		return -1;
-	}
-	return 0;
+	return texture;
 }
 
-GLuint sdl_create_texture( const char *filename, int *x, int *y ) {
-	GLuint t = 0;
+struct texture *sdl_create_texture( const char *filename ) {
+	struct texture *t = NULL;
 	SDL_Surface *s = sdl_load_image( filename );
 	if( s ) {
-		ogl_create_texture( s, &t );
-		if( x ) *x = s->w;
-		if( y ) *y = s->h;
+		t = ogl_create_texture( s );
 		SDL_FreeSurface( s );
 	}
 	return t;
 }
-

@@ -16,7 +16,7 @@ struct menu_item {
 	int position;
 	struct menu_item *next;
 	struct menu_item *prev;
-	struct font_message *message;
+	struct texture *message;
 	struct category *category;
 	char *text;
 };

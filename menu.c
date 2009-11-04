@@ -13,7 +13,7 @@ struct menu_item *menu_start = NULL;
 struct menu_item *menu_end = NULL;
 struct menu_item *selected = NULL;
 struct menu_item *prev = NULL;
-static GLuint menu_texture = 0;
+static struct texture *menu_texture = NULL;
 static int menu_items = 0;
 static int items_visible = 0;
 static int scroll = 0;
@@ -31,7 +31,7 @@ int menu_item_count( void ) {
 }
 
 int menu_load_texture( void ) {
-	menu_texture = sdl_create_texture( config_get()->iface.menu.texture, NULL ,NULL );
+	menu_texture = sdl_create_texture( config_get()->iface.menu.texture );
 	if( menu_texture == 0 ) {
 		fprintf( stderr, "Warning: Couldn't create texture for menu items\n" );
 		return -1;
@@ -41,7 +41,7 @@ int menu_load_texture( void ) {
 
 void menu_free_texture( void ) {
 	if( menu_texture ) {
-		ogl_free_texture( &menu_texture );
+		ogl_free_texture( menu_texture );
 	}
 }
 
@@ -52,7 +52,7 @@ void menu_pause( void ) {
 	menu_free_texture();
 	
 	while( item ) {
-		font_message_free( item->message );
+		ogl_free_texture( item->message );
 		item = item->next;
 	}
 }
@@ -65,7 +65,7 @@ int menu_resume( void ) {
 		return -1;
 		
 	while( item ) {
-		item->message = font_message_create( item->text );
+		item->message = font_create_texture( item->text );
 		if( item->message == NULL )
 			return -1;
 		item = item->next;
@@ -79,7 +79,7 @@ int menu_item_add( const char *text, int type, struct category *category ) {
 
 	if( item ) {
 		item->text = (char*)text;
-		item->message = font_message_create( text );
+		item->message = font_create_texture( text );
 		if( item->message == NULL ) {
 			fprintf( stderr, "Error: Couldn't create message for menu item '%s'\n", text );
 			return -1;
@@ -204,7 +204,7 @@ void menu_draw( void ) {
 		glEnable(GL_TEXTURE_2D);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
-		glBindTexture( GL_TEXTURE_2D, menu_texture );
+		glBindTexture( GL_TEXTURE_2D, menu_texture->id );
 		glBegin( GL_QUADS );
 			glTexCoord2f(0.0, 0.0); glVertex3f(-mx,  my, 0.0);
 			glTexCoord2f(0.0, 1.0); glVertex3f(-mx, -my, 0.0);
@@ -212,7 +212,7 @@ void menu_draw( void ) {
 			glTexCoord2f(1.0, 0.0); glVertex3f( mx,  my, 0.0);
 		glEnd();
 
-		glBindTexture( GL_TEXTURE_2D, item->message->texture );
+		glBindTexture( GL_TEXTURE_2D, item->message->id );
 		glBegin( GL_QUADS );
 			glTexCoord2f(0.0, 0.0); glVertex3f( -tx,  ty, 0.0);
 			glTexCoord2f(0.0, 1.0); glVertex3f( -tx, -ty, 0.0);
@@ -244,8 +244,7 @@ void menu_retreat( void ) {
 
 void menu_item_free( struct menu_item *m ) {
 	if( m->message ) {
-		font_message_free( m->message );
-		m->message = NULL;
+		ogl_free_texture( m->message );
 	}
 	menu_start = m->next;
 	free( m );

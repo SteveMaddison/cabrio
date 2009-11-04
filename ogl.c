@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "ogl.h"
 #include "config.h"
 
@@ -104,9 +105,12 @@ void ogl_load_alterego( void ) {
 	glScalef( xscale, yscale, 1.0 );
 }
 
-void ogl_free_texture( GLuint *t ) {
-	if( t && *t ) {
-		glDeleteTextures( 1, t );
+void ogl_free_texture( struct texture *t ) {
+	if( t ) {
+		if( t->id )
+			glDeleteTextures( 1, &t->id );
+		free( t );
+		t = NULL;
 	}
 }
 

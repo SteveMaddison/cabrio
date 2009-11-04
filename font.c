@@ -52,36 +52,15 @@ SDL_Surface *font_render( const char *text ) {
 	return TTF_RenderText_Blended( font, text, col );
 }
 
-void font_message_free( struct font_message *m ) {
-	if( m ) {
-		if( m->texture )
-			ogl_free_texture( &m->texture );
-		free( m );
-		m = NULL;
-	}
-}
-
-struct font_message *font_message_create( const char *text ) {
-	struct font_message *m = malloc( sizeof(struct font_message) );
-
-	if( m == NULL ) {
-		fprintf( stderr, "Error: Couldn't allocate meneory for text object '%s'\n", text );
-		return NULL;
-	}
-	else {
-		SDL_Surface *s = font_render( text );
-		if( s ) {
-			ogl_create_texture( s, &m->texture );
-			if( m->texture == 0 ) {
-				fprintf( stderr, "Error: Couldn't create texture for text '%s'\n", text );
-				free( m );
-				return NULL;
-			}
-			m->width = s->w;
-			m->height = s->h;
-			SDL_FreeSurface( s );
+struct texture *font_create_texture( const char *text ) {
+	struct texture *t = NULL;
+	SDL_Surface *s = font_render( text );
+	if( s ) {
+		t = ogl_create_texture( s );
+		if( t == NULL ) {
+			fprintf( stderr, "Error: Couldn't create texture for text '%s'\n", text );
 		}
+		SDL_FreeSurface( s );
 	}
-	return m;
+	return t;
 }
-

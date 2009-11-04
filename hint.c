@@ -14,21 +14,21 @@ static const GLfloat FONT_SCALE = 0.005;
 static const GLfloat ALPHA_STEP_MIN = 0.01;
 static GLfloat alpha = 1.0;
 static GLfloat alpha_step = 0.01;
-static GLuint arrow_texture = 0;
-static GLuint select_texture = 0;
-static GLuint back_texture = 0;
-struct font_message *text_select_message = 0;
-struct font_message *text_back_message = 0;
+static struct texture *arrow_texture = NULL;
+static struct texture *select_texture = NULL;
+static struct texture *back_texture = NULL;
+static struct texture *text_select_message = NULL;
+static struct texture *text_back_message = NULL;
 
 int hint_init( void ) {
 	int frame_rate = config_get()->iface.frame_rate;
 	
-	arrow_texture = sdl_create_texture( DATA_DIR "/pixmaps/arrow.png", NULL, NULL );
-	back_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_blue.png", NULL, NULL );
-	select_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_red.png", NULL, NULL );
-	if(!( text_select_message = font_message_create( "Select" ) ))
+	arrow_texture = sdl_create_texture( DATA_DIR "/pixmaps/arrow.png" );
+	back_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_blue.png" );
+	select_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_red.png" );
+	if(!( text_select_message = font_create_texture( "Select" ) ))
 		return -1;
-	if(!( text_back_message = font_message_create( "Back" ) ))
+	if(!( text_back_message = font_create_texture( "Back" ) ))
 		return -1;
 
 	if( frame_rate )
@@ -41,19 +41,15 @@ int hint_init( void ) {
 
 void hint_free( void ) {
 	if( arrow_texture )
-		ogl_free_texture( &arrow_texture );
+		ogl_free_texture( arrow_texture );
 	if( select_texture )
-		ogl_free_texture( &select_texture );
+		ogl_free_texture( select_texture );
 	if( back_texture )
-		ogl_free_texture( &back_texture );
-	if( text_select_message ) {
-		font_message_free( text_select_message );
-		text_select_message = NULL;
-	}
-	if( text_back_message ) {
-		font_message_free( text_back_message );
-		text_back_message = NULL;
-	}
+		ogl_free_texture( back_texture );
+	if( text_select_message )
+		ogl_free_texture( text_select_message );
+	if( text_back_message )
+		ogl_free_texture( text_back_message );
 }
 
 void hint_pause( void ) {
@@ -64,7 +60,7 @@ int hint_resume( void ) {
 	return hint_init();
 }
 
-void hint_draw_button( GLuint texture, GLfloat position ) {
+void hint_draw_button( struct texture *texture, GLfloat position ) {
 	GLfloat xfactor = ogl_xfactor();
 	GLfloat yfactor = ogl_yfactor();
 	GLfloat size = (BUTTON_SIZE/2) * xfactor;
@@ -76,7 +72,7 @@ void hint_draw_button( GLuint texture, GLfloat position ) {
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
-	glBindTexture( GL_TEXTURE_2D, texture );
+	glBindTexture( GL_TEXTURE_2D, texture->id );
 	glBegin( GL_QUADS );
 		glTexCoord2f(0.0, 0.0); glVertex3f(-size,  size, 0.0);
 		glTexCoord2f(0.0, 1.0); glVertex3f(-size, -size, 0.0);
@@ -97,7 +93,7 @@ void hint_draw_arrow( GLfloat x, GLfloat y, int orientation ) {
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
-	glBindTexture( GL_TEXTURE_2D, arrow_texture );
+	glBindTexture( GL_TEXTURE_2D, arrow_texture->id );
 	glBegin( GL_QUADS );
 	if( orientation == ORIENT_LEFT ) {
 		glTexCoord2f(1.0, 0.0); glVertex3f(-size,  size, 0.0);
@@ -114,7 +110,7 @@ void hint_draw_arrow( GLfloat x, GLfloat y, int orientation ) {
 	glEnd();
 }
 
-void hint_draw_caption( struct font_message *message, GLfloat position ) {
+void hint_draw_caption( struct texture *message, GLfloat position ) {
 	GLfloat xfactor = ogl_xfactor();
 	GLfloat yfactor = ogl_yfactor();
 	GLfloat tx = ((message->width*FONT_SCALE)/2) * xfactor;
@@ -127,7 +123,7 @@ void hint_draw_caption( struct font_message *message, GLfloat position ) {
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
-	glBindTexture( GL_TEXTURE_2D, message->texture );
+	glBindTexture( GL_TEXTURE_2D, message->id );
 	glBegin( GL_QUADS );
 		glTexCoord2f(0.0, 0.0); glVertex3f(-tx,  ty, 0.0);
 		glTexCoord2f(0.0, 1.0); glVertex3f(-tx, -ty, 0.0);

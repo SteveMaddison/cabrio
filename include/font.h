@@ -3,18 +3,11 @@
 
 #include "ogl.h"
 
-struct font_message {
-	GLuint texture;
-	int width;
-	int height;
-};
-
 int font_init( void );
 void font_pause( void );
 int font_resume( void );
 void font_free( void );
-void font_message_free( struct font_message *m );
-struct font_message *font_message_create( const char *text );
+struct texture *font_create_texture( const char *text );
 
 #endif
 
