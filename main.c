@@ -123,7 +123,7 @@ int run( struct game *game ) {
 	memset( &pi, 0, sizeof(PROCESS_INFORMATION));
 	memset( &si, 0, sizeof(STARTUPINFO));
 
-	snprintf( cmdline, "\"%s\"", config->emulators->executable, CONFIG_MAX_CMD_LENGTH );
+	snprintf( cmdline, CONFIG_MAX_CMD_LENGTH, "\"%s\"", config->emulators->executable );
 	for( i = 0 ; i < count ; i++ ) {
 		if( strlen(cmdline) + strlen(params[i]) + 4 <= CONFIG_MAX_CMD_LENGTH ) {
 			strcat( cmdline, " \"" );

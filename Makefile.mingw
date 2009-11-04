@@ -2,7 +2,9 @@ CC=gcc
 DATA_DIR=data
 CFLAGS=-g -Wall -DDATA_DIR=\"$(DATA_DIR)\"
 LDFLAGS=SDL.dll libSDL_gfx-13.dll SDL_image.dll SDL_mixer.dll SDL_ttf.dll \
-	libfreetype-6.dll glut.dll iconv.dll libxml2.dll -lglu32 -lopengl32
+	libfreetype-6.dll glut.dll iconv.dll libxml2.dll libpng12-0.dll jpeg.dll \
+	libvorbis-0.dll libvorbisfile-3.dll mikmod.dll smpeg.dll \
+	-lglu32 -lopengl32
 
 INCLUDES=-I./include -I/usr/include/libxml2
 

@@ -7,8 +7,10 @@ Mix_Chunk *back_sound = NULL;
 Mix_Chunk *no_sound = NULL;
 
 int sound_init( void ) {
-	if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 )
+	if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) {
+	  fprintf( stderr, "Error: Unable to initialise sound: %s\n", SDL_GetError() );
 		return -1;
+	}
 
 	blip_sound = Mix_LoadWAV( DATA_DIR "/sounds/blip.wav" );
 	select_sound = Mix_LoadWAV( DATA_DIR "/sounds/select.wav" );
