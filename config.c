@@ -389,42 +389,42 @@ struct config_category_value *config_category_value( struct config_category *cat
 }
 
 int config_read_game_category( xmlNode *node, struct config_game_category *gc ) {
-	char *value;
+	xmlNode *tmp = node;
 	
-	gc->category = NULL;
+	/* Make sure we have the name first */
 	if( node ) {
 		while( node ) {
 			if( node->type == XML_ELEMENT_NODE ) {
 				if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
 					gc->category = config_category( (char*)xmlNodeGetContent(node) );
 				}
-				else if( strcmp( (char*)node->name, config_tag_value ) == 0 ) {
-					/* Save for later, in case name is not yet known. */
-					value = (char*)xmlNodeGetContent(node);
+			}
+			node = node->next;
+		}
+	}
+	/* Now check for (and add) values */
+	if( gc->category ) {
+		node = tmp;
+		while( node ) {
+			if( node->type == XML_ELEMENT_NODE ) {
+				if( strcmp( (char*)node->name, config_tag_value ) == 0 ) {
+					if( xmlNodeGetContent(node)[0] ) { 
+						gc->value = config_category_value( gc->category, (char*)xmlNodeGetContent(node) );
+					}
+				}
+				else if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+					/* Already got it... */
 				}
 				else {
 					fprintf( stderr, warn_skip, config_tag_game_category, node->name );
 				}
 			}
 			node = node->next;
-		}
-
-		if( gc->category ) {
-			if( value && *value ) {
-				gc->value = config_category_value( gc->category, value );
-			}
-			else {
-				fprintf( stderr, "Warning: game category with %s '%s' has no %s\n", config_tag_name, gc->category->name, config_tag_value );
-				return -1;
-			}
-		}
-		else {
-			if( value && *value ) {
-				fprintf( stderr, "Warning: game category with %s '%s' but no %s\n", config_tag_value, value, config_tag_name );
-			}
-			fprintf( stderr, "Warning: game category with no %s nor %s\n", config_tag_value, config_tag_name );
-			return -1;
-		}
+		}		
+	}
+	else {
+		fprintf( stderr, "Warning: game category has no '%s' element\n", config_tag_name );
+		return -1;
 	}
 	
 	return 0;

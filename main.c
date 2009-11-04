@@ -123,14 +123,15 @@ int run( struct game *game ) {
 	memset( &pi, 0, sizeof(PROCESS_INFORMATION));
 	memset( &si, 0, sizeof(STARTUPINFO));
 
-	strncpy( cmdline, config->emulators->executable, CONFIG_MAX_CMD_LENGTH );
+	snprintf( cmdline, "\"%s\"", config->emulators->executable, CONFIG_MAX_CMD_LENGTH );
 	for( i = 0 ; i < count ; i++ ) {
-		if( strlen(cmdline) + strlen(params[i]) + 2 <= CONFIG_MAX_CMD_LENGTH ) {
-			strcat( cmdline, " " );
+		if( strlen(cmdline) + strlen(params[i]) + 4 <= CONFIG_MAX_CMD_LENGTH ) {
+			strcat( cmdline, " \"" );
 			strcat( cmdline, params[i] );
+			strcat( cmdline, "\"" );
 		}
 		else {
-			fprintf( stderr, "Warning: No spcae for parameter: '%s'\n", params[i] );
+			fprintf( stderr, "Warning: No space for parameter: '%s'\n", params[i] );
 			break;
 		}
 	}
