@@ -174,18 +174,22 @@ void menu_draw( void ) {
 			zoom = 1;
 			alpha = min_alpha;
 		}
-		tx = ((GLfloat)item->message->width * config->font_scale)*xfactor;
+		tx = ((GLfloat)item->message->width * config->font_scale) * xfactor;
 		if( tx > config->item_width/2 ) {
 			tx = (config->item_width/2)-(config->item_width/10);
 		}
-		ty = ((GLfloat)item->message->height * config->font_scale)*xfactor;
+		tx *= zoom;
+		ty = ((GLfloat)item->message->height * config->font_scale) * xfactor * zoom;
 
 		mx = (config->item_width/2)*xfactor*zoom;
 		my = (config->item_height/2)*xfactor*zoom;
 
 		ogl_load_alterego();
-		offset = (((GLfloat)(item->position - scroll) - ( ((GLfloat)items_visible-1)/2 )) * spacing) * xfactor;
-		glTranslatef( offset, config->y_offset * yfactor, -6 );
+		offset = (((GLfloat)(item->position - scroll) - ( ((GLfloat)items_visible-1)/2 )) * spacing);
+		if( config->orientation == CONFIG_LANDSCAPE )
+			glTranslatef( (offset + config->x_offset) * xfactor, config->y_offset * yfactor, -6 );
+		else
+			glTranslatef( config->y_offset * xfactor, (-offset + config->x_offset) * yfactor, -6 );
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
