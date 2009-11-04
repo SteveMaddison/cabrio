@@ -187,9 +187,9 @@ void menu_draw( void ) {
 		ogl_load_alterego();
 		offset = (((GLfloat)(item->position - scroll) - ( ((GLfloat)items_visible-1)/2 )) * spacing);
 		if( config->orientation == CONFIG_LANDSCAPE )
-			glTranslatef( (offset + config->x_offset) * xfactor, config->y_offset * yfactor, -6 );
+			glTranslatef( (offset + config->offset1) * xfactor, config->offset2 * yfactor, -6 );
 		else
-			glTranslatef( config->y_offset * xfactor, (-offset + config->x_offset) * yfactor, -6 );
+			glTranslatef( -config->offset2 * xfactor, (-offset + config->offset1) * yfactor, -6 );
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);

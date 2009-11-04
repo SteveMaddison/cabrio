@@ -14,6 +14,7 @@ int ogl_screen_height( void );
 int ogl_screen_orientation( void );
 GLfloat ogl_xfactor( void );
 GLfloat ogl_yfactor( void );
+GLfloat ogl_aspect_ratio( void );
 void ogl_screen_rotate( int angle );
 void ogl_free_texture( GLuint *t );
 void ogl_clear( void );

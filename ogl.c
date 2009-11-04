@@ -64,11 +64,15 @@ int ogl_screen_height( void ) {
 }
 
 GLfloat ogl_xfactor( void ) {
-	return width/(GLfloat)config_get()->iface.screen_width;
+	return (GLfloat)width/(GLfloat)config_get()->iface.screen_width;
 }
 
 GLfloat ogl_yfactor( void ) {
-	return height/(GLfloat)config_get()->iface.screen_height;
+	return (GLfloat)height/(GLfloat)config_get()->iface.screen_height;
+}
+
+GLfloat ogl_aspect_ratio( void ) {
+	return (GLfloat)width/(GLfloat)height;
 }
 
 int ogl_screen_orientation( void ) {

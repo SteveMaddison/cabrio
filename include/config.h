@@ -87,8 +87,8 @@ struct config_menu {
 	float font_scale;
 	float zoom;
 	int transparency;
-	float x_offset;
-	float y_offset;
+	float offset1;
+	float offset2;
 	int max_visible;
 	float spacing;
 	int orientation;

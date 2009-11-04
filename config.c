@@ -64,8 +64,8 @@ static const char *config_tag_iface_gfx_max_height		=     "max-image-height";
 static const char *config_tag_iface_menu				=   "menu";
 static const char *config_tag_iface_menu_item_width		=     "item-width";
 static const char *config_tag_iface_menu_item_height	=     "item-height";
-static const char *config_tag_iface_menu_x_offset		=     "x-offset";
-static const char *config_tag_iface_menu_y_offset		=     "y-offset";
+static const char *config_tag_iface_menu_offset1		=     "primary-offset";
+static const char *config_tag_iface_menu_offset2		=     "secondary-offset";
 static const char *config_tag_iface_menu_items_visible	=     "items-visible";
 static const char *config_tag_iface_menu_spacing		=     "spacing";
 
@@ -713,11 +713,11 @@ int config_read_menu( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, config_tag_transparency ) == 0 ) {
 				config_read_percentage( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.transparency );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_menu_x_offset ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.x_offset );
+			else if( strcmp( (char*)node->name, config_tag_iface_menu_offset1 ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.offset1 );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_menu_y_offset ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.y_offset );
+			else if( strcmp( (char*)node->name, config_tag_iface_menu_offset2 ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.offset2 );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_menu_items_visible ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.menu.max_visible );
@@ -1162,8 +1162,8 @@ int config_new( void ) {
 		config.iface.menu.font_scale = 0.0025;
 		config.iface.menu.zoom = 1.2;
 		config.iface.menu.transparency = 40;
-		config.iface.menu.x_offset = 0;
-		config.iface.menu.y_offset = 2.0;
+		config.iface.menu.offset1 = 0;
+		config.iface.menu.offset2 = 2.0;
 		config.iface.menu.max_visible = 4;
 		config.iface.menu.spacing = -1;
 		config.iface.menu.orientation = CONFIG_LANDSCAPE;
