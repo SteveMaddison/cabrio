@@ -72,7 +72,7 @@ GLfloat ogl_yfactor( void ) {
 }
 
 GLfloat ogl_aspect_ratio( void ) {
-	return (GLfloat)width/(GLfloat)height;
+	return (GLfloat)config_get()->iface.screen_width/(GLfloat)config_get()->iface.screen_height;
 }
 
 int ogl_screen_orientation( void ) {

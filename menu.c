@@ -142,6 +142,10 @@ int menu_init( void ) {
 	if( menu_items > config->iface.menu.max_visible )
 		items_visible = config->iface.menu.max_visible;
 
+	printf("x: %f\n", ogl_xfactor());
+	printf("y: %f\n", ogl_xfactor());
+	printf("ar: %f\n", ogl_aspect_ratio());
+
 	selected = menu_start;
 	prev = selected;
 	return 0;
@@ -189,7 +193,7 @@ void menu_draw( void ) {
 		if( config->orientation == CONFIG_LANDSCAPE )
 			glTranslatef( (offset + config->offset1) * xfactor, config->offset2 * yfactor, -6 );
 		else
-			glTranslatef( -config->offset2 * xfactor, (-offset + config->offset1) * yfactor, -6 );
+			glTranslatef( -config->offset2 * xfactor * ogl_aspect_ratio(), (-offset + config->offset1) * yfactor, -6 );			
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
