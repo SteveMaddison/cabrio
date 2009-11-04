@@ -51,11 +51,16 @@ void game_list_free( void ) {
 }
 
 int game_load_texture( struct game *game ) {
-	if( game && game->logo_image && game->logo_image[0] ) {
+	if( game && game->logo_image && *game->logo_image ) {
 		game->texture = sdl_create_texture( game->logo_image );
 	}
-	else {
-		game->texture = font_create_texture( "<No Image>" );
+	if( game->texture == NULL ) {
+		if( game && game->name && *game->name ) {
+			game->texture = font_create_texture( game->name );
+		}
+		else {
+			game->texture = font_create_texture( "<No Name>" );
+		}
 	}
 	
 	if( game->texture == NULL ) {
@@ -131,6 +136,7 @@ int game_list_create( void ) {
 			struct category *category = category_first();
 			game->name = config_game->name;
 			game->logo_image = config_game->logo_image;
+			game->texture = NULL;
 			game_load_texture( game );
 			game->bg_image = config_game->background_image;
 			game->rom_path = config_game->rom_image;
