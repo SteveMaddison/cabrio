@@ -4,6 +4,8 @@
 #include "font.h"
 
 static const int MAX_STEPS = 50;
+static const GLfloat MENU_DEPTH = -6;
+static const GLfloat SPACING_FACTOR = 1.2;
 const char *menu_text_all = "All";
 const char *menu_text_platform = "Platform";
 
@@ -118,9 +120,9 @@ int menu_init( void ) {
 	if( spacing < 0 ) {
 		/* auto spacing */
 		if( config->iface.menu.orientation == CONFIG_LANDSCAPE )
-			spacing = (GLfloat)(config->iface.menu.item_width * config->iface.menu.zoom * 1.2);
+			spacing = (GLfloat)config->iface.menu.item_width * config->iface.menu.zoom * SPACING_FACTOR;
 		else
-			spacing = (GLfloat)(config->iface.menu.item_height * config->iface.menu.zoom * 1.2);
+			spacing = (GLfloat)config->iface.menu.item_height * config->iface.menu.zoom * SPACING_FACTOR;
 	}
 
 	min_alpha = 1.0 - (GLfloat)(config->iface.menu.transparency)/100;
@@ -142,10 +144,6 @@ int menu_init( void ) {
 	if( menu_items > config->iface.menu.max_visible )
 		items_visible = config->iface.menu.max_visible;
 
-	printf("x: %f\n", ogl_xfactor());
-	printf("y: %f\n", ogl_xfactor());
-	printf("ar: %f\n", ogl_aspect_ratio());
-
 	selected = menu_start;
 	prev = selected;
 	return 0;
@@ -161,6 +159,7 @@ void menu_draw( void ) {
 	while( item ) {
 		if( prev != selected ) {
 			if( step++ > steps ) {
+				/* Animation complete */
 				step = 0;
 				prev = selected;
 			}
@@ -178,22 +177,28 @@ void menu_draw( void ) {
 			zoom = 1;
 			alpha = min_alpha;
 		}
+		
+		/* Make sure the text fits inside the box */
 		tx = ((GLfloat)item->message->width * config->font_scale) * xfactor;
 		if( tx > config->item_width/2 ) {
-			tx = (config->item_width/2)-(config->item_width/10);
+			tx = ((config->item_width/2)-(config->item_width)) / 10;
 		}
 		tx *= zoom;
-		ty = ((GLfloat)item->message->height * config->font_scale) * xfactor * zoom;
+		ty = ((GLfloat)item->message->height * config->font_scale) * xfactor;
+		if( ty > config->item_height/2 ) {
+			ty = ((config->item_height/2)-(config->item_height)) / 10;
+		}
+		ty *= zoom;
 
-		mx = (config->item_width/2)*xfactor*zoom;
-		my = (config->item_height/2)*xfactor*zoom;
+		mx = (config->item_width/2) * xfactor * zoom;
+		my = (config->item_height/2) * xfactor * zoom;
 
 		ogl_load_alterego();
 		offset = (((GLfloat)(item->position - scroll) - ( ((GLfloat)items_visible-1)/2 )) * spacing);
 		if( config->orientation == CONFIG_LANDSCAPE )
 			glTranslatef( (offset + config->offset1) * xfactor, config->offset2 * yfactor, -6 );
 		else
-			glTranslatef( -config->offset2 * xfactor * ogl_aspect_ratio(), (-offset + config->offset1) * yfactor, -6 );			
+			glTranslatef( -config->offset2 * xfactor * ogl_aspect_ratio(), (-offset + config->offset1) * yfactor, MENU_DEPTH );			
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
