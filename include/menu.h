@@ -13,12 +13,19 @@ enum menu_t {
 
 struct menu_item {
 	int type;
-	int position;
 	struct menu_item *next;
 	struct menu_item *prev;
 	struct texture *message;
 	struct category *category;
 	char *text;
+};
+
+struct menu_tile {
+	struct menu_tile *next;
+	struct menu_tile *prev;
+	struct menu_item *item;
+	GLfloat x;
+	GLfloat y;
 };
 
 int menu_init( void );

@@ -11,12 +11,12 @@ const char *menu_text_platform = "Platform";
 
 struct menu_item *menu_start = NULL;
 struct menu_item *menu_end = NULL;
-struct menu_item *selected = NULL;
-struct menu_item *prev = NULL;
+struct menu_tile *selected = NULL;
+struct menu_tile *tile_start = NULL;
+struct menu_tile *tile_end = NULL;
 static struct texture *menu_texture = NULL;
 static int menu_items = 0;
 static int items_visible = 0;
-static int scroll = 0;
 static int steps = 0;
 static int step = 0;
 static GLfloat spacing = 1.0;
@@ -24,7 +24,7 @@ static GLfloat min_alpha = 1.0;
 static GLfloat zoom = 1.0;
 
 struct menu_item *menu_selected( void ) {
-	return selected;
+	return selected->item;
 }
 
 int menu_item_count( void ) {
@@ -49,7 +49,6 @@ void menu_free_texture( void ) {
 void menu_pause( void ) {
 	struct menu_item *item = menu_start;
 	step = 0;
-	prev = selected;
 	menu_free_texture();
 	
 	while( item ) {
@@ -87,17 +86,19 @@ int menu_item_add( const char *text, int type, struct category *category ) {
 		}
 		item->type = type;
 		item->category = category;
-		item->position = menu_items;
 
-		item->next = NULL;
-		item->prev = menu_end;
-		if( menu_end ) {
-			menu_end->next = item;
-		}
-		if( menu_items == 0 ) {
+		if( menu_start == NULL ) {
+			item->next = item;
+			item->prev = item;
 			menu_start = item;
 		}
-		menu_end = item;
+		else {
+			menu_start->next->prev = item;
+			item->next = menu_start->next;
+			menu_start->next = item;
+			item->prev = menu_start;
+		}
+
 		menu_items++;
 	}
 	else {
@@ -111,6 +112,7 @@ int menu_item_add( const char *text, int type, struct category *category ) {
 int menu_init( void ) {
 	struct category *category = category_first();
 	const struct config *config = config_get();
+	int i;
 	
 	if( config->iface.frame_rate )
 		steps = config->iface.frame_rate/3;
@@ -131,7 +133,6 @@ int menu_init( void ) {
 		else
 			spacing = (GLfloat)config->iface.menu.item_height * zoom * SPACING_FACTOR;
 	}
-	
 
 	min_alpha = 1.0 - (GLfloat)(config->iface.menu.transparency)/100;
 
@@ -152,32 +153,65 @@ int menu_init( void ) {
 	if( menu_items > config->iface.menu.max_visible )
 		items_visible = config->iface.menu.max_visible;
 
-	selected = menu_start;
-	prev = selected;
+	if( items_visible ) {
+		struct menu_item *item = menu_start;
+		if( item ) {
+			for( i = 0 ; i < items_visible + 2 ; i++ ) {
+				struct menu_tile *tile = malloc( sizeof(struct menu_tile) );
+				if( tile ) {
+					GLfloat offset = (((GLfloat)(i) - (((GLfloat)items_visible+1)/2 )) * spacing);
+					if( config->iface.menu.orientation == CONFIG_LANDSCAPE ) {
+						tile->x = (offset + config->iface.menu.offset1) * ogl_xfactor();
+						tile->y = config->iface.menu.offset2 * ogl_yfactor();
+					}
+					else {
+						tile->x = -config->iface.menu.offset2 * ogl_xfactor() * ogl_aspect_ratio();
+						tile->y = -(offset + config->iface.menu.offset1) * ogl_yfactor();
+					}
+						
+					tile->item = item;
+					item = item->next;
+					
+					tile->next = NULL;
+					tile->prev = tile_end;
+					if( tile_end )
+						tile_end->next = tile;
+					else
+						tile_start = tile;
+					tile_end = tile;
+				}
+				else {
+					fprintf( stderr, "Warning: Couldn't allocate memeory for menu tile %d\n", i );
+				}
+			}
+		}
+	}
+	
+	selected = tile_start;
+	for( i = 0 ; i < (menu_items/2) ; i++ ) {
+		selected = selected->next;
+	}
+	
 	return 0;
 }
 
 void menu_draw( void ) {
-	struct menu_item *item = menu_start;
-	GLfloat item_zoom,offset,tx,ty,mx,my,alpha = 0;
+	struct menu_tile *tile = tile_start;
+	GLfloat item_zoom,tx,ty,mx,my,alpha = 0;
 	GLfloat xfactor = ogl_xfactor();
-	GLfloat yfactor = ogl_yfactor();
 	const struct config_menu *config = &config_get()->iface.menu;
 	
-	while( item ) {
-		if( prev != selected ) {
-			if( step++ > steps ) {
-				/* Animation complete */
-				step = 0;
-				prev = selected;
-			}
+	while( tile ) {
+		if( step && step++ > steps ) {
+			/* Animation complete */
+			step = 0;
 		}
 
-		if( item == prev ) {
+		if( tile->prev == selected || tile->next == selected ) {
 			item_zoom = zoom - (((zoom - 1)/(GLfloat)steps) * (GLfloat)step);
 			alpha = 1.0-(((1.0-min_alpha)/steps)*step);
 		}
-		else if ( item == selected ) {
+		else if ( tile == selected ) {
 			item_zoom = 1 + ((zoom - 1)/(GLfloat)steps) * (GLfloat)step;
 			alpha = min_alpha+(((1.0-min_alpha)/steps)*step);
 		}
@@ -187,12 +221,12 @@ void menu_draw( void ) {
 		}
 		
 		/* Make sure the text fits inside the box */
-		tx = ((GLfloat)item->message->width * config->font_scale) * xfactor;
+		tx = ((GLfloat)tile->item->message->width * config->font_scale) * xfactor;
 		if( tx > config->item_width/2 ) {
 			tx = ((config->item_width/2)-(config->item_width)) / 10;
 		}
 		tx *= item_zoom;
-		ty = ((GLfloat)item->message->height * config->font_scale) * xfactor;
+		ty = ((GLfloat)tile->item->message->height * config->font_scale) * xfactor;
 		if( ty > config->item_height/2 ) {
 			ty = ((config->item_height/2)-(config->item_height)) / 10;
 		}
@@ -202,11 +236,7 @@ void menu_draw( void ) {
 		my = (config->item_height/2) * xfactor * item_zoom;
 
 		ogl_load_alterego();
-		offset = (((GLfloat)(item->position - scroll) - ( ((GLfloat)items_visible-1)/2 )) * spacing);
-		if( config->orientation == CONFIG_LANDSCAPE )
-			glTranslatef( (offset + config->offset1) * xfactor, config->offset2 * yfactor, -6 );
-		else
-			glTranslatef( -config->offset2 * xfactor * ogl_aspect_ratio(), (-offset + config->offset1) * yfactor, MENU_DEPTH );			
+		glTranslatef( tile->x, tile->y, -6 );
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
@@ -220,7 +250,7 @@ void menu_draw( void ) {
 			glTexCoord2f(1.0, 0.0); glVertex3f( mx,  my, 0.0);
 		glEnd();
 
-		glBindTexture( GL_TEXTURE_2D, item->message->id );
+		glBindTexture( GL_TEXTURE_2D, tile->item->message->id );
 		glBegin( GL_QUADS );
 			glTexCoord2f(0.0, 0.0); glVertex3f( -tx,  ty, 0.0);
 			glTexCoord2f(0.0, 1.0); glVertex3f( -tx, -ty, 0.0);
@@ -228,26 +258,38 @@ void menu_draw( void ) {
 			glTexCoord2f(1.0, 0.0); glVertex3f(  tx,  ty, 0.0);
 		glEnd();
 		
-		item = item->next;
+		tile = tile->next;
 	}
 }
 
 void menu_advance( void ) {
-	if( selected == prev ) {
-		prev = selected;
-		selected = selected->next;
-		if( selected == NULL )
-			selected = menu_start;
+	struct menu_tile *t = tile_start;
+	struct menu_item *i = NULL;
+
+	step = steps;
+	if( t ) {
+		i = tile_start->item;
+		while( t && t->next ) {
+			t->item = t->next->item;
+			t = t->next;
+		}
+		t->item = i;
 	}
 }
 
 void menu_retreat( void ) {
-	if( selected == prev ) {
-		prev = selected;
-		selected = selected->prev;
-		if( selected == NULL )
-			selected = menu_end;
-	}
+	struct menu_tile *t = tile_end;
+	struct menu_item *i = NULL;
+	
+	step = steps;
+	if( t ) {
+		i = tile_end->item;
+		while( t && t->prev ) {
+			t->item = t->prev->item;
+			t = t->prev;
+		}
+		t->item = i;
+	}		
 }
 
 void menu_item_free( struct menu_item *m ) {
@@ -255,15 +297,16 @@ void menu_item_free( struct menu_item *m ) {
 		ogl_free_texture( m->message );
 	}
 	menu_start = m->next;
+	if( menu_start->next == menu_start )
+		menu_start = NULL;
 	free( m );
 	m = NULL;
 }
 
 void menu_free( void ) {
-	while( menu_start ) {
-		menu_item_free( menu_start );
-	}
-	menu_end = NULL;
+
+	/* XXX FIXME */
+
 	menu_free_texture();
 }
 
