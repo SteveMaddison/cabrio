@@ -19,6 +19,7 @@ static int menu_items = 0;
 static int items_visible = 0;
 static int steps = 0;
 static int step = 0;
+static int direction = 0;
 static GLfloat spacing = 1.0;
 static GLfloat min_alpha = 1.0;
 static GLfloat zoom = 1.0;
@@ -115,7 +116,7 @@ int menu_init( void ) {
 	int i;
 	
 	if( config->iface.frame_rate )
-		steps = config->iface.frame_rate/3;
+		steps = config->iface.frame_rate;
 	else
 		steps = MAX_STEPS;
 
@@ -156,6 +157,7 @@ int menu_init( void ) {
 	if( items_visible ) {
 		struct menu_item *item = menu_start;
 		if( item ) {
+			item = item->next;
 			for( i = 0 ; i < items_visible + 2 ; i++ ) {
 				struct menu_tile *tile = malloc( sizeof(struct menu_tile) );
 				if( tile ) {
@@ -168,7 +170,9 @@ int menu_init( void ) {
 						tile->x = -config->iface.menu.offset2 * ogl_xfactor() * ogl_aspect_ratio();
 						tile->y = -(offset + config->iface.menu.offset1) * ogl_yfactor();
 					}
-						
+					
+					tile->zoom = 1;
+					tile->alpha = min_alpha;
 					tile->item = item;
 					item = item->next;
 					
@@ -188,75 +192,89 @@ int menu_init( void ) {
 	}
 	
 	selected = tile_start;
-	for( i = 0 ; i < (menu_items/2) ; i++ ) {
+	for( i = 0 ; i < ((menu_items+1)/2) ; i++ ) {
 		selected = selected->next;
 	}
+	selected->zoom = zoom;
+	selected->alpha = 1;
+	
+	tile_start->zoom = 0;
+	tile_start->alpha = 0;
+	tile_start->x = tile_start->next->x;
+	tile_start->y = tile_start->next->y;
+	
+	tile_end->zoom = 0;
+	tile_end->alpha = 0;
+	tile_end->x = tile_end->prev->x;
+	tile_end->y = tile_end->prev->y;
 	
 	return 0;
 }
 
 void menu_draw( void ) {
 	struct menu_tile *tile = tile_start;
-	GLfloat item_zoom,tx,ty,mx,my,alpha = 0;
+	GLfloat item_zoom,tx,ty,mx,my = 0;
 	GLfloat xfactor = ogl_xfactor();
 	const struct config_menu *config = &config_get()->iface.menu;
 	
 	while( tile ) {
-		if( step && step++ > steps ) {
-			/* Animation complete */
-			step = 0;
-		}
-
-		if( tile->prev == selected || tile->next == selected ) {
-			item_zoom = zoom - (((zoom - 1)/(GLfloat)steps) * (GLfloat)step);
-			alpha = 1.0-(((1.0-min_alpha)/steps)*step);
-		}
-		else if ( tile == selected ) {
-			item_zoom = 1 + ((zoom - 1)/(GLfloat)steps) * (GLfloat)step;
-			alpha = min_alpha+(((1.0-min_alpha)/steps)*step);
-		}
-		else {
-			item_zoom = 1;
-			alpha = min_alpha;
-		}
+		struct menu_tile *dest = tile;
 		
-		/* Make sure the text fits inside the box */
-		tx = ((GLfloat)tile->item->message->width * config->font_scale) * xfactor;
-		if( tx > config->item_width/2 ) {
-			tx = ((config->item_width/2)-(config->item_width)) / 10;
+		if( direction ) {
+			if( direction > 0 )
+				dest = tile->next;
+			else
+				dest = tile->prev;
+				
+			if( step-- == 0 ) {
+				/* Animation complete */
+				direction = 0;
+			}
 		}
-		tx *= item_zoom;
-		ty = ((GLfloat)tile->item->message->height * config->font_scale) * xfactor;
-		if( ty > config->item_height/2 ) {
-			ty = ((config->item_height/2)-(config->item_height)) / 10;
+
+		if( dest ) {
+			/* Make sure the text fits inside the box */
+			item_zoom = tile->zoom + (((dest->zoom-tile->zoom)/steps) * step);
+			
+			tx = ((GLfloat)tile->item->message->width * config->font_scale) * xfactor;
+			if( tx > config->item_width/2 ) {
+				tx = ((config->item_width/2)-(config->item_width)) / 10;
+			}
+			tx *= item_zoom;
+			ty = ((GLfloat)tile->item->message->height * config->font_scale) * xfactor;
+			if( ty > config->item_height/2 ) {
+				ty = ((config->item_height/2)-(config->item_height)) / 10;
+			}
+			ty *= item_zoom;
+
+			mx = (config->item_width/2) * xfactor * item_zoom;
+			my = (config->item_height/2) * xfactor * item_zoom;
+
+			ogl_load_alterego();
+			glTranslatef( tile->x + (((dest->x-tile->x)/steps) * step),
+					 	  tile->y + (((dest->y-tile->y)/steps) * step),
+					 	  MENU_DEPTH );
+			glColor4f( 1.0, 1.0, 1.0, tile->alpha + (((dest->alpha-tile->alpha)/steps) * step) );
+			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+			glEnable(GL_TEXTURE_2D);
+			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+
+			glBindTexture( GL_TEXTURE_2D, menu_texture->id );
+			glBegin( GL_QUADS );
+				glTexCoord2f(0.0, 0.0); glVertex3f(-mx,  my, 0.0);
+				glTexCoord2f(0.0, 1.0); glVertex3f(-mx, -my, 0.0);
+				glTexCoord2f(1.0, 1.0); glVertex3f( mx, -my, 0.0);
+				glTexCoord2f(1.0, 0.0); glVertex3f( mx,  my, 0.0);
+			glEnd();
+
+			glBindTexture( GL_TEXTURE_2D, tile->item->message->id );
+			glBegin( GL_QUADS );
+				glTexCoord2f(0.0, 0.0); glVertex3f( -tx,  ty, 0.0);
+				glTexCoord2f(0.0, 1.0); glVertex3f( -tx, -ty, 0.0);
+				glTexCoord2f(1.0, 1.0); glVertex3f(  tx, -ty, 0.0);
+				glTexCoord2f(1.0, 0.0); glVertex3f(  tx,  ty, 0.0);
+			glEnd();
 		}
-		ty *= item_zoom;
-
-		mx = (config->item_width/2) * xfactor * item_zoom;
-		my = (config->item_height/2) * xfactor * item_zoom;
-
-		ogl_load_alterego();
-		glTranslatef( tile->x, tile->y, -6 );
-		glColor4f( 1.0, 1.0, 1.0, alpha );
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_TEXTURE_2D);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-		glBindTexture( GL_TEXTURE_2D, menu_texture->id );
-		glBegin( GL_QUADS );
-			glTexCoord2f(0.0, 0.0); glVertex3f(-mx,  my, 0.0);
-			glTexCoord2f(0.0, 1.0); glVertex3f(-mx, -my, 0.0);
-			glTexCoord2f(1.0, 1.0); glVertex3f( mx, -my, 0.0);
-			glTexCoord2f(1.0, 0.0); glVertex3f( mx,  my, 0.0);
-		glEnd();
-
-		glBindTexture( GL_TEXTURE_2D, tile->item->message->id );
-		glBegin( GL_QUADS );
-			glTexCoord2f(0.0, 0.0); glVertex3f( -tx,  ty, 0.0);
-			glTexCoord2f(0.0, 1.0); glVertex3f( -tx, -ty, 0.0);
-			glTexCoord2f(1.0, 1.0); glVertex3f(  tx, -ty, 0.0);
-			glTexCoord2f(1.0, 0.0); glVertex3f(  tx,  ty, 0.0);
-		glEnd();
 		
 		tile = tile->next;
 	}
@@ -264,48 +282,43 @@ void menu_draw( void ) {
 
 void menu_advance( void ) {
 	struct menu_tile *t = tile_start;
-	struct menu_item *i = NULL;
 
-	step = steps;
-	if( t ) {
-		i = tile_start->item;
-		while( t && t->next ) {
-			t->item = t->next->item;
+	if( direction == 0 ) {
+		direction = 1;
+		step = steps;
+
+		while( t ) {
+			t->item = t->item->next;
 			t = t->next;
 		}
-		t->item = i;
 	}
 }
 
 void menu_retreat( void ) {
-	struct menu_tile *t = tile_end;
-	struct menu_item *i = NULL;
+	struct menu_tile *t = tile_start;
 	
-	step = steps;
-	if( t ) {
-		i = tile_end->item;
-		while( t && t->prev ) {
-			t->item = t->prev->item;
-			t = t->prev;
-		}
-		t->item = i;
-	}		
-}
+	if( direction == 0 ) {
+		direction = -1;
+		step = steps;
 
-void menu_item_free( struct menu_item *m ) {
-	if( m->message ) {
-		ogl_free_texture( m->message );
+		while( t ) {
+			t->item = t->item->prev;
+			t = t->next;
+		}
 	}
-	menu_start = m->next;
-	if( menu_start->next == menu_start )
-		menu_start = NULL;
-	free( m );
-	m = NULL;
 }
 
 void menu_free( void ) {
-
-	/* XXX FIXME */
+	struct menu_item *item = menu_start;
+	
+	if( item ) {
+		do {
+			if( item->message ) {
+				ogl_free_texture( item->message );
+			}
+			item = item->next;
+		} while( item != menu_start );
+	}
 
 	menu_free_texture();
 }

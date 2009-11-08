@@ -26,6 +26,8 @@ struct menu_tile {
 	struct menu_item *item;
 	GLfloat x;
 	GLfloat y;
+	GLfloat zoom;
+	GLfloat alpha;
 };
 
 int menu_init( void );
