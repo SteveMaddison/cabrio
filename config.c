@@ -403,6 +403,7 @@ int config_read_game_category( xmlNode *node, struct config_game_category *gc ) 
 		}
 	}
 	/* Now check for (and add) values */
+	gc->value = NULL;
 	if( gc->category ) {
 		node = tmp;
 		while( node ) {
@@ -420,7 +421,11 @@ int config_read_game_category( xmlNode *node, struct config_game_category *gc ) 
 				}
 			}
 			node = node->next;
-		}		
+		}
+		if( gc->value == NULL ) {
+			fprintf( stderr, "Warning: Category '%s' specified without value(s)\n", gc->category->name );
+			return -1;		
+		}
 	}
 	else {
 		fprintf( stderr, "Warning: game category has no '%s' element\n", config_tag_name );
