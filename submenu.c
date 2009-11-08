@@ -85,13 +85,13 @@ int submenu_create( struct menu_item *item ) {
 	if( submenu_load_texture() != 0 )
 		return -1;
 
-	arrow_retreat.x = -((item_width/2) + item_height);
-	arrow_retreat.y = (menu_tile_selected()->y * ogl_yfactor()) - offset;
+	arrow_retreat.x = menu_tile_selected()->x - ((item_width/2) + item_height);
+	arrow_retreat.y = (menu_tile_selected()->y - offset);
 	arrow_retreat.size = item_height * 2;
 	arrow_retreat.angle = 90;
 	
-	arrow_advance.x = (item_width/2) + item_height;
-	arrow_advance.y = (menu_tile_selected()->y * ogl_yfactor()) - offset;
+	arrow_advance.x = menu_tile_selected()->x + ((item_width/2) + item_height);
+	arrow_advance.y = (menu_tile_selected()->y - offset);
 	arrow_advance.size = item_height * 2;
 	arrow_advance.angle = -90;
 
@@ -226,6 +226,7 @@ void submenu_free( void ) {
 void submenu_draw( void ) {
 	if( focus_has() >= FOCUS_SUBMENU && type != MENU_ALL ) {
 		GLfloat xfactor = ogl_xfactor();
+		GLfloat yfactor = ogl_yfactor();
 		GLfloat width = (item_width/2)*xfactor;
 		GLfloat height = (item_height/2)*xfactor;
 		GLfloat tx = (((GLfloat)message->width*font_scale)/2) * xfactor;
@@ -239,7 +240,7 @@ void submenu_draw( void ) {
 		}
 		
 		ogl_load_alterego();
-		glTranslatef( menu_tile_selected()->x * xfactor, (menu_tile_selected()->y * xfactor)- offset, -6 );
+		glTranslatef( menu_tile_selected()->x * xfactor, (menu_tile_selected()->y- offset) * yfactor, -6 );
 		glColor4f( 1.0, 1.0, 1.0, 1.0 );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
