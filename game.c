@@ -141,7 +141,13 @@ int game_list_create( void ) {
 			game->bg_image = config_game->background_image;
 			game->rom_path = config_game->rom_image;
 			game->params = config_game->params;
-			game->platform = config_game->platform ? platform_get( config_game->platform->name ) : platform_get( NULL );
+			if( config_game->platform ) {
+				game->platform = platform_get( config_game->platform->name );
+			}
+			else {
+				platform_add_unknown();
+				game->platform = platform_get( NULL );
+			}
 			
 			/* Add game categories. */
 			game->categories = NULL;
@@ -267,6 +273,7 @@ int game_list_filter_platform( struct platform *platform ) {
 			game = game->all_next;
 		} while ( game != game_start );
 	}
+
 	return count;
 }
 

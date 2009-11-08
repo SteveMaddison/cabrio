@@ -14,6 +14,7 @@ int platform_init( void );
 int platform_count( void );
 struct platform *platform_first( void );
 struct platform *platform_get( const char *name );
+void platform_add_unknown( void );
 
 #endif
 

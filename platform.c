@@ -4,6 +4,7 @@
 
 struct platform *platform_start;
 static int count = 0;
+static int has_unknown = 0;
 
 static struct platform platform_unknown = { NULL, NULL, "???" };
 
@@ -24,15 +25,29 @@ void platform_add( struct platform *platform, struct platform *after ) {
 	}
 }
 
+void platform_add_unknown( void ) {
+	if( has_unknown == 0 ) {
+		if( platform_start ) {
+			platform_unknown.next = platform_start->prev;
+			platform_unknown.prev = platform_start;
+			platform_start->prev->next = &platform_unknown;
+			platform_start->prev = &platform_unknown;
+		}
+		else {
+			platform_start = &platform_unknown;
+			platform_start->next = platform_start;
+			platform_start->prev = platform_start;
+		}
+		count++;
+		has_unknown = 1;
+	}
+}
+
 int platform_init( void ) {
 	struct config_platform *c = config_get()->platforms;
 	struct platform *platform = NULL;
 	struct platform *prev = NULL;
 
-	platform_start = &platform_unknown;
-	platform_start->next = platform_start;
-	platform_start->prev = platform_start;
-		
 	while( c ) {
 		platform = malloc( sizeof(struct platform) );
 		if( platform ) {
@@ -50,6 +65,7 @@ int platform_init( void ) {
 			if( !platform_start || strcasecmp( platform->name, platform_start->name ) < 0 ) {
 				platform_start = platform;
 			}
+			count++;
 		}
 		else {
 			fprintf( stderr, "Error: Couldn't allocate memeory for platform object\n" );

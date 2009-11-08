@@ -176,12 +176,12 @@ void submenu_retreat( void ) {
 int submenu_got_focus( void ) {
 	if( focus_prev() == FOCUS_MENU ) {
 		submenu_create( menu_selected() );
-		if( items == 0 ) {
+		if( items <= 1 ) {
 			submenu_do_filter();
 			focus_set( FOCUS_GAMESEL );
 		}
 	}
-	else {
+	else if( focus_prev() == FOCUS_GAMESEL ) {
 		if( items == 0 ) {
 			focus_set( FOCUS_MENU );
 		}
