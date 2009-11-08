@@ -60,9 +60,11 @@ void menu_pause( void ) {
 	step = 0;
 	menu_free_texture();
 	
-	while( item ) {
-		ogl_free_texture( item->message );
-		item = item->next;
+	if( item ) {
+		do {
+			ogl_free_texture( item->message );
+			item = item->next;
+		} while( item != menu_start );
 	}
 }
 
@@ -72,13 +74,15 @@ int menu_resume( void ) {
 	
 	if( menu_load_texture() != 0 )
 		return -1;
-		
-	while( item ) {
-		item->message = font_create_texture( item->text );
-		if( item->message == NULL )
-			return -1;
-		item = item->next;
-		i++;
+	
+	if( item ) {	
+		do {
+			item->message = font_create_texture( item->text );
+			if( item->message == NULL )
+				return -1;
+			item = item->next;
+			i++;
+		} while( item != menu_start );
 	}
 	return 0;
 }
@@ -171,7 +175,7 @@ int menu_init( void ) {
 				if( tile ) {
 					GLfloat offset = (((GLfloat)(i) - (((GLfloat)items_visible+1)/2 )) * spacing);
 					if( config->iface.menu.orientation == CONFIG_LANDSCAPE ) {
-						tile->x = (offset + config->iface.menu.offset1) * ogl_aspect_ratio();
+						tile->x = (offset + config->iface.menu.offset1);
 						tile->y = config->iface.menu.offset2;
 					}
 					else {

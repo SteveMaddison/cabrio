@@ -6,6 +6,7 @@
 #include "config.h"
 #include "focus.h"
 #include "sound.h"
+#include "emulator.h"
 
 static const int IMAGE_SCALE = 128;
 static const int NUM_GAME_TILES = 11;
@@ -153,26 +154,39 @@ int game_sel_populate( struct game *game ) {
 }
 
 int game_sel_event( int event ) {
+	int o = config_get()->iface.menu.orientation;
 	switch( event ) {
 		case EVENT_UP:
 			sound_play_blip();
-			game_sel_skip_back();
+			if( o == CONFIG_LANDSCAPE )
+				game_sel_skip_back();
+			else
+				game_sel_retreat();
 			break;
 		case EVENT_DOWN:
 			sound_play_blip();
-			game_sel_skip_forward();
+			if( o == CONFIG_LANDSCAPE )
+				game_sel_skip_forward();
+			else
+				game_sel_advance();
 			break;
 		case EVENT_LEFT:
 			sound_play_blip();
-			game_sel_retreat();
+			if( o == CONFIG_LANDSCAPE )
+				game_sel_retreat();
+			else
+				game_sel_skip_back();
 			break;
 		case EVENT_RIGHT:
 			sound_play_blip();
-			game_sel_advance();
+			if( o == CONFIG_LANDSCAPE )
+				game_sel_advance();
+			else
+				game_sel_skip_forward();
 			break;
 		case EVENT_SELECT:
-			game_sel_zoom();
-	/*		to_run = game_sel_current(); */
+			/*game_sel_zoom();*/
+			emulator_run( game_sel_current() );
 			break;
 		case EVENT_BACK:
 			sound_play_back();
@@ -208,20 +222,31 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 	if( tile && tile->game && dest ) {
 		GLfloat width = (((GLfloat)tile->game->texture->width/IMAGE_SCALE)/2) * xfactor;
 		GLfloat height = (((GLfloat)tile->game->texture->height/IMAGE_SCALE)/2) * xfactor;
-		
-		glTranslatef(
-			(tile->pos[X] + (((dest->pos[X]-tile->pos[X])/steps)*step)) * xfactor,
-			tile->pos[Y] + (((dest->pos[Y]-tile->pos[Y])/steps)*step),
-			tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/steps)*step) -5.0
-			);
+		if( config_get()->iface.menu.orientation == CONFIG_LANDSCAPE ) {
+			glTranslatef(
+				(tile->pos[X] + (((dest->pos[X]-tile->pos[X])/steps)*step)) * xfactor,
+				(tile->pos[Y] + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * xfactor,
+				tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/steps)*step) -5.0
+				);
+			glRotatef( tile->angle[X] + (((dest->angle[X]-tile->angle[X])/steps)*step), 1.0, 0.0, 0.0 );
+			glRotatef( tile->angle[Y] + (((dest->angle[Y]-tile->angle[Y])/steps)*step), 0.0, 1.0, 0.0 );
+			glRotatef( tile->angle[Z] + (((dest->angle[Z]-tile->angle[Z])/steps)*step), 0.0, 0.0, 1.0 );
+		}
+		else {
+			glTranslatef(
+				-((tile->pos[Y] + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * xfactor),
+				-((tile->pos[X] + (((dest->pos[X]-tile->pos[X])/steps)*step)) * xfactor),
+				tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/steps)*step) -5.0
+				);		
+			glRotatef( -(tile->angle[X] + (((dest->angle[X]-tile->angle[X])/steps)*step)), 1.0, 0.0, 0.0 );
+			glRotatef( -(tile->angle[Y] + (((dest->angle[Y]-tile->angle[Y])/steps)*step)), 0.0, 1.0, 0.0 );
+			glRotatef( tile->angle[Z] + (((dest->angle[Z]-tile->angle[Z])/steps)*step), 0.0, 0.0, 1.0 );
+		}
 		if( zoom && tile == game_tile_current ) {
 			glTranslatef( 0.0, 0.0, (steps-zoom)/5 );
 			alpha = (1.0/steps)*(zoom);
 			zoom--;
 		}
-		glRotatef( tile->angle[X] + (((dest->angle[X]-tile->angle[X])/steps)*step), 1.0, 0.0, 0.0 );
-		glRotatef( tile->angle[Y] + (((dest->angle[Y]-tile->angle[Y])/steps)*step), 0.0, 1.0, 0.0 );
-		glRotatef( tile->angle[Z] + (((dest->angle[Z]-tile->angle[Z])/steps)*step), 0.0, 0.0, 1.0 );
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
