@@ -18,7 +18,7 @@
 static int supress_wait = 0;
 
 void supress( void ) {
-	supress_wait = 15;
+	supress_wait = config_get()->iface.frame_rate / 4;
 }
 
 int main( int argc, char *arvg[] ) {
