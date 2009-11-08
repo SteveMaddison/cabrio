@@ -233,26 +233,22 @@ void menu_draw( void ) {
 		}
 
 		if( dest ) {
-			/* Make sure the text fits inside the box */
 			item_zoom = tile->zoom + (((dest->zoom-tile->zoom)/steps) * step);
-			
-			tx = ((GLfloat)tile->item->message->width * config->font_scale) * xfactor;
-			if( tx > config->item_width/2 ) {
-				tx = ((config->item_width/2)-(config->item_width)) / 10;
-			}
-			tx *= item_zoom;
-			ty = ((GLfloat)tile->item->message->height * config->font_scale) * xfactor;
-			if( ty > config->item_height/2 ) {
-				ty = ((config->item_height/2)-(config->item_height)) / 10;
-			}
-			ty *= item_zoom;
 
 			mx = (config->item_width/2) * xfactor * item_zoom;
 			my = (config->item_height/2) * xfactor * item_zoom;
+			
+			/* Make sure the text fits inside the box */
+			tx = ((GLfloat)tile->item->message->width * config->font_scale) * xfactor * item_zoom;
+			if( tx > mx )
+				tx = mx * 0.9;
+			ty = ((GLfloat)tile->item->message->height * config->font_scale) * xfactor * item_zoom;
+			if( ty > my )
+				ty = mx * 0.9;
 
 			ogl_load_alterego();
-			glTranslatef( tile->x + (((dest->x-tile->x)/steps) * step),
-					 	  tile->y + (((dest->y-tile->y)/steps) * step),
+			glTranslatef( (tile->x + (((dest->x-tile->x)/steps) * step)) * xfactor,
+					 	  (tile->y + (((dest->y-tile->y)/steps) * step)) * xfactor,
 					 	  MENU_DEPTH );
 			glColor4f( 1.0, 1.0, 1.0, tile->alpha + (((dest->alpha-tile->alpha)/steps) * step) );
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);

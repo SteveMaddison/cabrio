@@ -1161,14 +1161,14 @@ int config_new( void ) {
 		config.iface.frame_rate = 60;
 		
 		snprintf( config.iface.menu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_menu_texture );
-		config.iface.menu.item_width = 1.0;
-		config.iface.menu.item_height = 0.6;
+		config.iface.menu.item_width = 0.8;
+		config.iface.menu.item_height = 0.5;
 		config.iface.menu.font_scale = 0.0025;
 		config.iface.menu.zoom = 1.2;
 		config.iface.menu.transparency = 40;
 		config.iface.menu.offset1 = 0;
 		config.iface.menu.offset2 = 2.0;
-		config.iface.menu.max_visible = 4;
+		config.iface.menu.max_visible = 5;
 		config.iface.menu.spacing = -1;
 		config.iface.menu.orientation = CONFIG_LANDSCAPE;
 		
