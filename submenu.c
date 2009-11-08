@@ -85,14 +85,14 @@ int submenu_create( struct menu_item *item ) {
 	if( submenu_load_texture() != 0 )
 		return -1;
 
-	arrow_retreat.x = -((item_width/2) + (item_height/2));
+	arrow_retreat.x = -((item_width/2) + item_height);
 	arrow_retreat.y = (menu_tile_selected()->y * ogl_yfactor()) - offset;
-	arrow_retreat.size = item_height;
+	arrow_retreat.size = item_height * 2;
 	arrow_retreat.angle = 90;
 	
-	arrow_advance.x = (item_width/2) + (item_height/2);
+	arrow_advance.x = (item_width/2) + item_height;
 	arrow_advance.y = (menu_tile_selected()->y * ogl_yfactor()) - offset;
-	arrow_advance.size = item_height;
+	arrow_advance.size = item_height * 2;
 	arrow_advance.angle = -90;
 
 	type = item->type;

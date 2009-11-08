@@ -216,21 +216,21 @@ int menu_init( void ) {
 	tile_end->x = tile_end->prev->x;
 	tile_end->y = tile_end->prev->y;
 
-	arrow_retreat.size = config->iface.menu.item_height;
-	arrow_advance.size = config->iface.menu.item_height;
+	arrow_retreat.size = config->iface.menu.item_height * 1.5;
+	arrow_advance.size = config->iface.menu.item_height * 1.5;
 	if( config->iface.menu.orientation == CONFIG_LANDSCAPE ) {
-		arrow_retreat.x = tile_start->x - config->iface.menu.item_width;
+		arrow_retreat.x = tile_start->x - config->iface.menu.item_width * 0.9;
 		arrow_retreat.y = tile_start->y;
-		arrow_advance.x = tile_end->x + config->iface.menu.item_width;
+		arrow_advance.x = tile_end->x + config->iface.menu.item_width * 0.9;
 		arrow_advance.y = tile_end->y;
 		arrow_retreat.angle = 90;
 		arrow_advance.angle = -90;
 	}
 	else {
 		arrow_retreat.x = tile_start->x;
-		arrow_retreat.y = tile_start->y + config->iface.menu.item_height;
+		arrow_retreat.y = tile_start->y + config->iface.menu.item_height * 0.9;
 		arrow_advance.x = tile_end->x;
-		arrow_advance.y = tile_end->y - config->iface.menu.item_height;
+		arrow_advance.y = tile_end->y - config->iface.menu.item_height * 0.9;
 		arrow_retreat.angle = 0;
 		arrow_advance.angle = 180;	
 	}
