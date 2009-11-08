@@ -34,6 +34,7 @@ struct event *event_get( int id );
 void event_flush( void );
 int event_poll( void );
 int event_probe( int timeout, struct event *event );
+int event_process( int e );
 int event_id( char *name );
 const char *event_name( int event );
 

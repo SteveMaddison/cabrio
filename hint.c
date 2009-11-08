@@ -7,10 +7,10 @@
 #define ORIENT_RIGHT	1
 
 static const GLfloat ARROW_SIZE = 1.0;
-static const GLfloat BUTTON_SIZE = 1.0;
+static const GLfloat BUTTON_SIZE = 0.75;
 static const GLfloat ALPHA_MIN = 0.5;
 static const GLfloat ALPHA_STEP_SIZE = 0.02;
-static const GLfloat FONT_SCALE = 0.005;
+static const GLfloat FONT_SCALE = 0.004;
 static const GLfloat ALPHA_STEP_MIN = 0.01;
 static GLfloat alpha = 1.0;
 static GLfloat alpha_step = 0.01;
@@ -81,13 +81,14 @@ void hint_draw_button( struct texture *texture, GLfloat position ) {
 	glEnd();
 }
 
-void hint_draw_arrow( GLfloat x, GLfloat y, int orientation ) {
+void hint_draw_arrow( struct arrow *arrow ) {
 	GLfloat xfactor = ogl_xfactor();
 	GLfloat yfactor = ogl_yfactor();
-	GLfloat size = (ARROW_SIZE/2) * xfactor;
+	GLfloat size = arrow->size/2 * xfactor;
 
 	ogl_load_alterego();
-	glTranslatef( x * xfactor, y * yfactor, -6 );
+	glTranslatef( arrow->x * xfactor, arrow->y * yfactor, -6 );
+	glRotatef( arrow->angle, 0.0, 0.0, 1.0 );
 	glColor4f( 1.0, 1.0, 1.0, alpha );
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_2D);
@@ -95,18 +96,10 @@ void hint_draw_arrow( GLfloat x, GLfloat y, int orientation ) {
 
 	glBindTexture( GL_TEXTURE_2D, arrow_texture->id );
 	glBegin( GL_QUADS );
-	if( orientation == ORIENT_LEFT ) {
-		glTexCoord2f(1.0, 0.0); glVertex3f(-size,  size, 0.0);
-		glTexCoord2f(0.0, 0.0); glVertex3f(-size, -size, 0.0);
-		glTexCoord2f(0.0, 1.0); glVertex3f( size, -size, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f( size,  size, 0.0);	
-	}
-	else {
-		glTexCoord2f(0.0, 1.0); glVertex3f(-size,  size, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f(-size, -size, 0.0);
-		glTexCoord2f(1.0, 0.0); glVertex3f( size, -size, 0.0);
-		glTexCoord2f(0.0, 0.0); glVertex3f( size,  size, 0.0);
-	}
+		glTexCoord2f(0.0, 0.0); glVertex3f(-size,  size, 0.0);
+		glTexCoord2f(0.0, 1.0); glVertex3f(-size, -size, 0.0);
+		glTexCoord2f(1.0, 1.0); glVertex3f( size, -size, 0.0);
+		glTexCoord2f(1.0, 0.0); glVertex3f( size,  size, 0.0);	
 	glEnd();
 }
 
@@ -144,26 +137,19 @@ int hint_draw( int menu_level ) {
 	if( menu_level == 0 ) {
 		hint_draw_button( select_texture, 0 );
 		hint_draw_caption( text_select_message, (text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2) );
-		hint_draw_arrow( -2.9, 2, ORIENT_LEFT );
-		hint_draw_arrow( 2.9, 2, ORIENT_RIGHT );
 	}
 	else if( menu_level == 1 ) {
 		hint_draw_button( back_texture, -BUTTON_SIZE/2 );
 		hint_draw_caption( text_select_message, BUTTON_SIZE/2 + ((text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
 		hint_draw_button( select_texture, BUTTON_SIZE/2 );		
 		hint_draw_caption( text_back_message, -BUTTON_SIZE/2 - ((text_back_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
-		hint_draw_arrow( -3, 1.35, ORIENT_LEFT );
-		hint_draw_arrow( 3, 1.35, ORIENT_RIGHT );
 	}
 	else {
 		hint_draw_button( back_texture, -BUTTON_SIZE/2 );
 		hint_draw_caption( text_select_message, BUTTON_SIZE/2 + ((text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
 		hint_draw_button( select_texture, BUTTON_SIZE/2 );		
 		hint_draw_caption( text_back_message, -BUTTON_SIZE/2 - ((text_back_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
-		hint_draw_arrow( -3, 0.5, ORIENT_LEFT );
-		hint_draw_arrow( 3, 0.5, ORIENT_RIGHT );
 	}
-
 	
 	return 0;
 }

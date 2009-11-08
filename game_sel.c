@@ -4,6 +4,8 @@
 #include "game_sel.h"
 #include "bg.h"
 #include "config.h"
+#include "focus.h"
+#include "sound.h"
 
 static const int IMAGE_SCALE = 128;
 static const int NUM_GAME_TILES = 11;
@@ -147,6 +149,55 @@ int game_sel_populate( struct game *game ) {
 		tile = tile->next;
 		game = game->next;
 	}
+	return 0;
+}
+
+int game_sel_event( int event ) {
+	switch( event ) {
+		case EVENT_UP:
+			sound_play_blip();
+			game_sel_skip_back();
+			break;
+		case EVENT_DOWN:
+			sound_play_blip();
+			game_sel_skip_forward();
+			break;
+		case EVENT_LEFT:
+			sound_play_blip();
+			game_sel_retreat();
+			break;
+		case EVENT_RIGHT:
+			sound_play_blip();
+			game_sel_advance();
+			break;
+		case EVENT_SELECT:
+			game_sel_zoom();
+	/*		to_run = game_sel_current(); */
+			break;
+		case EVENT_BACK:
+			sound_play_back();
+			focus_set( FOCUS_SUBMENU );
+			break;
+		default:
+			break;
+	}
+	return 0;
+}
+
+int game_sel_got_focus( void ) {
+	if( game_sel_populate( game_first() ) == 0 ) {
+		sound_play_select();
+		game_sel_show();
+	}
+	else {
+		sound_play_no();
+		focus_set( FOCUS_SUBMENU );
+	}
+	return 0;
+}
+
+int game_sel_lost_focus( void ) {
+	game_sel_hide(HIDE_TARGET_START);
 	return 0;
 }
 

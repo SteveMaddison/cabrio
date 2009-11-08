@@ -1,20 +1,24 @@
 #include <stdlib.h>
 #include "sdl_ogl.h"
+#include "hint.h"
 #include "menu.h"
+#include "focus.h"
+#include "sound.h"
 #include "font.h"
 
 static const int MAX_STEPS = 50;
 static const GLfloat MENU_DEPTH = -6;
 static const GLfloat SPACING_FACTOR = 1.2;
-const char *menu_text_all = "All";
-const char *menu_text_platform = "Platform";
+static const char *menu_text_all = "All";
+static const char *menu_text_platform = "Platform";
 
-struct menu_item *menu_start = NULL;
-struct menu_item *menu_end = NULL;
-struct menu_tile *selected = NULL;
-struct menu_tile *tile_start = NULL;
-struct menu_tile *tile_end = NULL;
+static struct menu_item *menu_start = NULL;
+static struct menu_tile *selected = NULL;
+static struct menu_tile *tile_start = NULL;
+static struct menu_tile *tile_end = NULL;
 static struct texture *menu_texture = NULL;
+static struct arrow arrow_advance;
+static struct arrow arrow_retreat;
 static int menu_items = 0;
 static int items_visible = 0;
 static int steps = 0;
@@ -26,6 +30,10 @@ static GLfloat zoom = 1.0;
 
 struct menu_item *menu_selected( void ) {
 	return selected->item;
+}
+
+struct menu_tile *menu_tile_selected( void ) {
+	return selected;
 }
 
 int menu_item_count( void ) {
@@ -204,9 +212,28 @@ int menu_init( void ) {
 	tile_start->y = tile_start->next->y;
 	
 	tile_end->zoom = 0;
-	tile_end->alpha = 0;
+	tile_end->alpha = 0;	
 	tile_end->x = tile_end->prev->x;
 	tile_end->y = tile_end->prev->y;
+
+	arrow_retreat.size = config->iface.menu.item_height;
+	arrow_advance.size = config->iface.menu.item_height;
+	if( config->iface.menu.orientation == CONFIG_LANDSCAPE ) {
+		arrow_retreat.x = tile_start->x - config->iface.menu.item_width;
+		arrow_retreat.y = tile_start->y;
+		arrow_advance.x = tile_end->x + config->iface.menu.item_width;
+		arrow_advance.y = tile_end->y;
+		arrow_retreat.angle = 90;
+		arrow_advance.angle = -90;
+	}
+	else {
+		arrow_retreat.x = tile_start->x;
+		arrow_retreat.y = tile_start->y + config->iface.menu.item_height;
+		arrow_advance.x = tile_end->x;
+		arrow_advance.y = tile_end->y - config->iface.menu.item_height;
+		arrow_retreat.angle = 0;
+		arrow_advance.angle = 180;	
+	}
 	
 	return 0;
 }
@@ -274,6 +301,11 @@ void menu_draw( void ) {
 		
 		tile = tile->next;
 	}
+	
+	if( focus_has() == FOCUS_MENU ) {
+		hint_draw_arrow( &arrow_retreat );
+		hint_draw_arrow( &arrow_advance );
+	}
 }
 
 void menu_advance( void ) {
@@ -302,6 +334,62 @@ void menu_retreat( void ) {
 			t = t->next;
 		}
 	}
+}
+
+int menu_event( int event ) {
+	int o = config_get()->iface.menu.orientation;
+	switch( event ) {
+		case EVENT_UP:
+			if( o == CONFIG_PORTRAIT ) {
+				sound_play_blip();
+				menu_retreat();
+			}
+			else {
+				sound_play_no();
+			}		
+			break;
+		case EVENT_DOWN:
+			if( o == CONFIG_PORTRAIT ) {
+				sound_play_blip();
+				menu_advance();
+			}
+			else {
+				sound_play_no();
+			}		
+			break;
+		case EVENT_LEFT:
+			if( o == CONFIG_LANDSCAPE ) {
+				sound_play_blip();
+				menu_retreat();
+			}
+			else {
+				sound_play_no();
+			}		
+		case EVENT_RIGHT:
+			if( o == CONFIG_LANDSCAPE ) {
+				sound_play_blip();
+				menu_advance();
+			}
+			else {
+				sound_play_no();
+			}		
+			break;
+		case EVENT_SELECT:
+			sound_play_select();
+			focus_set( FOCUS_SUBMENU );
+			break;
+		default:
+			break;		
+	}
+	return 0;
+}
+
+int menu_got_focus( void ) {
+	return 0;
+}
+
+int menu_lost_focus( void ) {
+	return 0;
 }
 
 void menu_free( void ) {

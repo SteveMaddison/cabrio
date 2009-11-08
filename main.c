@@ -21,6 +21,7 @@
 #include "sound.h"
 #include "event.h"
 #include "setup.h"
+#include "focus.h"
 
 static int supress_wait = 0;
 
@@ -158,7 +159,6 @@ void supress( void ) {
 
 int main( int argc, char *arvg[] ) {
 	int quit = 0;
-	int menu_level = 0;
 	int config_status = 0;
 	int event;
 	struct game *to_run = NULL;
@@ -214,105 +214,20 @@ int main( int argc, char *arvg[] ) {
 	while( !quit ) {
 		ogl_clear();
 		bg_draw();
-		hint_draw( menu_level );
+		hint_draw( focus_has() );
 		menu_draw();
-		if( menu_level > 0 ) {
-			submenu_draw();
-		}
+		submenu_draw();
 		game_sel_draw();
 		sdl_swap();
 	
 		if (( event = event_poll() )) {
 			if( supress_wait == 0 ) {
-				supress();
-				switch( event ) {
-					case EVENT_UP:
-						if( menu_level == 2 ) {
-							sound_play_blip();
-							game_sel_skip_back();
-						}
-						break;
-					case EVENT_DOWN:
-						if( menu_level == 2 ) {
-							sound_play_blip();
-							game_sel_skip_forward();
-						}
-						break;
-					case EVENT_LEFT:
-						sound_play_blip();
-						if( menu_level == 0 ) {
-							menu_retreat();
-						}
-						else if( menu_level == 1 ) {
-							submenu_retreat();
-						}
-						else {
-							game_sel_retreat();
-						}
-						break;
-					case EVENT_RIGHT:
-						sound_play_blip();
-						if( menu_level == 0 ) {
-							menu_advance();
-						}
-						else if( menu_level == 1 ) {
-							submenu_advance();
-						}
-						else {
-							game_sel_advance();
-						}
-						break;
-					case EVENT_SELECT:
-						if( menu_level == 0 ) {
-							sound_play_select();
-							if( submenu_create( menu_selected() ) == 0 ) {
-								/* nothing to filter on, go straight to game selector */
-								game_list_unfilter();
-								game_sel_populate( game_first() );
-								game_sel_show();
-								menu_level++;
-							}
-							menu_level++;
-						}
-						else if( menu_level == 1 ) {
-							submenu_do_filter();
-							if( game_sel_populate( game_first() ) == 0 ) {
-								sound_play_select();
-								game_sel_show();
-								menu_level++;
-							}
-							else {
-								sound_play_no();
-							}
-						}
-						else {
-							if( game_sel_current() ) {
-								game_sel_zoom();
-								to_run = game_sel_current();
-							}
-						}
-						break;
-					case EVENT_BACK:
-						if( menu_level == 2 ) {
-							sound_play_back();
-							game_sel_hide(HIDE_TARGET_START);
-							menu_level--;
-							if( submenu_items() == 0 ) {
-								menu_level--;
-							}
-						}
-						else if( menu_level == 1 ) {
-							sound_play_back();
-							submenu_free();
-							menu_level--;
-						}
-						break;
-					case EVENT_QUIT:
-						quit = 1;
-						break;
-					default:
-						fprintf( stderr, "Error: unknow event %d\n", event );
-						break;
+				if( event == EVENT_QUIT ) {
+					quit = 1;
+				}
+				else {
+					supress();
+					event_process( event );
 				}
 			}
 		}

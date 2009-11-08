@@ -1,6 +1,10 @@
 #include "control.h"
 #include "config.h"
 #include "event.h"
+#include "menu.h"
+#include "submenu.h"
+#include "game_sel.h"
+#include "focus.h"
 #include "sdl_wrapper.h"
 #include <SDL/SDL.h>
 
@@ -258,6 +262,25 @@ int event_probe( int timeout, struct event *event ) {
 		}
 		SDL_Delay( 10 );
 		timeout -= 10;
+	}
+	return 0;
+}
+
+int event_process( int e ) {
+	switch( focus_has() ) {
+		case FOCUS_MENU:
+			menu_event( e );
+			break;
+		case FOCUS_SUBMENU:
+			submenu_event( e );
+			break;
+		case FOCUS_GAMESEL:
+			game_sel_event( e );
+			break;
+		default:
+			fprintf( stderr, "Error: Unknown focus %d\n", focus_has() );
+			return -1;
+			break;
 	}
 	return 0;
 }

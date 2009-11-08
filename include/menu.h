@@ -36,10 +36,12 @@ void menu_pause( void );
 int menu_resume( void );
 
 struct menu_item *menu_selected( void );
+struct menu_tile *menu_tile_selected( void );
 int menu_item_count( void );
 void menu_draw( void );
-void menu_advance( void );
-void menu_retreat( void );
+int menu_event( int event );
+int menu_got_focus( void );
+int menu_lost_focus( void );
 
 #endif
 

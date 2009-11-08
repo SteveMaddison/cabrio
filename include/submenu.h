@@ -4,8 +4,9 @@
 #include "menu.h"
 
 int submenu_create( struct menu_item *item );
-void submenu_advance( void );
-void submenu_retreat( void );
+int submenu_event( int event );
+int submenu_got_focus( void );
+int submenu_lost_focus( void );
 int submenu_items( void );
 void submenu_pause( void );
 int submenu_resume( void );
