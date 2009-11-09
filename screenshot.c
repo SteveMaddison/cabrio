@@ -55,8 +55,9 @@ void screenshot_pause( void ) {
 }
 
 int screenshot_resume( void ) {
-	screenshot_init();
+	int ret = screenshot_init();
 	screenshot_set( last_file );
+	return ret;
 }
 
 int screenshot_set( const char *filename ) {
