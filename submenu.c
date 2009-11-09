@@ -207,10 +207,13 @@ int submenu_got_focus( void ) {
 		submenu_create( menu_selected() );
 		if( items <= 1 ) {
 			submenu_do_filter();
+			if( items > 0 )
+				submenu_show();
 			focus_set( FOCUS_GAMESEL );
 		}
-		if( items > 0 )
+		else {
 			submenu_show();
+		}
 	}
 	else if( focus_prev() == FOCUS_GAMESEL ) {
 		if( items <= 1 ) {
