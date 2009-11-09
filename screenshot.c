@@ -15,6 +15,7 @@ static struct texture *current = NULL;
 static struct texture *noise[NUM_NOISE];
 static int frame = 0;
 static int noise_skip = 10;
+static char last_file[CONFIG_FILE_NAME_LENGTH];
 
 int screenshot_init( void ) {
 	int i;
@@ -49,8 +50,18 @@ void screenshot_free( void ) {
 	current = NULL;
 }
 
+void screenshot_pause( void ) {
+	screenshot_free();
+}
+
+int screenshot_resume( void ) {
+	screenshot_init();
+	screenshot_set( last_file );
+}
+
 int screenshot_set( const char *filename ) {
 	if( filename && filename[0] ) {
+		strncpy( last_file, filename, CONFIG_FILE_NAME_LENGTH );
 		current = sdl_create_texture( filename );
 		if( current ) {
 			if( current->width > current->height ) {

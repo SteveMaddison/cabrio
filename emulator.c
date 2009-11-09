@@ -18,25 +18,19 @@
 #include "sound.h"
 #include "font.h"
 #include "event.h"
+#include "screenshot.h"
 
 
 void pause_all( void ) {
 	sound_pause();
-	printf("1\n");
+	screenshot_pause();
 	game_list_pause();
-	printf("1\n");
 	submenu_pause();
-	printf("1\n");
 	menu_pause();
-	printf("1\n");
 	hint_pause();
-	printf("1\n");
 	font_pause();
-	printf("1\n");
 	bg_pause();
-	printf("1\n");
 	event_pause();
-	printf("1\n");
 }
 
 int resume_all( void ) {
@@ -54,8 +48,10 @@ int resume_all( void ) {
 		return -6;
 	if( game_list_resume() != 0 )
 		return -7;
-	if( sound_resume() != 0 )
+	if( screenshot_resume() != 0 )
 		return -8;
+	if( sound_resume() != 0 )
+		return -9;
 
 	return 0;
 }
