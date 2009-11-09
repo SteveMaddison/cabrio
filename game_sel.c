@@ -11,7 +11,7 @@
 #include "submenu.h"
 
 static const int IMAGE_SCALE = 128;
-static const int NUM_GAME_TILES = 11;
+static const int NUM_GAME_TILES = 13;
 static const int IDLE_TIME = 5;
 static const int MAX_STEPS = 25;
 static int steps = 0;
@@ -47,7 +47,7 @@ int game_sel_init( int theme ) {
 		else {
 			float offset = i<mid ? (float)mid-i : (float)i-mid;
 			memset(tile,0,sizeof(struct game_tile));
-			if( theme == 0 ) {
+			if( theme == 1 ) {
 				if( i < mid ) {
 					tile->pos[0] = -((offset/4)+(0.5*offset))-1;
 					tile->pos[1] = 0.0;
@@ -73,7 +73,7 @@ int game_sel_init( int theme ) {
 					tile->angle[2] = 0.0;
 				}
 			}
-			else if ( theme == 1 ) {
+			else if ( theme == 2 ) {
 				if( i < mid ) {
 					tile->pos[0] = -((offset/3)+(0.5*offset))-1;
 					tile->pos[1] = -(offset/3);
@@ -101,15 +101,15 @@ int game_sel_init( int theme ) {
 			}			
 			else  {
 				if( i < mid ) {
-					tile->pos[0] = offset;
-					tile->pos[1] = -0.5-offset/2;
+					tile->pos[0] = offset * 0.6;
+					tile->pos[1] = -(0.5 + offset/2);
 					tile->pos[2] = -offset/2;
 					tile->angle[0] = 0.0;
 					tile->angle[1] = 0.0;
 					tile->angle[2] = offset*(120/(float)NUM_GAME_TILES);
 				}
 				else if( i > mid ) {
-					tile->pos[0] = offset;
+					tile->pos[0] = offset * 0.6;
 					tile->pos[1] = 0.5+offset/2;
 					tile->pos[2] = -offset/2;
 					tile->angle[0] = 0.0;
@@ -156,7 +156,7 @@ int game_sel_populate( struct game *game ) {
 }
 
 int game_sel_event( int event ) {
-	int o = config_get()->iface.menu.orientation;
+	int o = config_get()->iface.game_sel.orientation;
 	switch( event ) {
 		case EVENT_UP:
 			sound_play_blip();
@@ -230,14 +230,15 @@ int game_sel_lost_focus( void ) {
 void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) {
 	GLfloat xfactor = ogl_xfactor();
 	GLfloat alpha = 1.0;
+	const struct config_game_sel *config = &config_get()->iface.game_sel;
 	
 	if( tile && tile->game && dest ) {
 		GLfloat width = (((GLfloat)tile->game->texture->width/IMAGE_SCALE)/2) * xfactor;
 		GLfloat height = (((GLfloat)tile->game->texture->height/IMAGE_SCALE)/2) * xfactor;
-		if( config_get()->iface.menu.orientation == CONFIG_LANDSCAPE ) {
+		if( config->orientation == CONFIG_PORTRAIT ) {
 			glTranslatef(
-				(tile->pos[X] + (((dest->pos[X]-tile->pos[X])/steps)*step)) * xfactor,
-				(tile->pos[Y] + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * xfactor,
+				(tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step)) * xfactor,
+				(tile->pos[Y] + config->offset2 + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * xfactor,
 				tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/steps)*step) -5.0
 				);
 			glRotatef( tile->angle[X] + (((dest->angle[X]-tile->angle[X])/steps)*step), 1.0, 0.0, 0.0 );
@@ -246,12 +247,12 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 		}
 		else {
 			glTranslatef(
-				-((tile->pos[Y] + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * xfactor),
-				-((tile->pos[X] + (((dest->pos[X]-tile->pos[X])/steps)*step)) * xfactor),
+				-((tile->pos[Y] + config->offset2 + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * xfactor),
+				-((tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step)) * xfactor),
 				tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/steps)*step) -5.0
 				);		
-			glRotatef( -(tile->angle[X] + (((dest->angle[X]-tile->angle[X])/steps)*step)), 1.0, 0.0, 0.0 );
-			glRotatef( -(tile->angle[Y] + (((dest->angle[Y]-tile->angle[Y])/steps)*step)), 0.0, 1.0, 0.0 );
+			glRotatef( -(tile->angle[Y] + (((dest->angle[Y]-tile->angle[Y])/steps)*step)), 1.0, 0.0, 0.0 );
+			glRotatef( -(tile->angle[X] + (((dest->angle[X]-tile->angle[X])/steps)*step)), 0.0, 1.0, 0.0 );
 			glRotatef( tile->angle[Z] + (((dest->angle[Z]-tile->angle[Z])/steps)*step), 0.0, 0.0, 1.0 );
 		}
 		if( zoom && tile == game_tile_current ) {

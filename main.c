@@ -14,6 +14,7 @@
 #include "event.h"
 #include "setup.h"
 #include "focus.h"
+#include "screenshot.h"
 
 static int supress_wait = 0;
 
@@ -57,7 +58,7 @@ int main( int argc, char *arvg[] ) {
 	if( category_init() != 0 )
 		return -1;
 
-	if( game_sel_init( 1 ) != 0 )
+	if( game_sel_init( 0 ) != 0 )
 		return -1;
 
 	if( menu_init() != 0 )
@@ -76,6 +77,9 @@ int main( int argc, char *arvg[] ) {
 	bg_init();
 
 	event_flush();
+	/* Easy way to display the game selector right off the bat. */
+	menu_event( EVENT_SELECT );
+	menu_show();
 
 	while( !quit ) {
 		ogl_clear();
@@ -84,6 +88,7 @@ int main( int argc, char *arvg[] ) {
 		menu_draw();
 		submenu_draw();
 		game_sel_draw();
+		screenshot_draw();
 		sdl_swap();
 	
 		if (( event = event_poll() )) {

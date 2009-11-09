@@ -66,7 +66,7 @@ void hint_draw_button( struct texture *texture, GLfloat position ) {
 	GLfloat size = (BUTTON_SIZE/2) * xfactor;
 	
 	ogl_load_alterego();
-	glTranslatef( position * xfactor, -1.9 * yfactor, -6 );
+	glTranslatef( (position - 1.2) * xfactor, -2.0 * yfactor, -6 );
 	glColor4f( 1.0, 1.0, 1.0, alpha );
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_2D);
@@ -110,7 +110,7 @@ void hint_draw_caption( struct texture *message, GLfloat position ) {
 	GLfloat ty = ((message->height*FONT_SCALE)/2) * xfactor;
 	
 	ogl_load_alterego();
-	glTranslatef( position * xfactor, -1.9 * yfactor, -6 );
+	glTranslatef( (position - 1.2)* xfactor, -2.0 * yfactor, -6 );
 	glColor4f( 1.0, 1.0, 1.0, 1.0 );
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_2D);

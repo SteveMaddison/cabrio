@@ -95,6 +95,12 @@ struct config_menu {
 	int auto_hide;
 };
 
+struct config_game_sel {
+	float offset1;
+	float offset2;
+	int orientation;
+};
+
 struct config_iface {
 	int full_screen;
 	int screen_width;
@@ -113,6 +119,7 @@ struct config_iface {
 	int gfx_max_height;
 	struct config_control controls[NUM_EVENTS];
 	struct config_menu menu;
+	struct config_game_sel game_sel;
 };
 
 struct config {
@@ -120,7 +127,7 @@ struct config {
 	struct config_platform *platforms;
 	struct config_category *categories;
 	struct config_game *games;
-	struct config_iface iface;	
+	struct config_iface iface;
 };
 
 const struct config *config_get( void );

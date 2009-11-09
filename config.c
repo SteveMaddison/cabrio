@@ -1175,12 +1175,17 @@ int config_new( void ) {
 		config.iface.menu.font_scale = 0.0025;
 		config.iface.menu.zoom = 1.2;
 		config.iface.menu.transparency = 40;
-		config.iface.menu.offset1 = 0;
+		config.iface.menu.offset1 = -1.2;
 		config.iface.menu.offset2 = 2.0;
-		config.iface.menu.max_visible = 5;
+		config.iface.menu.max_visible = 3;
 		config.iface.menu.spacing = -1;
 		config.iface.menu.orientation = CONFIG_LANDSCAPE;
 		config.iface.menu.auto_hide = 0;
+		
+		config.iface.game_sel.orientation = CONFIG_PORTRAIT;
+		config.iface.game_sel.offset1 = 1;
+		config.iface.game_sel.offset2 = 0;
+		
 		
 		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 			config.iface.controls[i].device_type = DEV_KEYBOARD;
