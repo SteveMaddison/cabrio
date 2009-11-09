@@ -11,7 +11,7 @@
 #include "submenu.h"
 #include "screenshot.h"
 
-static const int IMAGE_SCALE = 128;
+static const int IMAGE_SCALE = 200;
 static const int NUM_GAME_TILES = 13;
 static const int IDLE_TIME = 5;
 static const int MAX_STEPS = 25;
@@ -120,7 +120,7 @@ int game_sel_init( int theme ) {
 				else {
 					tile->pos[0] = 0.0;
 					tile->pos[1] = 0.0;
-					tile->pos[2] = 1.25;
+					tile->pos[2] = 1.5;
 					tile->angle[0] = 0.0;
 					tile->angle[1] = 0.0;
 					tile->angle[2] = 0.0;
@@ -205,6 +205,7 @@ int game_sel_got_focus( void ) {
 	if( game_sel_populate( game_first() ) == 0 ) {
 		sound_play_select();
 		game_sel_show();
+		idle_counter = 1;
 		
 		if( config_get()->iface.menu.auto_hide ) {
 			menu_hide();
@@ -220,6 +221,7 @@ int game_sel_got_focus( void ) {
 
 int game_sel_lost_focus( void ) {
 	game_sel_hide(HIDE_TARGET_START);
+	screenshot_clear();
 
 	if( config_get()->iface.menu.auto_hide ) {
 		menu_show();
@@ -438,9 +440,10 @@ void game_sel_skip_back( void ) {
 void game_sel_draw( void ) {
 	if( idle_counter && !game_sel_busy() ) {
 		idle_counter--;
-		if( idle_counter == 0 && game_tile_current->game )
+		if( idle_counter == 0 && game_tile_current->game ) {
 			bg_set( game_tile_current->game->bg_image );
 			screenshot_set( game_tile_current->game->screen_shot );
+		}
 	}
 	if( visible ) {
 		if( scroll_direction != 0 ) {

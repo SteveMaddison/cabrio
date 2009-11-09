@@ -1187,7 +1187,7 @@ int config_new( void ) {
 		config.iface.menu.auto_hide = 0;
 		
 		config.iface.game_sel.orientation = CONFIG_PORTRAIT;
-		config.iface.game_sel.offset1 = 1;
+		config.iface.game_sel.offset1 = 0.9;
 		config.iface.game_sel.offset2 = 0;
 		
 		

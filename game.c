@@ -51,7 +51,7 @@ void game_list_free( void ) {
 }
 
 int game_load_texture( struct game *game ) {
-	if( game && game->logo_image && *game->logo_image ) {
+	if( game && game->logo_image && game->logo_image[0] ) {
 		game->texture = sdl_create_texture( game->logo_image );
 	}
 	if( game->texture == NULL ) {

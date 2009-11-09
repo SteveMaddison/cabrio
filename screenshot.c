@@ -8,6 +8,8 @@ static GLfloat angle_x = -10;
 static GLfloat angle_y = 30;
 static GLfloat angle_z = 10;
 static GLfloat scale = 0.006;
+static const GLfloat max_width = 280;
+static const GLfloat max_height = 280;
 static struct texture *current = NULL;
 #define NUM_NOISE 3
 static struct texture *noise[NUM_NOISE];
@@ -15,6 +17,7 @@ static int frame = 0;
 static int noise_skip = 10;
 
 int screenshot_init( void ) {
+	int i;
 	noise[0] = sdl_create_texture( DATA_DIR "/pixmaps/noise1.png" );
 	noise[1] = sdl_create_texture( DATA_DIR "/pixmaps/noise2.png" );
 	noise[2] = sdl_create_texture( DATA_DIR "/pixmaps/noise3.png" );
@@ -22,6 +25,11 @@ int screenshot_init( void ) {
 	if( noise[0] == 0 || noise[1] == 0 || noise[2] == 0 ) {
 		fprintf( stderr, "Warning: Couldn't create texture for screenshot noise\n" );
 		return -1;
+	}
+	
+	for( i = 0 ; i < NUM_NOISE ; i++ ) {
+		noise[i]->width = max_width;
+		noise[i]->height = max_width * 0.75;
 	}
 	
 	if( config_get()->iface.frame_rate )
@@ -42,7 +50,25 @@ void screenshot_free( void ) {
 }
 
 int screenshot_set( const char *filename ) {
-	current = sdl_create_texture( filename );
+	if( filename && filename[0] ) {
+		current = sdl_create_texture( filename );
+		if( current ) {
+			if( current->width > current->height ) {
+				if( current->width > max_width ) {
+					current->height = (int)(float)current->height/((float)current->width/max_width);
+					current->width = max_width;
+				}
+			}
+			else {
+				if( current->height > max_height ) {
+					current->width = (int)(float)current->width/((float)current->height/max_width);
+					current->height = max_width;
+				}
+			}
+			return 0;
+		}
+	}
+	current = NULL;
 	return 0;
 }
 

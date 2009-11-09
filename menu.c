@@ -207,11 +207,20 @@ int menu_init( void ) {
 	}
 	
 	selected = tile_start;
-	for( i = 0 ; i < ((menu_items+1)/2) ; i++ ) {
+	/* Use the middle tile as selected */
+	for( i = 0 ; i < ((config->iface.menu.max_visible+1)/2) ; i++ ) {
 		selected = selected->next;
 	}
 	selected->zoom = zoom;
 	selected->alpha = 1;
+
+	while( selected->item->type != MENU_ALL ) {
+		struct menu_tile *skip = tile_start;
+		while( skip ) {
+			skip->item = skip->item->next;
+			skip = skip->next;
+		}
+	}
 	
 	tile_start->zoom = 0;
 	tile_start->alpha = 0;
