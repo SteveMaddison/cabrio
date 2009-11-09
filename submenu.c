@@ -182,7 +182,7 @@ int submenu_got_focus( void ) {
 		}
 	}
 	else if( focus_prev() == FOCUS_GAMESEL ) {
-		if( items == 0 ) {
+		if( items <= 1 ) {
 			focus_set( FOCUS_MENU );
 		}
 	}
