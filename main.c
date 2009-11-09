@@ -72,6 +72,9 @@ int main( int argc, char *arvg[] ) {
 
 	if( game_list_create() != 0 )
 		return -1;
+		
+	if( screenshot_init() != 0 )
+		return -1;
 
 	sound_init();
 	bg_init();
