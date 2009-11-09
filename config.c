@@ -68,6 +68,7 @@ static const char *config_tag_iface_menu_offset1		=     "primary-offset";
 static const char *config_tag_iface_menu_offset2		=     "secondary-offset";
 static const char *config_tag_iface_menu_items_visible	=     "items-visible";
 static const char *config_tag_iface_menu_spacing		=     "spacing";
+static const char *config_tag_iface_menu_auto_hide		=     "auto-hide";
 
 /* General (reused) XML tags */
 static const char *config_tag_name					= "name";
@@ -737,6 +738,9 @@ int config_read_menu( xmlNode *node, struct config_menu *menu ) {
 			else if( strcmp( (char*)node->name, config_tag_orientation ) == 0 ) {
 				config_read_orientation( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->orientation );
 			}
+			else if( strcmp( (char*)node->name, config_tag_iface_menu_auto_hide ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->auto_hide );
+			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
 			}
@@ -1176,6 +1180,7 @@ int config_new( void ) {
 		config.iface.menu.max_visible = 5;
 		config.iface.menu.spacing = -1;
 		config.iface.menu.orientation = CONFIG_LANDSCAPE;
+		config.iface.menu.auto_hide = 0;
 		
 		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 			config.iface.controls[i].device_type = DEV_KEYBOARD;

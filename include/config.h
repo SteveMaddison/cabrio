@@ -92,6 +92,7 @@ struct config_menu {
 	int max_visible;
 	float spacing;
 	int orientation;
+	int auto_hide;
 };
 
 struct config_iface {

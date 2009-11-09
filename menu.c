@@ -2,11 +2,12 @@
 #include "sdl_ogl.h"
 #include "hint.h"
 #include "menu.h"
+#include "submenu.h"
 #include "focus.h"
 #include "sound.h"
 #include "font.h"
 
-static const int MAX_STEPS = 50;
+static const int MAX_STEPS = 100;
 static const GLfloat MENU_DEPTH = -6;
 static const GLfloat SPACING_FACTOR = 1.1;
 static const char *menu_text_all = "All";
@@ -24,6 +25,8 @@ static int items_visible = 0;
 static int steps = 0;
 static int step = 0;
 static int direction = 0;
+static int hide_direction = 0;
+static int visible = 1;
 static GLfloat spacing = 1.0;
 static GLfloat min_alpha = 1.0;
 static GLfloat zoom = 1.0;
@@ -243,73 +246,91 @@ int menu_init( void ) {
 }
 
 void menu_draw( void ) {
-	struct menu_tile *tile = tile_start;
-	GLfloat item_zoom,tx,ty,mx,my = 0;
-	GLfloat xfactor = ogl_xfactor();
-	GLfloat yfactor = ogl_yfactor();
-	const struct config_menu *config = &config_get()->iface.menu;
-	
-	while( tile ) {
-		struct menu_tile *dest = tile;
+	if( visible ) {
+		struct menu_tile *tile = tile_start;
+		GLfloat item_zoom,tx,ty,mx,my = 0;
+		GLfloat xfactor = ogl_xfactor();
+		GLfloat yfactor = ogl_yfactor();
+		const struct config_menu *config = &config_get()->iface.menu;
 		
-		if( direction ) {
-			if( direction > 0 )
-				dest = tile->next;
-			else
-				dest = tile->prev;
-				
-			if( step-- == 0 ) {
-				/* Animation complete */
-				direction = 0;
-			}
-		}
-
-		if( dest ) {
-			item_zoom = tile->zoom + (((dest->zoom-tile->zoom)/steps) * step);
-
-			mx = (config->item_width/2) * xfactor * item_zoom;
-			my = (config->item_height/2) * xfactor * item_zoom;
+		while( tile ) {
+			struct menu_tile *dest = tile;
 			
-			/* Make sure the text fits inside the box */
-			tx = ((GLfloat)tile->item->message->width * config->font_scale) * xfactor * item_zoom;
-			if( tx > mx )
-				tx = mx * 0.9;
-			ty = ((GLfloat)tile->item->message->height * config->font_scale) * xfactor * item_zoom;
-			if( ty > my )
-				ty = mx * 0.9;
+			if( direction ) {
+				if( direction > 0 )
+					dest = tile->next;
+				else
+					dest = tile->prev;
+					
+				if( step-- == 0 ) {
+					/* Animation complete */
+					direction = 0;
+				}
+			}
+				
+			if( dest ) {
+				item_zoom = tile->zoom + (((dest->zoom-tile->zoom)/steps) * step);
 
-			ogl_load_alterego();
-			glTranslatef( (tile->x + (((dest->x-tile->x)/steps) * step)) * xfactor,
-					 	  (tile->y + (((dest->y-tile->y)/steps) * step)) * yfactor,
-					 	  MENU_DEPTH );
-			glColor4f( 1.0, 1.0, 1.0, tile->alpha + (((dest->alpha-tile->alpha)/steps) * step) );
-			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-			glEnable(GL_TEXTURE_2D);
-			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-			glBindTexture( GL_TEXTURE_2D, menu_texture->id );
-			glBegin( GL_QUADS );
-				glTexCoord2f(0.0, 0.0); glVertex3f(-mx,  my, 0.0);
-				glTexCoord2f(0.0, 1.0); glVertex3f(-mx, -my, 0.0);
-				glTexCoord2f(1.0, 1.0); glVertex3f( mx, -my, 0.0);
-				glTexCoord2f(1.0, 0.0); glVertex3f( mx,  my, 0.0);
-			glEnd();
-
-			glBindTexture( GL_TEXTURE_2D, tile->item->message->id );
-			glBegin( GL_QUADS );
-				glTexCoord2f(0.0, 0.0); glVertex3f( -tx,  ty, 0.0);
-				glTexCoord2f(0.0, 1.0); glVertex3f( -tx, -ty, 0.0);
-				glTexCoord2f(1.0, 1.0); glVertex3f(  tx, -ty, 0.0);
-				glTexCoord2f(1.0, 0.0); glVertex3f(  tx,  ty, 0.0);
-			glEnd();
+				if( hide_direction ) {
+					if( hide_direction == 1 )
+						item_zoom = item_zoom - ((item_zoom / steps) * (steps - step));
+					else
+						item_zoom = (item_zoom / steps) * (steps - step);
+				
+					if( step-- == 1 ) {
+						/* Animation complete */
+						if( hide_direction == -1 )
+							visible = 1;
+						else
+							visible = 0;
+						hide_direction = 0;
+					}
+				}
+	
+				mx = (config->item_width/2) * xfactor * item_zoom;
+				my = (config->item_height/2) * xfactor * item_zoom;
+				
+				/* Make sure the text fits inside the box */
+				tx = ((GLfloat)tile->item->message->width * config->font_scale) * xfactor * item_zoom;
+				if( tx > mx )
+					tx = mx * 0.9;
+				ty = ((GLfloat)tile->item->message->height * config->font_scale) * xfactor * item_zoom;
+				if( ty > my )
+					ty = mx * 0.9;
+	
+				ogl_load_alterego();
+				glTranslatef( (tile->x + (((dest->x-tile->x)/steps) * step)) * xfactor,
+						 	  (tile->y + (((dest->y-tile->y)/steps) * step)) * yfactor,
+						 	  MENU_DEPTH );
+				glColor4f( 1.0, 1.0, 1.0, tile->alpha + (((dest->alpha-tile->alpha)/steps) * step) );
+				glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+				glEnable(GL_TEXTURE_2D);
+				glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+	
+				glBindTexture( GL_TEXTURE_2D, menu_texture->id );
+				glBegin( GL_QUADS );
+					glTexCoord2f(0.0, 0.0); glVertex3f(-mx,  my, 0.0);
+					glTexCoord2f(0.0, 1.0); glVertex3f(-mx, -my, 0.0);
+					glTexCoord2f(1.0, 1.0); glVertex3f( mx, -my, 0.0);
+					glTexCoord2f(1.0, 0.0); glVertex3f( mx,  my, 0.0);
+				glEnd();
+	
+				glBindTexture( GL_TEXTURE_2D, tile->item->message->id );
+				glBegin( GL_QUADS );
+					glTexCoord2f(0.0, 0.0); glVertex3f( -tx,  ty, 0.0);
+					glTexCoord2f(0.0, 1.0); glVertex3f( -tx, -ty, 0.0);
+					glTexCoord2f(1.0, 1.0); glVertex3f(  tx, -ty, 0.0);
+					glTexCoord2f(1.0, 0.0); glVertex3f(  tx,  ty, 0.0);
+				glEnd();
+			}
+			
+			tile = tile->next;
 		}
 		
-		tile = tile->next;
-	}
-	
-	if( focus_has() == FOCUS_MENU ) {
-		hint_draw_arrow( &arrow_retreat );
-		hint_draw_arrow( &arrow_advance );
+		if( focus_has() == FOCUS_MENU ) {
+			hint_draw_arrow( &arrow_retreat );
+			hint_draw_arrow( &arrow_advance );
+		}
 	}
 }
 
@@ -339,6 +360,21 @@ void menu_retreat( void ) {
 			t = t->next;
 		}
 	}
+}
+
+void menu_hide( void ) {
+	if( hide_direction == 0 && visible == 1 ) {
+		hide_direction = 1;
+		step = steps;		
+	}
+}
+
+void menu_show( void ) {
+	if( hide_direction == 0 && visible == 0 ) {
+		visible = 1;
+		hide_direction = -1;
+		step = steps;	
+	}	
 }
 
 int menu_event( int event ) {
@@ -390,6 +426,7 @@ int menu_event( int event ) {
 }
 
 int menu_got_focus( void ) {
+	submenu_hide();
 	return 0;
 }
 

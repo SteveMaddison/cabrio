@@ -42,6 +42,8 @@ void menu_draw( void );
 int menu_event( int event );
 int menu_got_focus( void );
 int menu_lost_focus( void );
+void menu_show( void );
+void menu_hide( void );
 
 #endif
 

@@ -7,6 +7,8 @@
 #include "focus.h"
 #include "sound.h"
 #include "emulator.h"
+#include "menu.h"
+#include "submenu.h"
 
 static const int IMAGE_SCALE = 128;
 static const int NUM_GAME_TILES = 11;
@@ -202,6 +204,11 @@ int game_sel_got_focus( void ) {
 	if( game_sel_populate( game_first() ) == 0 ) {
 		sound_play_select();
 		game_sel_show();
+		
+		if( config_get()->iface.menu.auto_hide ) {
+			menu_hide();
+			submenu_hide();
+		}
 	}
 	else {
 		sound_play_no();
@@ -212,6 +219,11 @@ int game_sel_got_focus( void ) {
 
 int game_sel_lost_focus( void ) {
 	game_sel_hide(HIDE_TARGET_START);
+
+	if( config_get()->iface.menu.auto_hide ) {
+		menu_show();
+	}
+
 	return 0;
 }
 

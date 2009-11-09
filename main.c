@@ -63,6 +63,9 @@ int main( int argc, char *arvg[] ) {
 	if( menu_init() != 0 )
 		return -1;
 
+	if( submenu_init() != 0 )
+		return -1;
+
 	if( hint_init() != 0 )
 		return -1;
 
@@ -112,4 +115,3 @@ int main( int argc, char *arvg[] ) {
 
 	return 0;
 }
-

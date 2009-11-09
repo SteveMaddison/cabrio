@@ -18,6 +18,7 @@ static const GLfloat item_height = 0.3;
 static const GLfloat font_scale = 0.0035;
 static const GLfloat offset = 0.3;
 static const char *VALUE_UNKNOWN = "???";
+static const int MAX_STEPS = 100;
 
 static struct category *prev_category = NULL;
 static struct category *category = NULL;
@@ -26,6 +27,19 @@ static struct platform *platform = NULL;
 static struct texture *message = NULL;
 static struct arrow arrow_retreat;
 static struct arrow arrow_advance;
+static int steps = 0;
+static int step = 0;
+static int hide_direction = 0;
+static int visible = 0;
+
+int submenu_init( void ) {
+	if( config_get()->iface.frame_rate )
+		steps = config_get()->iface.frame_rate/4;
+	else
+		steps = MAX_STEPS;
+	
+	return 0;
+}
 
 int submenu_selected( void ) {
 	return selected;
@@ -173,6 +187,21 @@ void submenu_retreat( void ) {
 	}
 }
 
+void submenu_hide( void ) {
+	if( visible == 1 ) {
+		hide_direction = 1;
+		step = steps;
+	}
+}
+
+void submenu_show( void ) {
+	if( visible == 0 ) {
+		visible = 1;
+		hide_direction = -1;
+		step = steps;	
+	}	
+}
+
 int submenu_got_focus( void ) {
 	if( focus_prev() == FOCUS_MENU ) {
 		submenu_create( menu_selected() );
@@ -180,12 +209,18 @@ int submenu_got_focus( void ) {
 			submenu_do_filter();
 			focus_set( FOCUS_GAMESEL );
 		}
+		if( items > 0 )
+			submenu_show();
 	}
 	else if( focus_prev() == FOCUS_GAMESEL ) {
 		if( items <= 1 ) {
 			focus_set( FOCUS_MENU );
 		}
+		else {
+			submenu_show();
+		}
 	}
+
 	return 0;
 }
 
@@ -224,7 +259,7 @@ void submenu_free( void ) {
 }
 
 void submenu_draw( void ) {
-	if( focus_has() >= FOCUS_SUBMENU && type != MENU_ALL ) {
+	if( visible && type != MENU_ALL ) {
 		GLfloat xfactor = ogl_xfactor();
 		GLfloat yfactor = ogl_yfactor();
 		GLfloat width = (item_width/2)*xfactor;
@@ -238,7 +273,29 @@ void submenu_draw( void ) {
 		if( ty > ((item_height*0.9)/2)*xfactor ) {
 			ty = ((item_height*0.9)/2)*xfactor;
 		}
+
+		if( hide_direction ) {
+			GLfloat zoom = 1;
+			if( hide_direction == 1 )
+				zoom = 1.0 - ((1.0 / steps) * (steps - step));
+			else
+				zoom = ((1.0 / steps) * (steps - step));
+
+			width *= zoom;
+			height *= zoom;
+			tx *= zoom;
+			ty *=zoom;
 		
+			if( step-- == 1 ) {
+				/* Animation complete */
+				if( hide_direction == -1 )
+					visible = 1;
+				else
+					visible = 0;
+				hide_direction = 0;
+			}
+		}
+
 		ogl_load_alterego();
 		glTranslatef( menu_tile_selected()->x * xfactor, (menu_tile_selected()->y- offset) * yfactor, -6 );
 		glColor4f( 1.0, 1.0, 1.0, 1.0 );
