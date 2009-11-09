@@ -47,6 +47,7 @@ static const char *config_tag_game_logo_image			=     "logo-image";
 static const char *config_tag_game_background_image		=     "background-image";
 static const char *config_tag_game_categories			=     "categories";
 static const char *config_tag_game_category				=     "category";
+static const char *config_tag_game_screen_shot			=     "screen-shot";
 static const char *config_tag_iface						= "interface";
 static const char *config_tag_iface_full_screen			= 	"full-screen";
 static const char *config_tag_iface_screen				=   "screen";
@@ -505,6 +506,9 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 			}
 			else if( strcmp( (char*)node->name, config_tag_game_background_image ) == 0 ) {
 				strncpy( game->background_image, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, config_tag_game_screen_shot ) == 0 ) {
+				strncpy( game->screen_shot, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
 			else if( strcmp( (char*)node->name, config_tag_game_categories ) == 0 ) {
 				config_read_game_categories( node->children, game );

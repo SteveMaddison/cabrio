@@ -139,6 +139,7 @@ int game_list_create( void ) {
 			game->texture = NULL;
 			game_load_texture( game );
 			game->bg_image = config_game->background_image;
+			game->screen_shot = config_game->screen_shot;
 			game->rom_path = config_game->rom_image;
 			game->params = config_game->params;
 			if( config_game->platform ) {

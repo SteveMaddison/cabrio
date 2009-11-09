@@ -22,6 +22,7 @@ struct game {
 	char *name;
 	char *logo_image;
 	char *bg_image;
+	char *screen_shot;
 	char *rom_path;
 	struct config_param *params;
 };

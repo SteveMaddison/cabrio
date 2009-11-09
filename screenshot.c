@@ -7,7 +7,8 @@ static GLfloat offset = -1.0;
 static GLfloat angle_x = -10;
 static GLfloat angle_y = 30;
 static GLfloat angle_z = 10;
-static GLfloat size = 0.75;
+static GLfloat scale = 0.006;
+static struct texture *current = NULL;
 #define NUM_NOISE 3
 static struct texture *noise[NUM_NOISE];
 static int frame = 0;
@@ -31,13 +32,37 @@ int screenshot_init( void ) {
 
 void screenshot_free( void ) {
 	int i;
+	
 	for( i = 0 ; i < NUM_NOISE ; i++ )
 		ogl_free_texture( noise[i] );
+		
+	if( current )
+		ogl_free_texture( current );
+	current = NULL;
+}
+
+int screenshot_set( const char *filename ) {
+	current = sdl_create_texture( filename );
+	return 0;
+}
+
+void screenshot_clear( void ) {
+	if( current )
+		ogl_free_texture( current );
+	current = NULL;
 }
 
 void screenshot_draw( void ) {
 	GLfloat xfactor = ogl_xfactor();
 	GLfloat yfactor = ogl_yfactor();
+	struct texture *texture = current;
+	GLfloat xsize, ysize;
+	
+	if( texture == NULL )
+		texture = noise[frame/noise_skip];
+
+	xsize = (texture->width/2) * scale * xfactor;
+	ysize = (texture->height/2) * scale * xfactor;
 
 	ogl_load_alterego();
 	glTranslatef( offset * xfactor, 0 * yfactor, -4 );
@@ -49,12 +74,12 @@ void screenshot_draw( void ) {
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
-	glBindTexture( GL_TEXTURE_2D, noise[frame/noise_skip]->id );
+	glBindTexture( GL_TEXTURE_2D, texture->id );		
 	glBegin( GL_QUADS );
-		glTexCoord2f(0.0, 0.0); glVertex3f(-size,  size*0.75, 0.0);
-		glTexCoord2f(0.0, 1.0); glVertex3f(-size, -size*0.75, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f( size, -size*0.75, 0.0);
-		glTexCoord2f(1.0, 0.0); glVertex3f( size,  size*0.75, 0.0);	
+		glTexCoord2f(0.0, 0.0); glVertex3f(-xsize,  ysize, 0.0);
+		glTexCoord2f(0.0, 1.0); glVertex3f(-xsize, -ysize, 0.0);
+		glTexCoord2f(1.0, 1.0); glVertex3f( xsize, -ysize, 0.0);
+		glTexCoord2f(1.0, 0.0); glVertex3f( xsize,  ysize, 0.0);	
 	glEnd();
 	
 	if( ++frame >= NUM_NOISE * noise_skip )

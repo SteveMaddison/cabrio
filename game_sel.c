@@ -9,6 +9,7 @@
 #include "emulator.h"
 #include "menu.h"
 #include "submenu.h"
+#include "screenshot.h"
 
 static const int IMAGE_SCALE = 128;
 static const int NUM_GAME_TILES = 13;
@@ -439,6 +440,7 @@ void game_sel_draw( void ) {
 		idle_counter--;
 		if( idle_counter == 0 && game_tile_current->game )
 			bg_set( game_tile_current->game->bg_image );
+			screenshot_set( game_tile_current->game->screen_shot );
 	}
 	if( visible ) {
 		if( scroll_direction != 0 ) {

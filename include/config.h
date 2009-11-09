@@ -67,6 +67,7 @@ struct config_game {
 	char rom_image[CONFIG_FILE_NAME_LENGTH];
 	char logo_image[CONFIG_FILE_NAME_LENGTH];
 	char background_image[CONFIG_FILE_NAME_LENGTH];
+	char screen_shot[CONFIG_FILE_NAME_LENGTH];
 	struct config_game_category *categories;
 	struct config_param *params;
 	struct config_platform *platform;
