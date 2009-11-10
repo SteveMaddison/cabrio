@@ -1251,7 +1251,8 @@ int config_read_file( char *filename ) {
 }
 
 int config_open( const char *filename ) {
-	int ret = 0;
+	int created = 0;
+	DIR *dir = NULL;
 #ifdef __unix__
 	struct passwd *passwd = getpwuid(getuid());
 #endif
@@ -1297,7 +1298,7 @@ int config_open( const char *filename ) {
 					return -1;
 					break;
 				case ENOENT:
-					return 1; /* We check for this in main() */
+					created = 1; /* We check for this in main() */
 					break;
 				default:
 					fprintf( stderr, "Error: Can't read config file '%s': errno = %d\n", config_filename, errno );
@@ -1310,42 +1311,38 @@ int config_open( const char *filename ) {
 		}
 	}
 
-	ret = config_read_file( config_filename );
-	if( ret != 0 ) {
-		return ret;	
+	if( !created && config_read_file( config_filename ) != 0 )
+		return -1;
+			
+	/* Scan for other config files in the same directory */
+	if( !(dir = opendir( config_directory )) ) {
+		fprintf( stderr, "Warning: Can't scan for additional config files in '%s': %s\n", config_directory, strerror( errno ) );
 	}
 	else {
-		/* Scan for other config files in the same directory */
-		DIR *dir = opendir( config_directory );
-		if( dir == NULL ) {
-			fprintf( stderr, "Warning: Can't scan for additional config files in '%s': %s\n", config_directory, strerror( errno ) );
-		}
-		else {
-			struct dirent *dentry;
-			char filename[CONFIG_FILE_NAME_LENGTH] = "";
-			char *dot = NULL;
-			
-			while( (dentry = readdir( dir )) ) {
-				dot = strrchr( dentry->d_name, '.' );
-	
-				if( dot && strcasecmp( dot, ".xml" ) == 0 ) {
+		struct dirent *dentry;
+		char filename[CONFIG_FILE_NAME_LENGTH] = "";
+		char *dot = NULL;
+		
+		while( (dentry = readdir( dir )) ) {
+			dot = strrchr( dentry->d_name, '.' );
+
+			if( dot && strcasecmp( dot, ".xml" ) == 0 ) {
 #ifdef __WIN32__
-					if( strcasecmp( dentry->d_name, config_default_file ) != 0 ) {
-						snprintf( filename, CONFIG_FILE_NAME_LENGTH, "%s\\%s", config_directory, dentry->d_name );
+				if( strcasecmp( dentry->d_name, config_default_file ) != 0 ) {
+					snprintf( filename, CONFIG_FILE_NAME_LENGTH, "%s\\%s", config_directory, dentry->d_name );
 #else
-					if( strcmp( dentry->d_name, config_default_file ) != 0 ) {
-						snprintf( filename, CONFIG_FILE_NAME_LENGTH, "%s/%s", config_directory, dentry->d_name );
+				if( strcmp( dentry->d_name, config_default_file ) != 0 ) {
+					snprintf( filename, CONFIG_FILE_NAME_LENGTH, "%s/%s", config_directory, dentry->d_name );
 #endif
-						if( config_read_file( filename ) != 0 ) {
-							fprintf( stderr, "Warning: Error reading auxiliary config file '%s'\n", filename );
-						}
+					if( config_read_file( filename ) != 0 ) {
+						fprintf( stderr, "Warning: Error reading auxiliary config file '%s'\n", filename );
 					}
 				}
 			}
-			closedir( dir );
-		}		
-	}
+		}
+		closedir( dir );
+	}		
 	
-	return 0;
+	return created;
 }
 
