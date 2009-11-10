@@ -14,9 +14,9 @@ int sound_init( void ) {
 	}
 
 	for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
-		sounds[i] = Mix_LoadWAV( config_get()->iface.sounds[i] );
+		sounds[i] = Mix_LoadWAV( config_get()->iface.theme.sounds[i] );
 		if( sounds[i] == NULL ) {
-			fprintf( stderr, "Warning: Unable to open sound: %s\n", config_get()->iface.sounds[i] );
+			fprintf( stderr, "Warning: Unable to open sound: %s\n", config_get()->iface.theme.sounds[i] );
 		}
 	}
 

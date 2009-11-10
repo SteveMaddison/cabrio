@@ -12,8 +12,8 @@ int font_init( void ) {
 	const struct config *config = config_get();
 	int size;
 
-	if( config->iface.font_size > 0 )
-		size = config->iface.font_size;
+	if( config->iface.theme.font_size > 0 )
+		size = config->iface.theme.font_size;
 	else
 		size = DEFAULT_FONT_SIZE;
 
@@ -22,10 +22,10 @@ int font_init( void ) {
 		return -1;
 	}
 		
-	if( config->iface.font_file && *config->iface.font_file ) {
-		font = TTF_OpenFont( config->iface.font_file, size );
+	if( config->iface.theme.font_file && *config->iface.theme.font_file ) {
+		font = TTF_OpenFont( config->iface.theme.font_file, size );
 		if( font == NULL ) {
-			fprintf( stderr, "Error: Couldn't load font '%s': %s\n", config->iface.font_file, TTF_GetError() );
+			fprintf( stderr, "Error: Couldn't load font '%s': %s\n", config->iface.theme.font_file, TTF_GetError() );
 			return -1;
 		}
 	}

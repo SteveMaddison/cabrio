@@ -15,20 +15,20 @@ void bg_clear( void ) {
 int bg_init( void ) {
 	const struct config *config = config_get();
 
-	if( config->iface.background_image[0] != '\0' ) {
-		bg_clear_texture = sdl_create_texture( config->iface.background_image );	
+	if( config->iface.theme.background_image[0] != '\0' ) {
+		bg_clear_texture = sdl_create_texture( config->iface.theme.background_image );	
 		if( bg_clear_texture == NULL ) {
-			fprintf( stderr, "Warning: couldn't create default background texture from '%s'\n", config->iface.background_image );
+			fprintf( stderr, "Warning: couldn't create default background texture from '%s'\n", config->iface.theme.background_image );
 			return -1;
 		}
 	}
 
-	alpha = 1.0 - (GLfloat)(config->iface.background_transparency)/100;
+	alpha = 1.0 - (GLfloat)(config->iface.theme.background_transparency)/100;
 	
 	if( config->iface.frame_rate )
-		angle_step = (GLfloat)config->iface.background_rotation/((GLfloat)config->iface.frame_rate*20);
+		angle_step = (GLfloat)config->iface.theme.background_rotation/((GLfloat)config->iface.frame_rate*20);
 	else 
-		angle_step = (GLfloat)config->iface.background_rotation/1000;
+		angle_step = (GLfloat)config->iface.theme.background_rotation/1000;
 
 	bg_clear();
 	return 0;

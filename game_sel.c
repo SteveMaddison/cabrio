@@ -177,7 +177,7 @@ int game_sel_populate( struct game *game ) {
 }
 
 int game_sel_event( int event ) {
-	int o = config_get()->iface.game_sel.orientation;
+	int o = config_get()->iface.theme.game_sel.orientation;
 	switch( event ) {
 		case EVENT_UP:
 			sound_play( SOUND_BLIP );
@@ -227,7 +227,7 @@ int game_sel_got_focus( void ) {
 		game_sel_show();
 		idle_counter = 1;
 		
-		if( config_get()->iface.menu.auto_hide ) {
+		if( config_get()->iface.theme.menu.auto_hide ) {
 			menu_hide();
 			submenu_hide();
 		}
@@ -243,7 +243,7 @@ int game_sel_lost_focus( void ) {
 	game_sel_hide(HIDE_TARGET_START);
 	screenshot_clear();
 
-	if( config_get()->iface.menu.auto_hide ) {
+	if( config_get()->iface.theme.menu.auto_hide ) {
 		menu_show();
 	}
 
@@ -253,7 +253,7 @@ int game_sel_lost_focus( void ) {
 void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) {
 	GLfloat xfactor = ogl_xfactor();
 	GLfloat alpha = 1.0;
-	const struct config_game_sel *config = &config_get()->iface.game_sel;
+	const struct config_game_sel *config = &config_get()->iface.theme.game_sel;
 	
 	if( tile && tile->game && tile->game->texture && dest ) {
 		GLfloat width = (((GLfloat)tile->game->texture->width/IMAGE_SCALE)/2) * xfactor;

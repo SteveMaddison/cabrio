@@ -103,6 +103,17 @@ struct config_game_sel {
 	int orientation;
 };
 
+struct config_theme {
+	char background_image[CONFIG_FILE_NAME_LENGTH];
+	int background_rotation;
+	int background_transparency;
+	char font_file[CONFIG_FILE_NAME_LENGTH];
+	int font_size;
+	char sounds[NUM_SOUNDS][CONFIG_FILE_NAME_LENGTH];
+	struct config_menu menu;
+	struct config_game_sel game_sel;
+};
+
 struct config_iface {
 	int full_screen;
 	int screen_width;
@@ -115,15 +126,7 @@ struct config_iface {
 	int gfx_max_width;
 	int gfx_max_height;
 	struct config_control controls[NUM_EVENTS];
-
-	char background_image[CONFIG_FILE_NAME_LENGTH];
-	int background_rotation;
-	int background_transparency;
-	char font_file[CONFIG_FILE_NAME_LENGTH];
-	int font_size;
-	struct config_menu menu;
-	struct config_game_sel game_sel;
-	char sounds[NUM_SOUNDS][CONFIG_FILE_NAME_LENGTH];
+	struct config_theme theme;
 };
 
 struct config {

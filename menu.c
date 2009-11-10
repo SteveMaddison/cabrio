@@ -44,7 +44,7 @@ int menu_item_count( void ) {
 }
 
 int menu_load_texture( void ) {
-	menu_texture = sdl_create_texture( config_get()->iface.menu.texture );
+	menu_texture = sdl_create_texture( config_get()->iface.theme.menu.texture );
 	if( menu_texture == 0 ) {
 		fprintf( stderr, "Warning: Couldn't create texture for menu items\n" );
 		return -1;
@@ -135,22 +135,22 @@ int menu_init( void ) {
 	else
 		steps = MAX_STEPS;
 
-	zoom = (GLfloat)config->iface.menu.zoom;
+	zoom = (GLfloat)config->iface.theme.menu.zoom;
 	if( zoom < 1 ) {
 		fprintf( stderr, "Warning: Menu zoom parameter less than 1 - setting to 1\n" );
 		zoom = 1;
 	}
 
-	spacing = (GLfloat)config->iface.menu.spacing;
+	spacing = (GLfloat)config->iface.theme.menu.spacing;
 	if( spacing < 0 ) {
 		/* auto spacing */
-		if( config->iface.menu.orientation == CONFIG_LANDSCAPE )
-			spacing = (GLfloat)config->iface.menu.item_width * zoom * SPACING_FACTOR;
+		if( config->iface.theme.menu.orientation == CONFIG_LANDSCAPE )
+			spacing = (GLfloat)config->iface.theme.menu.item_width * zoom * SPACING_FACTOR;
 		else
-			spacing = (GLfloat)config->iface.menu.item_height * zoom * SPACING_FACTOR;
+			spacing = (GLfloat)config->iface.theme.menu.item_height * zoom * SPACING_FACTOR;
 	}
 
-	min_alpha = 1.0 - (GLfloat)(config->iface.menu.transparency)/100;
+	min_alpha = 1.0 - (GLfloat)(config->iface.theme.menu.transparency)/100;
 
 	if( menu_load_texture() != 0 ) {
 		return -1;
@@ -166,8 +166,8 @@ int menu_init( void ) {
 	}
 
 	items_visible = menu_items;
-	if( menu_items > config->iface.menu.max_visible )
-		items_visible = config->iface.menu.max_visible;
+	if( menu_items > config->iface.theme.menu.max_visible )
+		items_visible = config->iface.theme.menu.max_visible;
 
 	if( items_visible ) {
 		struct menu_item *item = menu_start;
@@ -177,13 +177,13 @@ int menu_init( void ) {
 				struct menu_tile *tile = malloc( sizeof(struct menu_tile) );
 				if( tile ) {
 					GLfloat offset = (((GLfloat)(i) - (((GLfloat)items_visible+1)/2 )) * spacing);
-					if( config->iface.menu.orientation == CONFIG_LANDSCAPE ) {
-						tile->x = (offset + config->iface.menu.offset1);
-						tile->y = config->iface.menu.offset2;
+					if( config->iface.theme.menu.orientation == CONFIG_LANDSCAPE ) {
+						tile->x = (offset + config->iface.theme.menu.offset1);
+						tile->y = config->iface.theme.menu.offset2;
 					}
 					else {
-						tile->x = -config->iface.menu.offset2 * ogl_aspect_ratio();
-						tile->y = -(offset + config->iface.menu.offset1);
+						tile->x = -config->iface.theme.menu.offset2 * ogl_aspect_ratio();
+						tile->y = -(offset + config->iface.theme.menu.offset1);
 					}
 					
 					tile->zoom = 1;
@@ -208,7 +208,7 @@ int menu_init( void ) {
 	
 	selected = tile_start;
 	/* Use the middle tile as selected */
-	for( i = 0 ; i < ((config->iface.menu.max_visible+1)/2) ; i++ ) {
+	for( i = 0 ; i < ((config->iface.theme.menu.max_visible+1)/2) ; i++ ) {
 		selected = selected->next;
 	}
 	selected->zoom = zoom;
@@ -232,21 +232,21 @@ int menu_init( void ) {
 	tile_end->x = tile_end->prev->x;
 	tile_end->y = tile_end->prev->y;
 
-	arrow_retreat.size = config->iface.menu.item_height * 1.5;
-	arrow_advance.size = config->iface.menu.item_height * 1.5;
-	if( config->iface.menu.orientation == CONFIG_LANDSCAPE ) {
-		arrow_retreat.x = tile_start->x - config->iface.menu.item_width;
+	arrow_retreat.size = config->iface.theme.menu.item_height * 1.5;
+	arrow_advance.size = config->iface.theme.menu.item_height * 1.5;
+	if( config->iface.theme.menu.orientation == CONFIG_LANDSCAPE ) {
+		arrow_retreat.x = tile_start->x - config->iface.theme.menu.item_width;
 		arrow_retreat.y = tile_start->y;
-		arrow_advance.x = tile_end->x + config->iface.menu.item_width;
+		arrow_advance.x = tile_end->x + config->iface.theme.menu.item_width;
 		arrow_advance.y = tile_end->y;
 		arrow_retreat.angle = 90;
 		arrow_advance.angle = -90;
 	}
 	else {
 		arrow_retreat.x = tile_start->x;
-		arrow_retreat.y = tile_start->y + config->iface.menu.item_height;
+		arrow_retreat.y = tile_start->y + config->iface.theme.menu.item_height;
 		arrow_advance.x = tile_end->x;
-		arrow_advance.y = tile_end->y - config->iface.menu.item_height;
+		arrow_advance.y = tile_end->y - config->iface.theme.menu.item_height;
 		arrow_retreat.angle = 0;
 		arrow_advance.angle = 180;	
 	}
@@ -260,7 +260,7 @@ void menu_draw( void ) {
 		GLfloat item_zoom,tx,ty,mx,my = 0;
 		GLfloat xfactor = ogl_xfactor();
 		GLfloat yfactor = ogl_yfactor();
-		const struct config_menu *config = &config_get()->iface.menu;
+		const struct config_menu *config = &config_get()->iface.theme.menu;
 		
 		while( tile ) {
 			struct menu_tile *dest = tile;
@@ -387,7 +387,7 @@ void menu_show( void ) {
 }
 
 int menu_event( int event ) {
-	int o = config_get()->iface.menu.orientation;
+	int o = config_get()->iface.theme.menu.orientation;
 	switch( event ) {
 		case EVENT_UP:
 			if( o == CONFIG_PORTRAIT ) {
