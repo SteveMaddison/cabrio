@@ -14,6 +14,7 @@
 #include "key.h"
 #include "event.h"
 #include "control.h"
+#include "sound.h"
 
 #include <libxml2/libxml/parser.h>
 #include <libxml2/libxml/tree.h>
@@ -23,10 +24,23 @@ struct config config;
 #ifdef __WIN32__
 static const char *config_default_font			= "\\fonts\\FreeSans.ttf";
 static const char *config_default_menu_texture	= "\\pixmaps\\menu_item.png";
+static const char *config_default_sounds[] = {
+	"\\sounds\\back.wav",
+	"\\sounds\\blip.wav",
+	"\\sounds\\no.wav",
+	"\\sounds\\select.wav"
+};
 #else
 static const char *config_default_dir = ".cabrio"; /* Relative to user's home */
-static const char *config_default_font = "/fonts/FreeSans.ttf";
+static const char *config_default_font 			= "/fonts/FreeSans.ttf";
 static const char *config_default_menu_texture	= "/pixmaps/menu_item.png";
+
+static const char *config_default_sounds[] = {
+	"/sounds/back.wav",
+	"/sounds/blip.wav",
+	"/sounds/no.wav",
+	"/sounds/select.wav"
+};
 #endif
 static const char *config_default_file = "config.xml";
 
@@ -71,6 +85,9 @@ static const char *config_tag_iface_menu_offset2		=     "secondary-offset";
 static const char *config_tag_iface_menu_items_visible	=     "items-visible";
 static const char *config_tag_iface_menu_spacing		=     "spacing";
 static const char *config_tag_iface_menu_auto_hide		=     "auto-hide";
+static const char *config_tag_iface_sounds				=	"sounds";
+static const char *config_tag_iface_sounds_sound		=	  "sound";
+static const char *config_tag_iface_sounds_sound_file	=	  "sound-file";
 
 /* General (reused) XML tags */
 static const char *config_tag_name					= "name";
@@ -792,6 +809,60 @@ int config_read_font( xmlNode *node ) {
 	return 0;
 }
 
+int config_read_sound( xmlNode *node ) {
+	xmlNode *tmp = node;
+	char *name = NULL;
+	int id = -1;
+	
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+				name = (char*)xmlNodeGetContent(node);
+				break;
+			}
+		}
+		node = node->next;
+	}
+	id = sound_id( name );
+	if( id >= 0 ) {
+		node = tmp;
+		while( node ) {
+			if( node->type == XML_ELEMENT_NODE ) {
+				if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+					/* Already got it */
+				}
+				else if( strcmp( (char*)node->name, config_tag_iface_sounds_sound_file ) == 0 ) {
+					strncpy( config.iface.sounds[id], (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+				}
+				else {
+					fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
+				}
+			}
+			node = node->next;
+		}
+	}
+	else {
+		fprintf( stderr, "Warning: Unrecogised sound name\n" );
+	}		
+		
+	return 0;
+}
+
+int config_read_sounds( xmlNode *node ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_iface_sounds_sound ) == 0 ) {
+				config_read_sound( node->children );
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_interface_background( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
@@ -866,6 +937,9 @@ int config_read_interface( xmlNode *node ) {
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_menu ) == 0 ) {
 				config_read_menu( node->children, &config.iface.menu );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_sounds ) == 0 ) {
+				config_read_sounds( node->children );
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
@@ -1184,6 +1258,9 @@ int config_new( void ) {
 		config.iface.game_sel.offset1 = 0.9;
 		config.iface.game_sel.offset2 = 0;
 		
+		for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
+			strncpy( config.iface.sounds[i], (char*)config_default_sounds[i], CONFIG_FILE_NAME_LENGTH );	
+		}
 		
 		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 			config.iface.controls[i].device_type = DEV_KEYBOARD;

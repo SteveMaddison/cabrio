@@ -1,35 +1,35 @@
 #include "sound.h"
+#include "config.h"
 #include <SDL/SDL_mixer.h>
 
-Mix_Chunk *blip_sound = NULL;
-Mix_Chunk *select_sound = NULL;
-Mix_Chunk *back_sound = NULL;
-Mix_Chunk *no_sound = NULL;
+static Mix_Chunk *sounds[NUM_SOUNDS];
+static char *names[] = { "back", "blip", "no", "select" };
 
 int sound_init( void ) {
+	int i;
+	
 	if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) {
 	  fprintf( stderr, "Error: Unable to initialise sound: %s\n", SDL_GetError() );
 		return -1;
 	}
 
-	blip_sound = Mix_LoadWAV( DATA_DIR "/sounds/blip.wav" );
-	select_sound = Mix_LoadWAV( DATA_DIR "/sounds/select.wav" );
-	back_sound = Mix_LoadWAV( DATA_DIR "/sounds/back.wav" );
-	no_sound = Mix_LoadWAV( DATA_DIR "/sounds/no.wav" );
+	for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
+		sounds[i] = Mix_LoadWAV( config_get()->iface.sounds[i] );
+	}
 
 	return 0;
 }
 
 void sound_free( void ) {
-	Mix_FreeChunk( blip_sound );
-	blip_sound = NULL;
-	Mix_FreeChunk( select_sound );
-	select_sound = NULL;
-	Mix_FreeChunk( back_sound );
-	back_sound = NULL;
-	Mix_FreeChunk( no_sound );
-	no_sound = NULL;
+	int i;
 	
+	for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
+		if( sounds[i] ) {
+			Mix_FreeChunk( sounds[i] );
+			sounds[i] = NULL;
+		}
+	}
+
 	Mix_CloseAudio();
 }
 
@@ -41,24 +41,27 @@ int sound_resume( void ) {
 	return sound_init();
 }
 
-void sound_play_blip( void ) {
-	if( blip_sound )
-		Mix_PlayChannel( -1, blip_sound, 0 );
+void sound_play( int s ) {
+	if( s >= 0 && s < NUM_SOUNDS && sounds[s] )
+		Mix_PlayChannel( -1, sounds[s], 0 );
 }
 
-void sound_play_select( void ) {
-	if( select_sound )
-		Mix_PlayChannel( -1, select_sound, 0 );
+int sound_id( char *name ) {
+	int i;
+	
+	if( name ) {
+		for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
+			if( strcasecmp( name, names[i] ) == 0 ) {
+				return i;
+			}
+		}
+	}
+	
+	return -1;
 }
 
-void sound_play_back( void ) {
-	if( back_sound )
-		Mix_PlayChannel( -1, back_sound, 0 );
+const char *sound_name( int s ) {
+	if( s >= 0 && s < NUM_SOUNDS )
+		return names[s];
+	return NULL;
 }
-
-void sound_play_no( void ) {
-	if( no_sound )
-		Mix_PlayChannel( -1, no_sound, 0 );
-}
-
-

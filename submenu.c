@@ -234,11 +234,11 @@ int submenu_lost_focus( void ) {
 int submenu_event( int event ) {
 	switch( event ) {	
 		case EVENT_LEFT:
-			sound_play_blip();
+			sound_play( SOUND_BLIP );
 			submenu_retreat();
 			break;
 		case EVENT_RIGHT:
-			sound_play_blip();
+			sound_play( SOUND_BLIP );
 			submenu_advance();
 			break;
 		case EVENT_SELECT:

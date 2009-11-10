@@ -180,28 +180,28 @@ int game_sel_event( int event ) {
 	int o = config_get()->iface.game_sel.orientation;
 	switch( event ) {
 		case EVENT_UP:
-			sound_play_blip();
+			sound_play( SOUND_BLIP );
 			if( o == CONFIG_LANDSCAPE )
 				game_sel_skip_back();
 			else
 				game_sel_retreat();
 			break;
 		case EVENT_DOWN:
-			sound_play_blip();
+			sound_play( SOUND_BLIP );
 			if( o == CONFIG_LANDSCAPE )
 				game_sel_skip_forward();
 			else
 				game_sel_advance();
 			break;
 		case EVENT_LEFT:
-			sound_play_blip();
+			sound_play( SOUND_BLIP );
 			if( o == CONFIG_LANDSCAPE )
 				game_sel_retreat();
 			else
 				game_sel_skip_back();
 			break;
 		case EVENT_RIGHT:
-			sound_play_blip();
+			sound_play( SOUND_BLIP );
 			if( o == CONFIG_LANDSCAPE )
 				game_sel_advance();
 			else
@@ -212,7 +212,7 @@ int game_sel_event( int event ) {
 			emulator_run( game_sel_current() );
 			break;
 		case EVENT_BACK:
-			sound_play_back();
+			sound_play( SOUND_BACK );
 			focus_set( FOCUS_SUBMENU );
 			break;
 		default:
@@ -223,7 +223,7 @@ int game_sel_event( int event ) {
 
 int game_sel_got_focus( void ) {
 	if( game_sel_populate( game_first() ) == 0 ) {
-		sound_play_select();
+		sound_play( SOUND_SELECT );
 		game_sel_show();
 		idle_counter = 1;
 		
@@ -233,7 +233,7 @@ int game_sel_got_focus( void ) {
 		}
 	}
 	else {
-		sound_play_no();
+		sound_play( SOUND_NO );
 		focus_set( FOCUS_SUBMENU );
 	}
 	return 0;

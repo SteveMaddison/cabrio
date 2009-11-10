@@ -391,41 +391,41 @@ int menu_event( int event ) {
 	switch( event ) {
 		case EVENT_UP:
 			if( o == CONFIG_PORTRAIT ) {
-				sound_play_blip();
+				sound_play( SOUND_BLIP );
 				menu_retreat();
 			}
 			else {
-				sound_play_no();
+				sound_play( SOUND_NO );
 			}		
 			break;
 		case EVENT_DOWN:
 			if( o == CONFIG_PORTRAIT ) {
-				sound_play_blip();
+				sound_play( SOUND_BLIP );
 				menu_advance();
 			}
 			else {
-				sound_play_no();
+				sound_play( SOUND_NO );
 			}		
 			break;
 		case EVENT_LEFT:
 			if( o == CONFIG_LANDSCAPE ) {
-				sound_play_blip();
+				sound_play( SOUND_BLIP );
 				menu_retreat();
 			}
 			else {
-				sound_play_no();
+				sound_play( SOUND_NO );
 			}		
 		case EVENT_RIGHT:
 			if( o == CONFIG_LANDSCAPE ) {
-				sound_play_blip();
+				sound_play( SOUND_BLIP );
 				menu_advance();
 			}
 			else {
-				sound_play_no();
+				sound_play( SOUND_NO );
 			}		
 			break;
 		case EVENT_SELECT:
-			sound_play_select();
+			sound_play( SOUND_SELECT );
 			focus_set( FOCUS_SUBMENU );
 			break;
 		default:

@@ -6,6 +6,7 @@
 
 #include "control.h"
 #include "event.h"
+#include "sound.h"
 
 #define CONFIG_NAME_LENGTH		128
 #define CONFIG_FILE_NAME_LENGTH	256
@@ -121,6 +122,7 @@ struct config_iface {
 	struct config_control controls[NUM_EVENTS];
 	struct config_menu menu;
 	struct config_game_sel game_sel;
+	char sounds[NUM_SOUNDS][CONFIG_FILE_NAME_LENGTH];
 };
 
 struct config {
