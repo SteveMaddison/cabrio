@@ -368,7 +368,6 @@ void game_sel_hide( int target ) {
 void game_sel_shuffle_forward( int manage_textures ) {
 	struct game_tile *t = game_tile_start;
 	
-	printf("Fwd:\n");
 	if( t ) {
 		if( manage_textures )
 			game_load_texture( t->game->prev );
@@ -395,7 +394,6 @@ void game_sel_shuffle_forward( int manage_textures ) {
 void game_sel_shuffle_back( int manage_textures ) {
 	struct game_tile *t = game_tile_start;
 	
-	printf("Back:\n");
 	if( t ) {
 		while( t ) {
 			if( t->game )

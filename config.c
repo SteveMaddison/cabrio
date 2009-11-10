@@ -1314,6 +1314,37 @@ int config_open( const char *filename ) {
 	if( ret != 0 ) {
 		return ret;	
 	}
+	else {
+		/* Scan for other config files in the same directory */
+		DIR *dir = opendir( config_directory );
+		if( dir == NULL ) {
+			fprintf( stderr, "Warning: Can't scan for additional config files in '%s': %s\n", config_directory, strerror( errno ) );
+		}
+		else {
+			struct dirent *dentry;
+			char filename[CONFIG_FILE_NAME_LENGTH] = "";
+			char *dot = NULL;
+			
+			while( (dentry = readdir( dir )) ) {
+				dot = strrchr( dentry->d_name, '.' );
+	
+				if( dot && strcasecmp( dot, ".xml" ) == 0 ) {
+#ifdef __WIN32__
+					if( strcasecmp( dentry->d_name, config_default_file ) != 0 ) {
+						snprintf( filename, CONFIG_FILE_NAME_LENGTH, "%s\\%s", config_directory, dentry->d_name );
+#else
+					if( strcmp( dentry->d_name, config_default_file ) != 0 ) {
+						snprintf( filename, CONFIG_FILE_NAME_LENGTH, "%s/%s", config_directory, dentry->d_name );
+#endif
+						if( config_read_file( filename ) != 0 ) {
+							fprintf( stderr, "Warning: Error reading auxiliary config file '%s'\n", filename );
+						}
+					}
+				}
+			}
+			closedir( dir );
+		}		
+	}
 	
 	return 0;
 }

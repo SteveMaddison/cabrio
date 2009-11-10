@@ -204,20 +204,15 @@ void submenu_show( void ) {
 
 int submenu_got_focus( void ) {
 	if( focus_prev() == FOCUS_MENU ) {
-		if( items > 0 ) {
-			submenu_create( menu_selected() );
-			if( items == 1 ) {
-				submenu_do_filter();
+		submenu_create( menu_selected() );
+		if( items <= 1 ) {
+			submenu_do_filter();
+			if( items > 0 )
 				submenu_show();
-				focus_set( FOCUS_GAMESEL );
-			}
-			else {
-				submenu_show();
-			}
+			focus_set( FOCUS_GAMESEL );
 		}
 		else {
-			sound_play_no();
-			focus_set( FOCUS_MENU );
+			submenu_show();
 		}
 	}
 	else if( focus_prev() == FOCUS_GAMESEL ) {

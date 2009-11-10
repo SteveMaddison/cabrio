@@ -52,7 +52,6 @@ void game_list_free( void ) {
 
 int game_load_texture( struct game *game ) {
 	if( game->texture == NULL ) {
-		printf("  load: %s\n", game->name );
 		if( game && game->logo_image && game->logo_image[0] ) {
 			game->texture = sdl_create_texture( game->logo_image );
 		}
@@ -90,7 +89,6 @@ int game_load_texture( struct game *game ) {
 
 void game_free_texture( struct game *game ) {
 	if( game->texture ) {
-		printf("  free: %s\n", game->name );
 		ogl_free_texture( game->texture );
 		game->texture = NULL;
 	}
