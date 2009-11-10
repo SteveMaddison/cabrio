@@ -36,6 +36,8 @@ int game_list_unfilter( void );
 void game_list_pause( void );
 int game_list_resume( void );
 void game_list_free( void );
+int game_load_texture( struct game *game );
+void game_free_texture( struct game *game );
 
 
 void game_free( struct game* game );

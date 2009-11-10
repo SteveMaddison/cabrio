@@ -51,38 +51,49 @@ void game_list_free( void ) {
 }
 
 int game_load_texture( struct game *game ) {
-	if( game && game->logo_image && game->logo_image[0] ) {
-		game->texture = sdl_create_texture( game->logo_image );
-	}
 	if( game->texture == NULL ) {
-		if( game && game->name && *game->name ) {
-			game->texture = font_create_texture( game->name );
+		printf("  load: %s\n", game->name );
+		if( game && game->logo_image && game->logo_image[0] ) {
+			game->texture = sdl_create_texture( game->logo_image );
 		}
-		else {
-			game->texture = font_create_texture( "<No Name>" );
-		}
-	}
-	
-	if( game->texture == NULL ) {
-		return -1;
-	}
-	else {
-		if( game->texture->width > game->texture->height ) {
-			/* Landscape */
-			if( game->texture->width > IMAGE_MAX_WIDTH ) {
-				game->texture->height = (int)(float)game->texture->height/((float)game->texture->width/IMAGE_MAX_WIDTH);
-				game->texture->width = IMAGE_MAX_WIDTH;
+		if( game->texture == NULL ) {
+			if( game && game->name && *game->name ) {
+				game->texture = font_create_texture( game->name );
+			}
+			else {
+				game->texture = font_create_texture( "<No Name>" );
 			}
 		}
+		
+		if( game->texture == NULL ) {
+			return -1;
+		}
 		else {
-			/* Portrait (or square) */
-			if( game->texture->height > IMAGE_MAX_HEIGHT ) {
-				game->texture->width = (int)(float)game->texture->width/((float)game->texture->height/IMAGE_MAX_HEIGHT);
-				game->texture->height = IMAGE_MAX_HEIGHT;
+			if( game->texture->width > game->texture->height ) {
+				/* Landscape */
+				if( game->texture->width > IMAGE_MAX_WIDTH ) {
+					game->texture->height = (int)(float)game->texture->height/((float)game->texture->width/IMAGE_MAX_WIDTH);
+					game->texture->width = IMAGE_MAX_WIDTH;
+				}
+			}
+			else {
+				/* Portrait (or square) */
+				if( game->texture->height > IMAGE_MAX_HEIGHT ) {
+					game->texture->width = (int)(float)game->texture->width/((float)game->texture->height/IMAGE_MAX_HEIGHT);
+					game->texture->height = IMAGE_MAX_HEIGHT;
+				}
 			}
 		}
 	}
 	return 0;
+}
+
+void game_free_texture( struct game *game ) {
+	if( game->texture ) {
+		printf("  free: %s\n", game->name );
+		ogl_free_texture( game->texture );
+		game->texture = NULL;
+	}
 }
 
 void game_list_pause( void ) {
@@ -137,7 +148,6 @@ int game_list_create( void ) {
 			game->name = config_game->name;
 			game->logo_image = config_game->logo_image;
 			game->texture = NULL;
-			game_load_texture( game );
 			game->bg_image = config_game->background_image;
 			game->screen_shot = config_game->screen_shot;
 			game->rom_path = config_game->rom_image;

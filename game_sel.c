@@ -135,6 +135,24 @@ int game_sel_init( int theme ) {
 	return 0;
 }
 
+void game_sel_load_textures( void ) {
+	struct game_tile *t = game_tile_start;
+	
+	while( t ) {
+		game_load_texture( t->game );
+		t = t->next;	
+	}
+}
+
+void game_sel_free_textures( void ) {
+	struct game_tile *t = game_tile_start;
+	
+	while( t ) {
+		game_free_texture( t->game );
+		t = t->next;	
+	}
+}
+
 int game_sel_populate( struct game *game ) {
 	int i;
 	struct game_tile *tile;
@@ -149,10 +167,12 @@ int game_sel_populate( struct game *game ) {
 
 	tile = game_tile_start;
 	while( tile ) {
+		game_load_texture( game );
 		tile->game = game;
 		tile = tile->next;
 		game = game->next;
 	}
+	
 	return 0;
 }
 
@@ -345,21 +365,57 @@ void game_sel_hide( int target ) {
 	}
 }
 
-void game_sel_shuffle_forward( void ) {
+void game_sel_shuffle_forward( int manage_textures ) {
 	struct game_tile *t = game_tile_start;
-	while( t ) {
-		if( t->game )
-			t->game = t->game->prev;
-		t = t->next;	
+	
+	printf("Fwd:\n");
+	if( t ) {
+		if( manage_textures )
+			game_load_texture( t->game->prev );
+		while( t ) {
+			if( t->game )
+				t->game = t->game->prev;
+			t = t->next;
+		}
+
+		if( manage_textures ) {
+			/* Check if we can free the last game's texture (we can't
+			 * if the game appears more than once in the selector. */
+			t = game_tile_start;
+			while( t && t->game != game_tile_end->game ) {
+				t = t->next;
+			}
+			if( t == NULL || t == game_tile_end ) {
+				game_free_texture( game_tile_end->game->next );
+			}
+		}
 	}
 }
 
-void game_sel_shuffle_back( void ) {
+void game_sel_shuffle_back( int manage_textures ) {
 	struct game_tile *t = game_tile_start;
-	while( t ) {
-		if( t->game )
-			t->game = t->game->next;
-		t = t->next;	
+	
+	printf("Back:\n");
+	if( t ) {
+		while( t ) {
+			if( t->game )
+				t->game = t->game->next;
+			if( manage_textures && t->next == NULL )
+				game_load_texture( t->game );
+			t = t->next;	
+		}
+
+		if( manage_textures ) {
+			/* Check if we can free the last game's texture (we can't
+			 * if the game appears more than once in the selector. */
+			t = game_tile_end;
+			while( t && t->game != game_tile_start->game ) {
+				t = t->prev;
+			}
+			if( t == NULL || t == game_tile_start ) {
+				game_free_texture( game_tile_start->game->prev );
+			}
+		}
 	}
 }
 
@@ -373,7 +429,7 @@ void game_sel_retreat( void ) {
 
 void game_sel_advance( void ) {
 	if( visible && !game_sel_busy() ) {
-		game_sel_shuffle_back();
+		game_sel_shuffle_back( 1 );
 		scroll_direction = -1;
 		step = steps-1;
 	}
@@ -384,41 +440,43 @@ void game_sel_do_skip( void ) {
 	struct game *pos;
 
 	if( current_game ) {
+		game_sel_free_textures();
 		if( skipping < 0 ) {
 			pos = current_game->prev;
-			game_sel_shuffle_forward();
+			game_sel_shuffle_forward( 0 );
 	
 			if( isalpha( current_game->name[0] ) ) {
 				while( strncasecmp( current_game->name, pos->name, 1 ) == 0 && pos != current_game ) {
-					game_sel_shuffle_forward();
+					game_sel_shuffle_forward( 0 );
 					pos = pos->prev;
 				}
 			}
 			else {
 				while( !isalpha( pos->name[0] ) && pos != current_game ) {
-					game_sel_shuffle_forward();
+					game_sel_shuffle_forward( 0 );
 					pos = pos->prev;
 				}
 			}	
 		}
 		else {
 			pos = current_game->next;
-			game_sel_shuffle_back();
+			game_sel_shuffle_back( 0 );
 	
 			if( isalpha( current_game->name[0] ) ) {
 				while( strncasecmp( current_game->name, pos->name, 1 ) == 0 && pos != current_game ) {
-					game_sel_shuffle_back();
+					game_sel_shuffle_back( 0 );
 					pos = pos->next;
 				}
 			}
 			else {
 				while( !isalpha( pos->name[0] ) && pos != current_game ) {
-					game_sel_shuffle_back();
+					game_sel_shuffle_back( 0 );
 					pos = pos->next;
 				}
 			}	
 		}
 		skipping = 0;
+		game_sel_load_textures();
 	}
 	game_sel_show();
 }
@@ -449,7 +507,7 @@ void game_sel_draw( void ) {
 		if( scroll_direction != 0 ) {
 			step += scroll_direction;
 			if( step > steps-1 ) {
-				game_sel_shuffle_forward();
+				game_sel_shuffle_forward( 1 );
 				game_tile_current = game_tile_current->next;
 				step = 0;
 			}
