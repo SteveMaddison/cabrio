@@ -52,6 +52,13 @@ int main( int argc, char *arvg[] ) {
 			return -1;
 	}
 
+	/* Large game lists take a while to initialise,
+	 * so show the background while we wait... */
+	bg_init();
+	bg_clear();
+	bg_draw();
+	sdl_swap();
+
 	if( platform_init() != 0 )
 		return -1;
 
@@ -77,7 +84,6 @@ int main( int argc, char *arvg[] ) {
 		return -1;
 
 	sound_init();
-	bg_init();
 
 	event_flush();
 	menu_show();
