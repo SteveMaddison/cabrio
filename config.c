@@ -30,6 +30,7 @@ static const char *config_default_menu_texture	= "/pixmaps/menu_item.png";
 #endif
 static const char *config_default_file = "config.xml";
 
+static char config_directory[CONFIG_FILE_NAME_LENGTH] = "";
 static char config_filename[CONFIG_FILE_NAME_LENGTH] = "";
 
 /* Defaults */
@@ -108,8 +109,6 @@ static const char *config_auto		= "auto";
 static const char *warn_alloc = "Warning: Couldn't allocate memory for '%s' object\n";
 static const char *warn_skip = "Warning: Skipping unrecognised XML element in '%s': '%s'\n";
 
-static xmlDocPtr config_doc = NULL;
-static xmlNodePtr config_root = NULL;
 static char scratch[32] = "";
 
 const struct config *config_get( void ) {
@@ -945,7 +944,7 @@ xmlChar *config_write_percentage( int value ) {
 	return (xmlChar*)scratch;
 }
 
-int config_write_emulators( void ) {
+int config_write_emulators( xmlNodePtr root ) {
 	xmlNodePtr xml_emulators = xmlNewNode( NULL, (xmlChar*)config_tag_emulators );
 	xmlNodePtr xml_emulator,xml_params,xml_param = NULL;
 	struct config_emulator *emulator = config.emulators;
@@ -974,16 +973,12 @@ int config_write_emulators( void ) {
 		xmlAddChild( xml_emulators, xml_emulator );
 		emulator = emulator->next;
 	}
-	xmlAddChild( config_root, xml_emulators );
+	xmlAddChild( root, xml_emulators );
 
 	return 0;
 }
 
-int config_write_games( void ) {
-	return 0;
-}
-
-int config_write_interface( void ) {
+int config_write_interface( xmlNodePtr root ) {
 	int i;
 	xmlNodePtr interface = xmlNewNode( NULL, (xmlChar*)config_tag_iface );
 	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_full_screen, config_write_boolean( config.iface.full_screen ) );
@@ -1072,7 +1067,7 @@ int config_write_interface( void ) {
 	}
 	xmlAddChild( interface, controls );
 	
-	xmlAddChild( config_root, interface );
+	xmlAddChild( root, interface );
 	return 0;
 }
 
@@ -1095,13 +1090,12 @@ int config_update( void ) {
 }
 
 int config_write() {
-	config_doc = xmlNewDoc( (xmlChar*)"1.0" );
-	config_root = xmlNewNode( NULL, (xmlChar*)config_tag_root );
+	xmlDocPtr config_doc = xmlNewDoc( (xmlChar*)"1.0" );
+	xmlNodePtr config_root = xmlNewNode( NULL, (xmlChar*)config_tag_root );
 	xmlDocSetRootElement( config_doc, config_root );
 	
-	config_write_interface();
-	config_write_emulators();
-	config_write_games();
+	config_write_interface( config_root );
+	config_write_emulators( config_root );
 	
 	xmlSaveFormatFileEnc( config_filename, config_doc, "UTF-8", 1 );
 	xmlFreeDoc( config_doc );
@@ -1203,36 +1197,23 @@ int config_create( void ) {
 #ifdef __unix__
 	struct passwd *passwd = getpwuid(getuid());
 #endif
-	char dirname[CONFIG_FILE_NAME_LENGTH];
 	DIR *dir;
-
-#ifdef __unix__
-	if( passwd == NULL ) {
-		fprintf( stderr, "Error: Couldn't fetch user's home directory\n" );
-		return -1;
-	}
-#endif
 	
 	/* Check if directory exists and attempt to create if not */
-#ifdef __unix__
-	snprintf( dirname, CONFIG_FILE_NAME_LENGTH, "%s/%s", passwd->pw_dir, config_default_dir );
-#else
-	strcpy( dirname, "." );
-#endif
-	dir = opendir( dirname );
+	dir = opendir( config_directory );
 	if( dir == NULL ) {
 		switch( errno ) {
 			case ENOTDIR:
-				fprintf( stderr, "Warning: Can't read config directory '%s': no such file or directory\n", dirname );
+				fprintf( stderr, "Warning: Can't read config directory '%s': no such file or directory\n", config_directory );
 				return -1;
 				break;
 			case ENOENT:
 #ifdef __unix__
-				if( mkdir( dirname, 0755 ) != 0 ) {
+				if( mkdir( config_directory, 0755 ) != 0 ) {
 #else
-				if( mkdir( dirname ) != 0 ) {
+				if( mkdir( config_directory ) != 0 ) {
 #endif
-					fprintf( stderr, "Warning: Can't create default config directory '%s'\n", dirname );
+					fprintf( stderr, "Warning: Can't create default config directory '%s'\n", config_directory );
 					return -1;
 				}
 				break;
@@ -1247,11 +1228,49 @@ int config_create( void ) {
 	return config_write();
 }
 
+int config_read_file( char *filename ) {
+	xmlDocPtr config_doc = NULL;
+	xmlNodePtr config_root = NULL;
+
+	config_doc = xmlReadFile( filename, NULL, 0 );
+	if( config_doc == NULL ) {
+		fprintf( stderr, "Warning: Error reading config file '%s'\n", filename );
+	}
+	else {
+		config_root = xmlDocGetRootElement( config_doc );
+		if( config_root == NULL ) {
+			fprintf( stderr, "Warning: Couldn't get root element of config file\n" );
+		}
+		else {
+			int retval = config_read( config_root );
+			xmlFreeDoc( config_doc );
+			return retval;
+		}
+	}
+	return -1;
+}
+
 int config_open( const char *filename ) {
+	int ret = 0;
+#ifdef __unix__
+	struct passwd *passwd = getpwuid(getuid());
+#endif
+	
 	if( config_new() != 0 ) {
 		fprintf( stderr, "Error: Config initialisation failed\n" );
 		return -1;
 	}
+
+#ifdef __unix__
+	if( passwd == NULL ) {
+		fprintf( stderr, "Error: Couldn't fetch user's home directory\n" );
+		return -1;
+	}
+
+	snprintf( config_directory, CONFIG_FILE_NAME_LENGTH, "%s/%s", passwd->pw_dir, config_default_dir );
+#else
+	strcpy( config_directory, "." );
+#endif
 
 	if( filename ) {
 		/* Use supplied file name throughout */
@@ -1264,15 +1283,9 @@ int config_open( const char *filename ) {
 	else {
 		/* Determine (path to) default config file */
 		FILE *file;
+		
 #ifdef __unix__
-		struct passwd *passwd = getpwuid(getuid());
-
-		if( passwd == NULL ) {
-			fprintf( stderr, "Error: Couldn't fetch user's home directory\n" );
-			return -1;
-		}
-
-		snprintf( config_filename, CONFIG_FILE_NAME_LENGTH, "%s/%s/%s", passwd->pw_dir, config_default_dir, config_default_file );
+		snprintf( config_filename, CONFIG_FILE_NAME_LENGTH, "%s/%s", config_directory, config_default_file );
 #else
 		strcpy( config_filename, config_default_file );
 #endif
@@ -1297,21 +1310,11 @@ int config_open( const char *filename ) {
 		}
 	}
 
-	config_doc = xmlReadFile( config_filename, NULL, 0 );
-	if( config_doc == NULL ) {
-		fprintf( stderr, "Warning: Error reading config file '%s'\n", config_filename );
+	ret = config_read_file( config_filename );
+	if( ret != 0 ) {
+		return ret;	
 	}
-	else {
-		config_root = xmlDocGetRootElement( config_doc );
-		if( config_root == NULL ) {
-			fprintf( stderr, "Warning: Couldn't get root element of config file\n" );
-		}
-		else {
-			int retval = config_read( config_root );
-			xmlFreeDoc( config_doc );
-			return retval;
-		}
-	}
-	return -1;
+	
+	return 0;
 }
 
