@@ -542,7 +542,7 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 		node = node->next;
 	}
 	
-/*{
+{
 	struct config_game_category *gc = game->categories;
 	printf( "Game: %s\n", game->name );
 	while( gc ) {
@@ -557,7 +557,7 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 		printf( "  '%s' = '%s'\n", gc->category->name, gc->value->name );
 		gc = gc->next;
 	}
-}*/
+}
 
 	return 0;
 }
@@ -1259,7 +1259,7 @@ int config_new( void ) {
 		config.iface.game_sel.offset2 = 0;
 		
 		for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
-			strncpy( config.iface.sounds[i], (char*)config_default_sounds[i], CONFIG_FILE_NAME_LENGTH );	
+			snprintf( config.iface.sounds[i], CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, (char*)config_default_sounds[i] );
 		}
 		
 		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
@@ -1271,9 +1271,6 @@ int config_new( void ) {
 }
 
 int config_create( void ) {
-#ifdef __unix__
-	struct passwd *passwd = getpwuid(getuid());
-#endif
 	DIR *dir;
 	
 	/* Check if directory exists and attempt to create if not */

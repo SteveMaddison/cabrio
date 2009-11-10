@@ -9,12 +9,15 @@ int sound_init( void ) {
 	int i;
 	
 	if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) {
-	  fprintf( stderr, "Error: Unable to initialise sound: %s\n", SDL_GetError() );
+		fprintf( stderr, "Error: Unable to initialise sound: %s\n", SDL_GetError() );
 		return -1;
 	}
 
 	for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
 		sounds[i] = Mix_LoadWAV( config_get()->iface.sounds[i] );
+		if( sounds[i] == NULL ) {
+			fprintf( stderr, "Warning: Unable to open sound: %s\n", config_get()->iface.sounds[i] );
+		}
 	}
 
 	return 0;

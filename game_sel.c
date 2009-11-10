@@ -99,23 +99,23 @@ int game_sel_init( int theme ) {
 					tile->angle[1] = 0.0;
 					tile->angle[2] = 0.0;
 				}
-			}			
+			}
 			else  {
 				if( i < mid ) {
 					tile->pos[0] = offset * 0.6;
-					tile->pos[1] = -(0.5 + offset/2);
-					tile->pos[2] = -offset/2;
-					tile->angle[0] = 0.0;
-					tile->angle[1] = 0.0;
-					tile->angle[2] = offset*(120/(float)NUM_GAME_TILES);
-				}
-				else if( i > mid ) {
-					tile->pos[0] = offset * 0.6;
-					tile->pos[1] = 0.5+offset/2;
+					tile->pos[1] = (0.5 + (offset/2));
 					tile->pos[2] = -offset/2;
 					tile->angle[0] = 0.0;
 					tile->angle[1] = 0.0;
 					tile->angle[2] = -(offset*(120/(float)NUM_GAME_TILES));
+				}
+				else if( i > mid ) {
+					tile->pos[0] = offset * 0.6;
+					tile->pos[1] = -(0.5 + (offset/2));
+					tile->pos[2] = -offset/2;
+					tile->angle[0] = 0.0;
+					tile->angle[1] = 0.0;
+					tile->angle[2] = (offset*(120/(float)NUM_GAME_TILES));
 				}
 				else {
 					tile->pos[0] = 0.0;

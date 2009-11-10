@@ -111,15 +111,16 @@ struct config_iface {
 	int screen_hflip;
 	int screen_vflip;
 	int frame_rate;
+	int gfx_quality;
+	int gfx_max_width;
+	int gfx_max_height;
+	struct config_control controls[NUM_EVENTS];
+
 	char background_image[CONFIG_FILE_NAME_LENGTH];
 	int background_rotation;
 	int background_transparency;
 	char font_file[CONFIG_FILE_NAME_LENGTH];
 	int font_size;
-	int gfx_quality;
-	int gfx_max_width;
-	int gfx_max_height;
-	struct config_control controls[NUM_EVENTS];
 	struct config_menu menu;
 	struct config_game_sel game_sel;
 	char sounds[NUM_SOUNDS][CONFIG_FILE_NAME_LENGTH];
