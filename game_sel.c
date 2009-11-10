@@ -255,7 +255,7 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 	GLfloat alpha = 1.0;
 	const struct config_game_sel *config = &config_get()->iface.game_sel;
 	
-	if( tile && tile->game && dest ) {
+	if( tile && tile->game && tile->game->texture && dest ) {
 		GLfloat width = (((GLfloat)tile->game->texture->width/IMAGE_SCALE)/2) * xfactor;
 		GLfloat height = (((GLfloat)tile->game->texture->height/IMAGE_SCALE)/2) * xfactor;
 		if( config->orientation == CONFIG_PORTRAIT ) {
@@ -273,7 +273,7 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 				-((tile->pos[Y] + config->offset2 + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * xfactor),
 				-((tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step)) * xfactor),
 				tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/steps)*step) -5.0
-				);		
+				);
 			glRotatef( -(tile->angle[Y] + (((dest->angle[Y]-tile->angle[Y])/steps)*step)), 1.0, 0.0, 0.0 );
 			glRotatef( -(tile->angle[X] + (((dest->angle[X]-tile->angle[X])/steps)*step)), 0.0, 1.0, 0.0 );
 			glRotatef( tile->angle[Z] + (((dest->angle[Z]-tile->angle[Z])/steps)*step), 0.0, 0.0, 1.0 );
@@ -282,6 +282,9 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 			glTranslatef( 0.0, 0.0, (steps-zoom)/5 );
 			alpha = (1.0/steps)*(zoom);
 			zoom--;
+		}
+		else if( hide_direction != 0 ) {
+			alpha = 1.0 - (1.0/(GLfloat)steps)*(GLfloat)(step+1);
 		}
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
