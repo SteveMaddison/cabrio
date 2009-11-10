@@ -223,7 +223,6 @@ int game_sel_event( int event ) {
 
 int game_sel_got_focus( void ) {
 	if( game_sel_populate( game_first() ) == 0 ) {
-		sound_play( SOUND_SELECT );
 		game_sel_show();
 		idle_counter = 1;
 		

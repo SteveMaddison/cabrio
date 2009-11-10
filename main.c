@@ -80,9 +80,8 @@ int main( int argc, char *arvg[] ) {
 	bg_init();
 
 	event_flush();
-	/* Easy way to display the game selector right off the bat. */
-	menu_event( EVENT_SELECT );
 	menu_show();
+	focus_set( FOCUS_GAMESEL );
 
 	while( !quit ) {
 		ogl_clear();

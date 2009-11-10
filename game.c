@@ -205,7 +205,7 @@ int game_list_create( void ) {
 		}
 		config_game = config_game->next;
 	}
-	game_filter_start = game_start;
+	game_list_unfilter();
 
 /*
 	if( game_start ) {

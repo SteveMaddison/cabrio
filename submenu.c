@@ -242,10 +242,12 @@ int submenu_event( int event ) {
 			submenu_advance();
 			break;
 		case EVENT_SELECT:
+			sound_play( SOUND_SELECT );
 			submenu_do_filter();
 			focus_set( FOCUS_GAMESEL );
 			break;
 		case EVENT_BACK:
+			sound_play( SOUND_BACK );
 			focus_set( FOCUS_MENU );
 			break;
 		default:
