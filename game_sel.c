@@ -524,6 +524,7 @@ void game_sel_draw( void ) {
 			if( step > steps-1 || step == 0 ) {
 				if( hide_direction < 0 ) {
 					visible = 0;
+					game_sel_free_textures();
 				}
 				hide_direction = 0;
 				if( skipping != 0 ) {
