@@ -173,7 +173,7 @@ void submenu_retreat( void ) {
 		case( MENU_PLATFORM ):
 			platform = platform->prev;
 			message = font_create_texture( platform->name );
-			break;		
+			break;
 		case( MENU_CATEGORY ):
 			category_value = category_value->prev;
 			if( category_value->name )

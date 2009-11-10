@@ -135,6 +135,9 @@ int game_list_create( void ) {
 	struct game *prev = NULL;
 	struct config_game *config_game = config_get()->games;
 	
+	if( !config_game )
+		platform_add_unknown();
+	
 	while( config_game ) {
 		game = malloc(sizeof(struct game));
 		if( game == NULL ) {
