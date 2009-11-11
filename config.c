@@ -22,18 +22,24 @@
 struct config config;
 
 #ifdef __WIN32__
-static const char *config_default_font			= "\\fonts\\FreeSans.ttf";
-static const char *config_default_menu_texture	= "\\pixmaps\\menu_item.png";
-static const char *config_default_sounds[] 		= {
+static const char *config_default_font				= "\\fonts\\FreeSans.ttf";
+static const char *config_default_menu_texture		= "\\pixmaps\\menu_item.png";
+static const char *config_default_back_texture		= "\\pixmaps\\button_blue.png";
+static const char *config_default_select_texture	= "\\pixmaps\\button_red.png";
+static const char *config_default_arrow_texture		= "\\pixmaps\\arrow.png";
+static const char *config_default_sounds[] = {
 	"\\sounds\\back.wav",
 	"\\sounds\\blip.wav",
 	"\\sounds\\no.wav",
 	"\\sounds\\select.wav"
 };
 #else
-static const char *config_default_dir 			= ".cabrio"; /* Relative to user's home */
-static const char *config_default_font 			= "/fonts/FreeSans.ttf";
-static const char *config_default_menu_texture	= "/pixmaps/menu_item.png";
+static const char *config_default_dir 				= ".cabrio"; /* Relative to user's home */
+static const char *config_default_font 				= "/fonts/FreeSans.ttf";
+static const char *config_default_menu_texture		= "/pixmaps/menu_item.png";
+static const char *config_default_back_texture		= "/pixmaps/button_blue.png";
+static const char *config_default_select_texture	= "/pixmaps/button_red.png";
+static const char *config_default_arrow_texture		= "/pixmaps/arrow.png";
 static const char *config_default_sounds[] = {
 	"/sounds/back.wav",
 	"/sounds/blip.wav",
@@ -95,6 +101,9 @@ static const char *config_tag_theme_hints				=	"hints";
 static const char *config_tag_theme_hints_pulse			=     "pulse";
 static const char *config_tag_theme_hints_label_back	=     "back-label";
 static const char *config_tag_theme_hints_label_select	=     "select-label";
+static const char *config_tag_theme_hints_image_back	=     "back-image";
+static const char *config_tag_theme_hints_image_select	=     "select-image";
+static const char *config_tag_theme_hints_image_arrow	=     "arrow-image";
 
 /* General (reused) XML tags */
 static const char *config_tag_name					= "name";
@@ -841,6 +850,15 @@ int config_read_hints( xmlNode *node, struct config_hints *hints ) {
 			else if( strcmp( (char*)node->name, config_tag_theme_hints_label_select ) == 0 ) {
 				strncpy( hints->label_select, (char*)xmlNodeGetContent(node), CONFIG_LABEL_LENGTH );
 			}
+			else if( strcmp( (char*)node->name, config_tag_theme_hints_image_back ) == 0 ) {
+				strncpy( hints->image_back, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_hints_image_select ) == 0 ) {
+				strncpy( hints->image_select, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_hints_image_arrow ) == 0 ) {
+				strncpy( hints->image_arrow, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_theme_hints, node->name );	
 			}
@@ -1539,6 +1557,9 @@ int config_new( void ) {
 		default_theme.hints.pulse = 1;
 		strncpy( default_theme.hints.label_select, "Select", CONFIG_LABEL_LENGTH );
 		strncpy( default_theme.hints.label_back, "Back", CONFIG_LABEL_LENGTH );
+		snprintf( default_theme.hints.image_back, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_back_texture );
+		snprintf( default_theme.hints.image_select, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_select_texture );
+		snprintf( default_theme.hints.image_arrow, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_arrow_texture );
 		
 		default_theme.game_sel.orientation = CONFIG_PORTRAIT;
 		default_theme.game_sel.offset1 = 0.9;

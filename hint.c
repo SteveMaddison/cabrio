@@ -23,18 +23,21 @@ static struct texture *text_select_message = NULL;
 static struct texture *text_back_message = NULL;
 
 int hint_init( void ) {
-	const struct config *config = config_get();
+	const struct config_hints *config = &config_get()->iface.theme.hints;
 	
-	arrow_texture = sdl_create_texture( DATA_DIR "/pixmaps/arrow.png" );
-	back_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_blue.png" );
-	select_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_red.png" );
-	if(!( text_select_message = font_create_texture( config->iface.theme.hints.label_select ) ))
+	if(!( arrow_texture = sdl_create_texture( config->image_arrow ) ))
 		return -1;
-	if(!( text_back_message = font_create_texture( config->iface.theme.hints.label_back ) ))
+	if(!( back_texture = sdl_create_texture( config->image_back ) ))
+		return -1;
+	if(!( select_texture = sdl_create_texture( config->image_select ) ))
+		return -1;	
+	if(!( text_select_message = font_create_texture( config->label_select ) ))
+		return -1;
+	if(!( text_back_message = font_create_texture( config->label_back ) ))
 		return -1;
 
-	if( config->iface.frame_rate )
-		alpha_step = config->iface.frame_rate/6000;
+	if( config_get()->iface.frame_rate )
+		alpha_step = config_get()->iface.frame_rate/6000;
 	else
 		alpha_step = ALPHA_STEP_MIN;
 	

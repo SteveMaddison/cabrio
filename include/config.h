@@ -122,6 +122,9 @@ struct config_hints {
 	int pulse;
 	char label_back[CONFIG_LABEL_LENGTH];
 	char label_select[CONFIG_LABEL_LENGTH];
+	char image_back[CONFIG_FILE_NAME_LENGTH];
+	char image_select[CONFIG_FILE_NAME_LENGTH];
+	char image_arrow[CONFIG_FILE_NAME_LENGTH];
 };
 
 struct config_theme {
