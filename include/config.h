@@ -103,6 +103,17 @@ struct config_game_sel {
 	int orientation;
 };
 
+struct config_screenshot {
+	float offset1;
+	float offset2;
+	float angle_x;
+	float angle_y;
+	float angle_z;
+	float size;
+	int fix_aspect_ratio;
+	int auto_hide;
+};
+
 struct config_theme {
 	struct config_theme *next;
 	char name[CONFIG_NAME_LENGTH];
@@ -114,6 +125,7 @@ struct config_theme {
 	char sounds[NUM_SOUNDS][CONFIG_FILE_NAME_LENGTH];
 	struct config_menu menu;
 	struct config_game_sel game_sel;
+	struct config_screenshot screenshot;
 };
 
 struct config_iface {

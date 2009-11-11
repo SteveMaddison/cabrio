@@ -3,15 +3,9 @@
 #include "ogl.h"
 #include "sdl_ogl.h"
 
-static GLfloat offset = -1.0;
-static GLfloat hidden_offset = -4.0;
-static GLfloat angle_x = -10;
-static GLfloat angle_y = 30;
-static GLfloat angle_z = 10;
-static GLfloat scale = 0.006;
-static const GLfloat max_width = 280;
-static const GLfloat max_height = 280;
-static int fix_aspect_ratio = 1;
+static const GLfloat max_size = 280;
+static const GLfloat hidden_offset = -4.0;
+static const GLfloat scale_fator = 0.006;
 static struct texture *current = NULL;
 #define NUM_NOISE 3
 static struct texture *noise[NUM_NOISE];
@@ -23,8 +17,10 @@ static int step = 0;
 static int hide_direction = 0;
 static int visible = 0;
 static char last_file[CONFIG_FILE_NAME_LENGTH];
+static GLfloat scale = 0.006;
 
 int screenshot_init( void ) {
+	const struct config *config = config_get();
 	int i;
 	noise[0] = sdl_create_texture( DATA_DIR "/pixmaps/noise1.png" );
 	noise[1] = sdl_create_texture( DATA_DIR "/pixmaps/noise2.png" );
@@ -36,17 +32,19 @@ int screenshot_init( void ) {
 	}
 	
 	for( i = 0 ; i < NUM_NOISE ; i++ ) {
-		noise[i]->width = max_width;
-		noise[i]->height = max_width / ogl_aspect_ratio();
+		noise[i]->width = max_size;
+		noise[i]->height = max_size / ogl_aspect_ratio();
 	}
 	
-	if( config_get()->iface.frame_rate ) {
-		noise_skip = config_get()->iface.frame_rate / 10;
-		steps = config_get()->iface.frame_rate / 4;
+	if( config->iface.frame_rate ) {
+		noise_skip = config->iface.frame_rate / 10;
+		steps = config->iface.frame_rate / 4;
 	}
 	else {
 		steps = MAX_STEPS;
 	}
+	
+	scale = config->iface.theme.screenshot.size * scale_fator;
 	
 	return 0;
 }
@@ -73,33 +71,35 @@ int screenshot_resume( void ) {
 }
 
 int screenshot_set( const char *filename ) {
+	const struct config_screenshot *config = &config_get()->iface.theme.screenshot;
+
 	screenshot_clear();
 	if( filename && filename[0] ) {
 		strncpy( last_file, filename, CONFIG_FILE_NAME_LENGTH );
 		current = sdl_create_texture( filename );
 		if( current ) {
-			if( fix_aspect_ratio ) {
+			if( config->fix_aspect_ratio ) {
 				if( current->width > current->height ) {
 					/* Landscape */
-					current->width = max_width;
-					current->height = max_height / ogl_aspect_ratio();
+					current->width = max_size;
+					current->height = max_size / ogl_aspect_ratio();
 				}
 				else {
 					/* Portrait */
-					current->height = max_height;
-					current->width = max_width / ogl_aspect_ratio();
+					current->height = max_size;
+					current->width = max_size / ogl_aspect_ratio();
 				}				
 			}
 			else {
 				if( current->width > current->height ) {
 					/* Landscape */
-					current->height = (int)(float)current->height/((float)current->width/max_width);
-					current->width = max_width;
+					current->height = (int)(float)current->height/((float)current->width/max_size);
+					current->width = max_size;
 				}
 				else {
 					/* Portrait */
-					current->width = (int)(float)current->width/((float)current->height/max_width);
-					current->height = max_width;
+					current->width = (int)(float)current->width/((float)current->height/max_size);
+					current->height = max_size;
 				}
 			}
 			return 0;
@@ -131,6 +131,8 @@ void screenshot_hide( void ) {
 }
 
 void screenshot_draw( void ) {
+	const struct config_screenshot *config = &config_get()->iface.theme.screenshot;
+	
 	if( visible ) {
 		GLfloat xfactor = ogl_xfactor();
 		GLfloat yfactor = ogl_yfactor();
@@ -143,18 +145,18 @@ void screenshot_draw( void ) {
 		xsize = (texture->width/2) * scale * xfactor;
 		ysize = (texture->height/2) * scale * xfactor;
 		
-		hide_offset = (((hidden_offset - offset) / (GLfloat)steps) * (GLfloat)step);
+		hide_offset = (((hidden_offset - config->offset1) / (GLfloat)steps) * (GLfloat)step);
 
 		ogl_load_alterego();
 		if( hide_direction == -1 ) {
-			glTranslatef( (hidden_offset - hide_offset) * xfactor, 0 * yfactor, -4 );
+			glTranslatef( (hidden_offset - hide_offset) * xfactor, config->offset2 * yfactor, -4 );
 		}
 		else {
-			glTranslatef( (offset + hide_offset) * xfactor, 0 * yfactor, -4 );
+			glTranslatef( (config->offset1 + hide_offset) * xfactor, config->offset2 * yfactor, -4 );
 		}
-		glRotatef( angle_x, 1.0, 0.0, 0.0 );
-		glRotatef( angle_y, 0.0, 1.0, 0.0 );
-		glRotatef( angle_z, 0.0, 0.0, 1.0 );
+		glRotatef( config->angle_x, 1.0, 0.0, 0.0 );
+		glRotatef( config->angle_y, 0.0, 1.0, 0.0 );
+		glRotatef( config->angle_z, 0.0, 0.0, 1.0 );
 		glColor4f( 1.0, 1.0, 1.0, 1.0 );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);

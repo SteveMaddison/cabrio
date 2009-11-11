@@ -81,17 +81,16 @@ static const char *config_tag_themes_theme				=     "theme";
 static const char *config_tag_theme_menu				=   "menu";
 static const char *config_tag_theme_menu_item_width		=     "item-width";
 static const char *config_tag_theme_menu_item_height	=     "item-height";
-static const char *config_tag_theme_menu_offset1		=     "primary-offset";
-static const char *config_tag_theme_menu_offset2		=     "secondary-offset";
 static const char *config_tag_theme_menu_items_visible	=     "items-visible";
 static const char *config_tag_theme_menu_spacing		=     "spacing";
-static const char *config_tag_theme_menu_auto_hide		=     "auto-hide";
 static const char *config_tag_theme_background			=   "background";
 static const char *config_tag_theme_font				=   "font";
 static const char *config_tag_theme_font_file			=     "font-file";
 static const char *config_tag_theme_sounds				=	"sounds";
 static const char *config_tag_theme_sounds_sound		=	  "sound";
 static const char *config_tag_theme_sounds_sound_file	=	  "sound-file";
+static const char *config_tag_theme_screenshot			=	"screen-shot";
+static const char *config_tag_theme_screenshot_fix_ar	=	  "fix-aspect-ratio";
 
 /* General (reused) XML tags */
 static const char *config_tag_name					= "name";
@@ -114,6 +113,13 @@ static const char *config_tag_image_file			= "image-file";
 static const char *config_tag_size					= "size";
 static const char *config_tag_font_scale			= "font-scale";
 static const char *config_tag_orientation			= "orientation";
+static const char *config_tag_offset1				= "primary-offset";
+static const char *config_tag_offset2				= "secondary-offset";
+static const char *config_tag_auto_hide				= "auto-hide";
+static const char *config_tag_angle_x				= "angle-x";
+static const char *config_tag_angle_y				= "angle-y";
+static const char *config_tag_angle_z				= "angle-z";
+
 
 static const char *config_empty		= "";
 static const char *config_true		= "true";
@@ -744,10 +750,10 @@ int config_read_menu( xmlNode *node, struct config_menu *menu ) {
 			else if( strcmp( (char*)node->name, config_tag_transparency ) == 0 ) {
 				config_read_percentage( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->transparency );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_menu_offset1 ) == 0 ) {
+			else if( strcmp( (char*)node->name, config_tag_offset1 ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->offset1 );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_menu_offset2 ) == 0 ) {
+			else if( strcmp( (char*)node->name, config_tag_offset2 ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->offset2 );
 			}
 			else if( strcmp( (char*)node->name, config_tag_theme_menu_items_visible ) == 0 ) {
@@ -762,11 +768,47 @@ int config_read_menu( xmlNode *node, struct config_menu *menu ) {
 			else if( strcmp( (char*)node->name, config_tag_orientation ) == 0 ) {
 				config_read_orientation( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->orientation );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_menu_auto_hide ) == 0 ) {
+			else if( strcmp( (char*)node->name, config_tag_auto_hide ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->auto_hide );
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_theme_menu, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+int config_read_screenshot( xmlNode *node, struct config_screenshot *screenshot ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_offset1 ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->offset1 );
+			}
+			else if( strcmp( (char*)node->name, config_tag_offset2 ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->offset2 );
+			}
+			else if( strcmp( (char*)node->name, config_tag_angle_x ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->angle_x );
+			}
+			else if( strcmp( (char*)node->name, config_tag_angle_y ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->angle_y );
+			}
+			else if( strcmp( (char*)node->name, config_tag_angle_z ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->angle_z );
+			}
+			else if( strcmp( (char*)node->name, config_tag_size ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->size );
+			}
+			if( strcmp( (char*)node->name, config_tag_theme_screenshot_fix_ar ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->fix_aspect_ratio );
+			}
+			else if( strcmp( (char*)node->name, config_tag_auto_hide ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->auto_hide );
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_theme_screenshot, node->name );	
 			}
 		}
 		node = node->next;
@@ -951,6 +993,9 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, config_tag_theme_sounds ) == 0 ) {
 				/* Ignore (for now) */
 			}
+			else if( strcmp( (char*)node->name, config_tag_theme_screenshot ) == 0 ) {
+				/* Ignore (for now) */
+			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
 			}
@@ -978,6 +1023,9 @@ int config_read_theme( xmlNode *node, struct config_theme *theme ) {
 			else if( strcmp( (char*)node->name, config_tag_theme_sounds ) == 0 ) {
 				config_read_sounds( node->children, theme );
 			}
+			else if( strcmp( (char*)node->name, config_tag_theme_screenshot ) == 0 ) {
+				config_read_screenshot( node->children, &theme->screenshot );
+			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_themes_theme, node->name );	
 			}
@@ -1004,6 +1052,9 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 			}
 			else if( strcmp( (char*)node->name, config_tag_theme_sounds ) == 0 ) {
 				config_read_sounds( node->children, theme );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_screenshot ) == 0 ) {
+				config_read_screenshot( node->children, &theme->screenshot );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_full_screen ) == 0 ) {
 				/* Ignore */
@@ -1429,6 +1480,15 @@ int config_new( void ) {
 		
 		snprintf( default_theme.font_file, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_font );
 		default_theme.font_size = 50;
+		
+		default_theme.screenshot.offset1 = -1.0;
+		default_theme.screenshot.offset2 = 0;
+		default_theme.screenshot.angle_x = -10;
+		default_theme.screenshot.angle_y = 30;
+		default_theme.screenshot.angle_z = 10;
+		default_theme.screenshot.size = 1.0;
+		default_theme.screenshot.fix_aspect_ratio = 1;
+		default_theme.screenshot.auto_hide = 1;
 		
 		default_theme.game_sel.orientation = CONFIG_PORTRAIT;
 		default_theme.game_sel.offset1 = 0.9;
