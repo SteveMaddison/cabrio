@@ -2,6 +2,7 @@
 #include "config.h"
 #include "sdl_ogl.h"
 
+static const GLfloat BG_SIZE = 7.0;
 static struct texture *bg_clear_texture = NULL;
 static struct texture *bg_texture = NULL;
 static GLfloat angle_step = 0;
@@ -77,10 +78,10 @@ void bg_draw( void ) {
 		glRotatef( angle, 0.0, 0.0, 1.0 );
 		glTranslatef( 0.0, 0.0, -10.0 );
 		glBegin( GL_QUADS );
-			glTexCoord2f(0.0, 0.0); glVertex3f( -10.0,  10.0, 0.0 );
-			glTexCoord2f(0.0, 1.0); glVertex3f( -10.0, -10.0, 0.0 );
-			glTexCoord2f(1.0, 1.0); glVertex3f(  10.0, -10.0, 0.0 );
-			glTexCoord2f(1.0, 0.0); glVertex3f(  10.0,  10.0, 0.0 );
+			glTexCoord2f(0.0, 0.0); glVertex3f( -BG_SIZE,  BG_SIZE, 0.0 );
+			glTexCoord2f(0.0, 1.0); glVertex3f( -BG_SIZE, -BG_SIZE, 0.0 );
+			glTexCoord2f(1.0, 1.0); glVertex3f(  BG_SIZE, -BG_SIZE, 0.0 );
+			glTexCoord2f(1.0, 0.0); glVertex3f(  BG_SIZE,  BG_SIZE, 0.0 );
 		glEnd();
 		glDisable( GL_TEXTURE_2D );
 		angle -= angle_step;

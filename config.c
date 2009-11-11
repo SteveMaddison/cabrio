@@ -1340,7 +1340,7 @@ int config_new( void ) {
 
 		strncpy( default_theme.background_image, BG_DEFAULT, CONFIG_FILE_NAME_LENGTH );
 		default_theme.background_rotation = 20;
-		default_theme.background_transparency = 75;
+		default_theme.background_transparency = 30;
 		
 		snprintf( default_theme.font_file, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_font );
 		default_theme.font_size = 50;
