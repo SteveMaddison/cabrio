@@ -24,6 +24,7 @@
 void pause_all( void ) {
 	sound_pause();
 	screenshot_pause();
+	game_sel_pause();
 	game_list_pause();
 	submenu_pause();
 	menu_pause();
@@ -36,8 +37,7 @@ void pause_all( void ) {
 int resume_all( void ) {
 	if( event_resume() != 0 )
 		return -1;
-	if( bg_resume() != 0 )
-		return -2;
+	bg_resume();
 	if( font_resume() != 0 )
 		return -3;
 	if( hint_resume() != 0 )
@@ -48,18 +48,19 @@ int resume_all( void ) {
 		return -6;
 	if( game_list_resume() != 0 )
 		return -7;
-	if( screenshot_resume() != 0 )
+	if( game_sel_resume() != 0 )
 		return -8;
-	if( sound_resume() != 0 )
+	if( screenshot_resume() != 0 )
 		return -9;
-
+	sound_resume();
+	
 	return 0;
 }
 
-int emulator_run( struct game *game ) {
+int emulator_exec( struct game *game ) {
 	char *params[CONFIG_MAX_PARAMS];
 	struct config_param *param = NULL;
-	int i, err = 0;
+	int i = 0;
 	int count = 0;
 	const struct config *config = config_get();
 #ifdef __WIN32__
@@ -67,9 +68,6 @@ int emulator_run( struct game *game ) {
 	STARTUPINFO si;
 	char cmdline[CONFIG_MAX_CMD_LENGTH];
 #endif
-
-	pause_all();
-	sdl_free();
 
 	if( config->emulators && config->emulators->executable ) {
 		param = config->emulators->params;
@@ -153,14 +151,24 @@ int emulator_run( struct game *game ) {
 	}
 #endif
 
+	return 0;
+}
+
+int emulator_run( struct game *game ) {
+	int ret = 0;
+
+	pause_all();
+	sdl_free();
+
+	emulator_exec( game );
+
 	if( sdl_init() != 0 )
 		return -1;
 	if( ogl_init() != 0 )
 		return -1;
-	err = resume_all();
-	if( err != 0 )
-		fprintf( stderr, "Warning: resume_all() failed: %d\n", err );
+	ret = resume_all();
+	if( ret != 0 )
+		fprintf( stderr, "Warning: resume_all() failed: %d\n", ret );
 
-	return 0;
+	return ret;
 }
-

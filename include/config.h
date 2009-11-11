@@ -128,6 +128,7 @@ struct config_iface {
 	int gfx_max_width;
 	int gfx_max_height;
 	struct config_control controls[NUM_EVENTS];
+	char theme_name[CONFIG_NAME_LENGTH];
 	struct config_theme theme;
 };
 

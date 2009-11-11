@@ -153,6 +153,15 @@ void game_sel_free_textures( void ) {
 	}
 }
 
+void game_sel_pause( void ) {
+	game_sel_free_textures();
+}
+
+int game_sel_resume( void ) {
+	game_sel_load_textures();
+	return 0;
+}
+
 int game_sel_populate( struct game *game ) {
 	int i;
 	struct game_tile *tile;

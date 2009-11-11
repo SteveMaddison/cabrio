@@ -38,6 +38,7 @@ int game_sel_lost_focus( void );
 void game_sel_skip_forward( void );
 void game_sel_skip_back( void );
 void game_sel_free( void );
+void game_sel_pause( void );
+int game_sel_resume( void );
 
 #endif
-

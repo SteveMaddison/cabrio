@@ -43,6 +43,7 @@ static const char *config_default_sounds[] = {
 };
 #endif
 static struct config_theme default_theme;
+static const char *config_default_theme_name = "default";
 static const char *config_default_file = "config.xml";
 
 static char config_directory[CONFIG_FILE_NAME_LENGTH] = "";
@@ -1234,6 +1235,30 @@ int config_write() {
 	return 0;
 }
 
+int config_set_theme( void ) {
+	if( config.themes && config.iface.theme_name[0] ) {
+		struct config_theme *ct = config.themes;
+		while( ct ) {
+			if( strcasecmp( ct->name, config.iface.theme_name ) == 0 ) {
+				break;
+			}
+			ct = ct->next;
+		}
+		if( ct ) {
+			memcpy( &config.iface.theme, ct, sizeof(struct config_theme) );
+		}
+		else {
+			fprintf( stderr, "Warning: Couldn't find theme '%s', using default\n", config.iface.theme_name );
+		}
+	}
+	else {
+		fprintf( stderr, "Warning: No themes found, using default\n" );
+		memcpy( &config.iface.theme, &default_theme, sizeof(struct config_theme) );
+	}
+
+	return 0;
+}
+
 int config_new( void ) {
 	/* Create a new, default configuration (in memory) */
 	memset( &config, 0, sizeof(struct config) );
@@ -1284,13 +1309,13 @@ int config_new( void ) {
 		config.iface.screen_width = 640;
 		config.iface.screen_height = 480;
 		config.iface.screen_rotation = 0;
+		config.iface.frame_rate = 60;
 		
 		config.iface.gfx_quality = CONFIG_HIGH;
 		config.iface.gfx_max_width = 512;
 		config.iface.gfx_max_height = 512;
 		
-		config.iface.frame_rate = 60;
-		strcpy( config.iface.theme.name, "" );
+		strncpy( config.iface.theme_name, config_default_theme_name, CONFIG_NAME_LENGTH );
 		
 		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 			config.iface.controls[i].device_type = DEV_KEYBOARD;
@@ -1298,6 +1323,8 @@ int config_new( void ) {
 		}
 
 		/* Default theme */
+		default_theme.next = NULL;
+		strncpy( default_theme.name, config_default_theme_name, CONFIG_NAME_LENGTH );
 		snprintf( default_theme.menu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_menu_texture );
 		default_theme.menu.item_width = 0.8;
 		default_theme.menu.item_height = 0.5;
@@ -1326,7 +1353,7 @@ int config_new( void ) {
 			snprintf( default_theme.sounds[i], CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, (char*)config_default_sounds[i] );
 		}
 		
-		memcpy( &config.iface.theme, &default_theme, sizeof(struct config_theme) );
+		config.themes = &default_theme;
 	}
 	return 0;
 }
@@ -1476,7 +1503,10 @@ int config_open( const char *filename ) {
 			}
 		}
 		closedir( dir );
-	}		
+	}
+
+	/* We now have our entire configuration, so the theming may begin... */
+	config_set_theme();
 	
 	return created;
 }

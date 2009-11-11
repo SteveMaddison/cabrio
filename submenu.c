@@ -10,7 +10,7 @@
 #include "sound.h"
 
 static struct texture *texture = NULL;
-static int type = -1;
+static int type = MENU_ALL;
 static int selected = 0;
 static int items = 0;
 static const GLfloat item_width = 1.2;
@@ -87,7 +87,7 @@ int submenu_resume( void ) {
 			message = font_create_texture( platform->name );
 			break;		
 		default:
-			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );
+			fprintf( stderr, "Error: Invalid menu type for sub menu (resume,%d)\n", type );
 			break;
 	}
 	return 0;
@@ -132,7 +132,7 @@ int submenu_create( struct menu_item *item ) {
 			prev_category = category;
 			break;
 		default:
-			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );
+			fprintf( stderr, "Error: Invalid menu type for sub menu (create,%d)\n", type );
 			break;
 	}
 	
@@ -158,7 +158,7 @@ void submenu_advance( void ) {
 				message = font_create_texture( VALUE_UNKNOWN );
 			break;
 		default:
-			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );
+			fprintf( stderr, "Error: Invalid menu type for sub menu (advance,%d)\n", type );
 			break;
 	}
 }
@@ -182,7 +182,7 @@ void submenu_retreat( void ) {
 				message = font_create_texture( VALUE_UNKNOWN );
 			break;
 		default:
-			fprintf( stderr, "Error: Invalid menu type for sub menu\n" );
+			fprintf( stderr, "Error: Invalid menu type for sub menu (retreat,%d)\n", type );
 			break;
 	}
 }
