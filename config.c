@@ -933,20 +933,23 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, config_tag_iface_gfx ) == 0 ) {
 				config_read_graphics( node->children );
 			}
+			else if( strcmp( (char*)node->name, config_tag_iface_theme ) == 0 ) {
+				strncpy( config.iface.theme_name, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+				/* Ignore (for now) */
+			}
 			else if( strcmp( (char*)node->name, config_tag_theme_background ) == 0 ) {
-				config_read_theme_background( node->children, &config.iface.theme );
+				/* Ignore (for now) */
 			}
 			else if( strcmp( (char*)node->name, config_tag_theme_font ) == 0 ) {
-				config_read_font( node->children, &config.iface.theme );
+				/* Ignore (for now) */
 			}
 			else if( strcmp( (char*)node->name, config_tag_theme_menu ) == 0 ) {
-				config_read_menu( node->children, &config.iface.theme.menu );
+				/* Ignore (for now) */
 			}
 			else if( strcmp( (char*)node->name, config_tag_theme_sounds ) == 0 ) {
-				config_read_sounds( node->children, &config.iface.theme );
-			}
-			else if( strcmp( (char*)node->name, config_tag_iface_theme ) == 0 ) {
-				strncpy( config.iface.theme.name, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
+				/* Ignore (for now) */
 			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
@@ -984,14 +987,59 @@ int config_read_theme( xmlNode *node, struct config_theme *theme ) {
 	return 0;
 }
 
+int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+				strncpy( theme->name, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_background ) == 0 ) {
+				config_read_theme_background( node->children, theme );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_font ) == 0 ) {
+				config_read_font( node->children, theme );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_menu ) == 0 ) {
+				config_read_menu( node->children, &theme->menu );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_sounds ) == 0 ) {
+				config_read_sounds( node->children, theme );
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_full_screen ) == 0 ) {
+				/* Ignore */
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_screen ) == 0 ) {
+				/* Ignore */
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_frame_rate ) == 0 ) {
+				/* Ignore */
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_controls ) == 0 ) {
+				/* Ignore */
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_gfx ) == 0 ) {
+				/* Ignore */
+			}
+			else if( strcmp( (char*)node->name, config_tag_iface_theme ) == 0 ) {
+				/* Ignore */
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_themes( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, config_tag_themes_theme ) == 0 ) {
 				struct config_theme *theme = malloc( sizeof(struct config_theme ) );
 				if( theme ) {
-					memset( theme, 0, sizeof(struct config_theme ) );
-					/*config_read_theme( node->children, theme );*/
+					memcpy( theme, &default_theme, sizeof(struct config_theme ) );
+					config_read_theme( node->children, theme );
 					theme->next = config.themes;
 					config.themes = theme;
 				}
@@ -1234,6 +1282,42 @@ int config_write() {
 	return 0;
 }
 
+int config_set_theme_override( struct config_theme *theme ) {
+	int retval = -1;
+	xmlDocPtr config_doc = NULL;
+	xmlNodePtr config_root = NULL;
+
+	config_doc = xmlReadFile( config_filename, NULL, 0 );
+	if( config_doc == NULL ) {
+		fprintf( stderr, "Warning: Error reading config file '%s'\n", config_filename );
+	}
+	else {
+		config_root = xmlDocGetRootElement( config_doc );
+		if( config_root == NULL ) {
+			fprintf( stderr, "Warning: Couldn't get root element of config file\n" );
+		}
+		else {
+			if( strcmp( (char*)config_root->name, config_tag_root ) != 0 ) {
+				fprintf( stderr, "Warning: Config file does not contain '%s' root element\n", config_tag_root );
+			}
+			else {
+				xmlNodePtr node = config_root->children;
+				while( node ) {
+					if( node->type == XML_ELEMENT_NODE ) {
+						if( strcmp( (char*)node->name, config_tag_iface ) == 0 ) {
+							retval = config_read_interface_theme( node->children, theme );
+							break;
+						}
+					}
+					node = node->next;
+				}
+			}
+		}
+		xmlFreeDoc( config_doc );
+	}
+	return retval;
+}
+
 int config_set_theme( void ) {
 	if( config.themes && config.iface.theme_name[0] ) {
 		struct config_theme *ct = config.themes;
@@ -1245,13 +1329,15 @@ int config_set_theme( void ) {
 		}
 		if( ct ) {
 			memcpy( &config.iface.theme, ct, sizeof(struct config_theme) );
+			config_set_theme_override( &config.iface.theme );
 		}
 		else {
 			fprintf( stderr, "Warning: Couldn't find theme '%s', using default\n", config.iface.theme_name );
+			memcpy( &config.iface.theme, &default_theme, sizeof(struct config_theme) );
 		}
 	}
 	else {
-		fprintf( stderr, "Warning: No themes found, using default\n" );
+		fprintf( stderr, "Warning: Themes defined but none specified, using default\n" );
 		memcpy( &config.iface.theme, &default_theme, sizeof(struct config_theme) );
 	}
 
@@ -1314,7 +1400,7 @@ int config_new( void ) {
 		config.iface.gfx_max_width = 512;
 		config.iface.gfx_max_height = 512;
 		
-		strncpy( config.iface.theme_name, config_default_theme_name, CONFIG_NAME_LENGTH );
+		strcpy( config.iface.theme_name, "" );
 		
 		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 			config.iface.controls[i].device_type = DEV_KEYBOARD;
@@ -1390,6 +1476,7 @@ int config_create( void ) {
 }
 
 int config_read_file( char *filename ) {
+	int retval = -1;
 	xmlDocPtr config_doc = NULL;
 	xmlNodePtr config_root = NULL;
 
@@ -1403,12 +1490,11 @@ int config_read_file( char *filename ) {
 			fprintf( stderr, "Warning: Couldn't get root element of config file\n" );
 		}
 		else {
-			int retval = config_read( config_root );
-			xmlFreeDoc( config_doc );
-			return retval;
+			retval = config_read( config_root );
 		}
+		xmlFreeDoc( config_doc );
 	}
-	return -1;
+	return retval;
 }
 
 int config_open( const char *filename ) {

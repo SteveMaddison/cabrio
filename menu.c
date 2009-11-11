@@ -305,7 +305,7 @@ void menu_draw( void ) {
 					tx = mx * 0.9;
 				ty = ((GLfloat)tile->item->message->height * config->font_scale) * xfactor * item_zoom;
 				if( ty > my )
-					ty = mx * 0.9;
+					ty = my * 0.9;
 	
 				ogl_load_alterego();
 				glTranslatef( (tile->x + (((dest->x-tile->x)/steps) * step)) * xfactor,
