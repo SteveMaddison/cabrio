@@ -104,6 +104,8 @@ struct config_game_sel {
 };
 
 struct config_theme {
+	struct config_theme *next;
+	char name[CONFIG_NAME_LENGTH];
 	char background_image[CONFIG_FILE_NAME_LENGTH];
 	int background_rotation;
 	int background_transparency;
@@ -134,6 +136,7 @@ struct config {
 	struct config_platform *platforms;
 	struct config_category *categories;
 	struct config_game *games;
+	struct config_theme *themes;
 	struct config_iface iface;
 };
 

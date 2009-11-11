@@ -75,6 +75,9 @@ static const char *config_tag_iface_gfx					=   "graphics";
 static const char *config_tag_iface_gfx_quality			=     "quality";
 static const char *config_tag_iface_gfx_max_width		=     "max-image-width";
 static const char *config_tag_iface_gfx_max_height		=     "max-image-height";
+static const char *config_tag_iface_theme				=     "theme";
+static const char *config_tag_themes					=   "themes";
+static const char *config_tag_themes_theme				=     "theme";
 static const char *config_tag_theme_menu				=   "menu";
 static const char *config_tag_theme_menu_item_width		=     "item-width";
 static const char *config_tag_theme_menu_item_height	=     "item-height";
@@ -921,20 +924,20 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, config_tag_iface_screen ) == 0 ) {
 				config_read_interface_screen( node->children );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_background ) == 0 ) {
-				config_read_theme_background( node->children, &config.iface.theme );
+			else if( strcmp( (char*)node->name, config_tag_iface_frame_rate ) == 0 ) {
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.frame_rate );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_controls ) == 0 ) {
 				config_read_controls( node->children );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_frame_rate ) == 0 ) {
-				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.frame_rate );
+			else if( strcmp( (char*)node->name, config_tag_iface_gfx ) == 0 ) {
+				config_read_graphics( node->children );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_background ) == 0 ) {
+				config_read_theme_background( node->children, &config.iface.theme );
 			}
 			else if( strcmp( (char*)node->name, config_tag_theme_font ) == 0 ) {
 				config_read_font( node->children, &config.iface.theme );
-			}
-			else if( strcmp( (char*)node->name, config_tag_iface_gfx ) == 0 ) {
-				config_read_graphics( node->children );
 			}
 			else if( strcmp( (char*)node->name, config_tag_theme_menu ) == 0 ) {
 				config_read_menu( node->children, &config.iface.theme.menu );
@@ -942,8 +945,63 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, config_tag_theme_sounds ) == 0 ) {
 				config_read_sounds( node->children, &config.iface.theme );
 			}
+			else if( strcmp( (char*)node->name, config_tag_iface_theme ) == 0 ) {
+				strncpy( config.iface.theme.name, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
+			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+int config_read_theme( xmlNode *node, struct config_theme *theme ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+				strncpy( theme->name, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_background ) == 0 ) {
+				config_read_theme_background( node->children, theme );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_font ) == 0 ) {
+				config_read_font( node->children, theme );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_menu ) == 0 ) {
+				config_read_menu( node->children, &theme->menu );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_sounds ) == 0 ) {
+				config_read_sounds( node->children, theme );
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_themes_theme, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+int config_read_themes( xmlNode *node ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_themes_theme ) == 0 ) {
+				struct config_theme *theme = malloc( sizeof(struct config_theme ) );
+				if( theme ) {
+					memset( theme, 0, sizeof(struct config_theme ) );
+					/*config_read_theme( node->children, theme );*/
+					theme->next = config.themes;
+					config.themes = theme;
+				}
+				else {
+					fprintf( stderr, warn_alloc, config_tag_themes_theme );
+					return -1;
+				}
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_themes, node->name );	
 			}
 		}
 		node = node->next;
@@ -972,6 +1030,10 @@ int config_read( xmlNode *root ) {
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface ) == 0 ) {
 				if( config_read_interface( node->children ) != 0 )
+					return -1;
+			}
+			else if( strcmp( (char*)node->name, config_tag_themes ) == 0 ) {
+				if( config_read_themes( node->children ) != 0 )
 					return -1;
 			}
 			else {
@@ -1228,6 +1290,7 @@ int config_new( void ) {
 		config.iface.gfx_max_height = 512;
 		
 		config.iface.frame_rate = 60;
+		strcpy( config.iface.theme.name, "" );
 		
 		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 			config.iface.controls[i].device_type = DEV_KEYBOARD;
