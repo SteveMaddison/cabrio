@@ -24,17 +24,16 @@ struct config config;
 #ifdef __WIN32__
 static const char *config_default_font			= "\\fonts\\FreeSans.ttf";
 static const char *config_default_menu_texture	= "\\pixmaps\\menu_item.png";
-static const char *config_default_sounds[] = {
+static const char *config_default_sounds[] 		= {
 	"\\sounds\\back.wav",
 	"\\sounds\\blip.wav",
 	"\\sounds\\no.wav",
 	"\\sounds\\select.wav"
 };
 #else
-static const char *config_default_dir = ".cabrio"; /* Relative to user's home */
+static const char *config_default_dir 			= ".cabrio"; /* Relative to user's home */
 static const char *config_default_font 			= "/fonts/FreeSans.ttf";
 static const char *config_default_menu_texture	= "/pixmaps/menu_item.png";
-
 static const char *config_default_sounds[] = {
 	"/sounds/back.wav",
 	"/sounds/blip.wav",
@@ -43,11 +42,11 @@ static const char *config_default_sounds[] = {
 };
 #endif
 static struct config_theme default_theme;
-static const char *config_default_theme_name = "default";
-static const char *config_default_file = "config.xml";
+static const char *config_default_theme_name 	= "default";
+static const char *config_default_file 			= "config.xml";
 
-static char config_directory[CONFIG_FILE_NAME_LENGTH] = "";
-static char config_filename[CONFIG_FILE_NAME_LENGTH] = "";
+static char config_directory[CONFIG_FILE_NAME_LENGTH] 	= "";
+static char config_filename[CONFIG_FILE_NAME_LENGTH] 	= "";
 
 /* Defaults */
 static const char *BG_DEFAULT = DATA_DIR "/pixmaps/default_background.jpg";
