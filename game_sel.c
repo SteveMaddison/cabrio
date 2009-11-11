@@ -224,6 +224,7 @@ int game_sel_event( int event ) {
 int game_sel_got_focus( void ) {
 	if( game_sel_populate( game_first() ) == 0 ) {
 		game_sel_show();
+		screenshot_show();
 		idle_counter = 1;
 		
 		if( config_get()->iface.theme.menu.auto_hide ) {
@@ -240,7 +241,7 @@ int game_sel_got_focus( void ) {
 
 int game_sel_lost_focus( void ) {
 	game_sel_hide(HIDE_TARGET_START);
-	screenshot_clear();
+	screenshot_hide();
 
 	if( config_get()->iface.theme.menu.auto_hide ) {
 		menu_show();
