@@ -617,7 +617,7 @@ int config_read_control( xmlNode *node, struct config_control *control ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &control->control_id );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_device, node->name );	
+				fprintf( stderr, warn_skip, config_tag_control, node->name );	
 			}
 		}
 		node = node->next;
@@ -653,7 +653,7 @@ int config_read_event( xmlNode *node ) {
 				value = (char*)xmlNodeGetContent(node);
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_control, node->name );	
+				fprintf( stderr, warn_skip, config_tag_event, node->name );	
 			}
 		}
 		node = node->next;
@@ -763,7 +763,7 @@ int config_read_menu( xmlNode *node, struct config_menu *menu ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->auto_hide );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
+				fprintf( stderr, warn_skip, config_tag_theme_menu, node->name );	
 			}
 		}
 		node = node->next;
@@ -784,7 +784,7 @@ int config_read_graphics( xmlNode *node ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_max_height );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
+				fprintf( stderr, warn_skip, config_tag_iface_gfx, node->name );	
 			}
 		}
 		node = node->next;
@@ -802,7 +802,7 @@ int config_read_font( xmlNode *node, struct config_theme *theme ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &theme->font_size );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
+				fprintf( stderr, warn_skip, config_tag_theme_font, node->name );	
 			}
 		}
 		node = node->next;
@@ -836,7 +836,7 @@ int config_read_sound( xmlNode *node, struct config_theme *theme ) {
 					strncpy( theme->sounds[id], (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 				}
 				else {
-					fprintf( stderr, warn_skip, config_tag_theme_sounds, node->name );	
+					fprintf( stderr, warn_skip, config_tag_theme_sounds_sound, node->name );	
 				}
 			}
 			node = node->next;
