@@ -801,7 +801,7 @@ int config_read_screenshot( xmlNode *node, struct config_screenshot *screenshot 
 			else if( strcmp( (char*)node->name, config_tag_size ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->size );
 			}
-			if( strcmp( (char*)node->name, config_tag_theme_screenshot_fix_ar ) == 0 ) {
+			else if( strcmp( (char*)node->name, config_tag_theme_screenshot_fix_ar ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->fix_aspect_ratio );
 			}
 			else if( strcmp( (char*)node->name, config_tag_auto_hide ) == 0 ) {
@@ -1481,7 +1481,7 @@ int config_new( void ) {
 		snprintf( default_theme.font_file, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_font );
 		default_theme.font_size = 50;
 		
-		default_theme.screenshot.offset1 = -1.0;
+		default_theme.screenshot.offset1 = -0.8;
 		default_theme.screenshot.offset2 = 0;
 		default_theme.screenshot.angle_x = -10;
 		default_theme.screenshot.angle_y = 30;

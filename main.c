@@ -19,7 +19,7 @@
 static int supress_wait = 0;
 
 void supress( void ) {
-	supress_wait = config_get()->iface.frame_rate / 4;
+	supress_wait = config_get()->iface.frame_rate / 5;
 }
 
 int main( int argc, char *arvg[] ) {
@@ -95,8 +95,8 @@ int main( int argc, char *arvg[] ) {
 		hint_draw( focus_has() );
 		menu_draw();
 		submenu_draw();
-		game_sel_draw();
 		screenshot_draw();
+		game_sel_draw();
 		sdl_swap();
 	
 		if (( event = event_poll() )) {
@@ -128,3 +128,4 @@ int main( int argc, char *arvg[] ) {
 
 	return 0;
 }
+

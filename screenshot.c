@@ -5,7 +5,7 @@
 
 static const GLfloat max_size = 280;
 static const GLfloat hidden_offset = -4.0;
-static const GLfloat scale_fator = 0.006;
+static const GLfloat scale_fator = 0.0072;
 static struct texture *current = NULL;
 #define NUM_NOISE 3
 static struct texture *noise[NUM_NOISE];

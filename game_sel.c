@@ -36,7 +36,7 @@ int game_sel_init( int theme ) {
 	int frame_rate = config_get()->iface.frame_rate;
 	
 	if( frame_rate )
-		steps = frame_rate/4;
+		steps = frame_rate/5;
 	else
 		steps = MAX_STEPS;
 	
