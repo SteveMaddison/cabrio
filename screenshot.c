@@ -10,6 +10,7 @@ static GLfloat angle_z = 10;
 static GLfloat scale = 0.006;
 static const GLfloat max_width = 280;
 static const GLfloat max_height = 280;
+static int fix_aspect_ratio = 1;
 static struct texture *current = NULL;
 #define NUM_NOISE 3
 static struct texture *noise[NUM_NOISE];
@@ -65,14 +66,26 @@ int screenshot_set( const char *filename ) {
 		strncpy( last_file, filename, CONFIG_FILE_NAME_LENGTH );
 		current = sdl_create_texture( filename );
 		if( current ) {
-			if( current->width > current->height ) {
-				if( current->width > max_width ) {
+			if( fix_aspect_ratio ) {
+				if( current->width > current->height ) {
+					/* Landscape */
+					current->width = max_width;
+					current->height = max_height / ogl_aspect_ratio();
+				}
+				else {
+					/* Portrait */
+					current->height = max_height;
+					current->width = max_width / ogl_aspect_ratio();
+				}				
+			}
+			else {
+				if( current->width > current->height ) {
+					/* Landscape */
 					current->height = (int)(float)current->height/((float)current->width/max_width);
 					current->width = max_width;
 				}
-			}
-			else {
-				if( current->height > max_height ) {
+				else {
+					/* Portrait */
 					current->width = (int)(float)current->width/((float)current->height/max_width);
 					current->height = max_width;
 				}
