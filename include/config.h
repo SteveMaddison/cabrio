@@ -10,6 +10,7 @@
 
 #define CONFIG_NAME_LENGTH		128
 #define CONFIG_FILE_NAME_LENGTH	256
+#define CONFIG_LABEL_LENGTH		32
 #define CONFIG_PARAM_LENGTH		64
 #define CONFIG_MAX_PARAMS		32
 #define CONFIG_MAX_CMD_LENGTH	2048
@@ -114,6 +115,15 @@ struct config_screenshot {
 	int auto_hide;
 };
 
+struct config_hints {
+	float offset1;
+	float offset2;
+	float size;
+	int pulse;
+	char label_back[CONFIG_LABEL_LENGTH];
+	char label_select[CONFIG_LABEL_LENGTH];
+};
+
 struct config_theme {
 	struct config_theme *next;
 	char name[CONFIG_NAME_LENGTH];
@@ -126,6 +136,7 @@ struct config_theme {
 	struct config_menu menu;
 	struct config_game_sel game_sel;
 	struct config_screenshot screenshot;
+	struct config_hints hints;
 };
 
 struct config_iface {

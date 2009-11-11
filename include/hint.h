@@ -14,7 +14,7 @@ int hint_init( void );
 void hint_pause( void );
 int hint_resume( void );
 void hint_free( void );
-int hint_draw( int menu_level );
+int hint_draw( void );
 void hint_draw_arrow( struct arrow *arrow );
 
 #endif

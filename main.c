@@ -92,10 +92,10 @@ int main( int argc, char *arvg[] ) {
 	while( !quit ) {
 		ogl_clear();
 		bg_draw();
-		hint_draw( focus_has() );
+		screenshot_draw();
+		hint_draw();
 		menu_draw();
 		submenu_draw();
-		screenshot_draw();
 		game_sel_draw();
 		sdl_swap();
 	

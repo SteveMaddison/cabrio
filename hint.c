@@ -2,6 +2,7 @@
 #include "font.h"
 #include "config.h"
 #include "sdl_ogl.h"
+#include "focus.h"
 
 #define ORIENT_LEFT		0
 #define ORIENT_RIGHT	1
@@ -12,6 +13,7 @@ static const GLfloat ALPHA_MIN = 0.5;
 static const GLfloat ALPHA_STEP_SIZE = 0.02;
 static const GLfloat FONT_SCALE = 0.004;
 static const GLfloat ALPHA_STEP_MIN = 0.01;
+static const GLfloat DEPTH = -6.0;
 static GLfloat alpha = 1.0;
 static GLfloat alpha_step = 0.01;
 static struct texture *arrow_texture = NULL;
@@ -21,18 +23,18 @@ static struct texture *text_select_message = NULL;
 static struct texture *text_back_message = NULL;
 
 int hint_init( void ) {
-	int frame_rate = config_get()->iface.frame_rate;
+	const struct config *config = config_get();
 	
 	arrow_texture = sdl_create_texture( DATA_DIR "/pixmaps/arrow.png" );
 	back_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_blue.png" );
 	select_texture = sdl_create_texture( DATA_DIR "/pixmaps/button_red.png" );
-	if(!( text_select_message = font_create_texture( "Select" ) ))
+	if(!( text_select_message = font_create_texture( config->iface.theme.hints.label_select ) ))
 		return -1;
-	if(!( text_back_message = font_create_texture( "Back" ) ))
+	if(!( text_back_message = font_create_texture( config->iface.theme.hints.label_back ) ))
 		return -1;
 
-	if( frame_rate )
-		alpha_step = frame_rate/6000;
+	if( config->iface.frame_rate )
+		alpha_step = config->iface.frame_rate/6000;
 	else
 		alpha_step = ALPHA_STEP_MIN;
 	
@@ -61,12 +63,13 @@ int hint_resume( void ) {
 }
 
 void hint_draw_button( struct texture *texture, GLfloat position ) {
+	const struct config_hints *config = &config_get()->iface.theme.hints;
 	GLfloat xfactor = ogl_xfactor();
 	GLfloat yfactor = ogl_yfactor();
-	GLfloat size = (BUTTON_SIZE/2) * xfactor;
+	GLfloat size = (BUTTON_SIZE/2) * config->size * xfactor;
 	
 	ogl_load_alterego();
-	glTranslatef( (position - 1.2) * xfactor, -2.0 * yfactor, -6 );
+	glTranslatef( (config->offset2 + (position * config->size)) * xfactor, config->offset1 * yfactor, DEPTH );
 	glColor4f( 1.0, 1.0, 1.0, alpha );
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_2D);
@@ -81,13 +84,36 @@ void hint_draw_button( struct texture *texture, GLfloat position ) {
 	glEnd();
 }
 
+void hint_draw_caption( struct texture *message, GLfloat position ) {
+	const struct config_hints *config = &config_get()->iface.theme.hints;
+	GLfloat xfactor = ogl_xfactor();
+	GLfloat yfactor = ogl_yfactor();
+	GLfloat tx = ((message->width*FONT_SCALE)/2) * config->size * xfactor;
+	GLfloat ty = ((message->height*FONT_SCALE)/2) * config->size * xfactor;
+	
+	ogl_load_alterego();
+	glTranslatef( (config->offset2 + (position * config->size)) * xfactor, config->offset1 * yfactor, DEPTH );
+	glColor4f( 1.0, 1.0, 1.0, 1.0 );
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+
+	glBindTexture( GL_TEXTURE_2D, message->id );
+	glBegin( GL_QUADS );
+		glTexCoord2f(0.0, 0.0); glVertex3f(-tx,  ty, 0.0);
+		glTexCoord2f(0.0, 1.0); glVertex3f(-tx, -ty, 0.0);
+		glTexCoord2f(1.0, 1.0); glVertex3f( tx, -ty, 0.0);
+		glTexCoord2f(1.0, 0.0); glVertex3f( tx,  ty, 0.0);
+	glEnd();
+}
+
 void hint_draw_arrow( struct arrow *arrow ) {
 	GLfloat xfactor = ogl_xfactor();
 	GLfloat yfactor = ogl_yfactor();
 	GLfloat size = arrow->size/2 * xfactor;
 
 	ogl_load_alterego();
-	glTranslatef( arrow->x * xfactor, arrow->y * yfactor, -6 );
+	glTranslatef( arrow->x * xfactor, arrow->y * yfactor, DEPTH );
 	glRotatef( arrow->angle, 0.0, 0.0, 1.0 );
 	glColor4f( 1.0, 1.0, 1.0, alpha );
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -103,52 +129,36 @@ void hint_draw_arrow( struct arrow *arrow ) {
 	glEnd();
 }
 
-void hint_draw_caption( struct texture *message, GLfloat position ) {
-	GLfloat xfactor = ogl_xfactor();
-	GLfloat yfactor = ogl_yfactor();
-	GLfloat tx = ((message->width*FONT_SCALE)/2) * xfactor;
-	GLfloat ty = ((message->height*FONT_SCALE)/2) * xfactor;
+int hint_draw( void ) {
+	if( config_get()->iface.theme.hints.pulse ) {
+		if( alpha >= 1.0  ) {
+			alpha_step = -ALPHA_STEP_SIZE;
+		}
+		else if( alpha <= ALPHA_MIN ) {
+			alpha_step = ALPHA_STEP_SIZE;	
+		}
+		alpha += alpha_step;
+	}
 	
-	ogl_load_alterego();
-	glTranslatef( (position - 1.2)* xfactor, -2.0 * yfactor, -6 );
-	glColor4f( 1.0, 1.0, 1.0, 1.0 );
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_TEXTURE_2D);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-	glBindTexture( GL_TEXTURE_2D, message->id );
-	glBegin( GL_QUADS );
-		glTexCoord2f(0.0, 0.0); glVertex3f(-tx,  ty, 0.0);
-		glTexCoord2f(0.0, 1.0); glVertex3f(-tx, -ty, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f( tx, -ty, 0.0);
-		glTexCoord2f(1.0, 0.0); glVertex3f( tx,  ty, 0.0);
-	glEnd();
-}
-
-int hint_draw( int menu_level ) {
-	if( alpha >= 1.0  ) {
-		alpha_step = -ALPHA_STEP_SIZE;
-	}
-	else if( alpha <= ALPHA_MIN ) {
-		alpha_step = ALPHA_STEP_SIZE;	
-	}
-	alpha += alpha_step;
-	
-	if( menu_level == 0 ) {
-		hint_draw_button( select_texture, 0 );
-		hint_draw_caption( text_select_message, (text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2) );
-	}
-	else if( menu_level == 1 ) {
-		hint_draw_button( back_texture, -BUTTON_SIZE/2 );
-		hint_draw_caption( text_select_message, BUTTON_SIZE/2 + ((text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
-		hint_draw_button( select_texture, BUTTON_SIZE/2 );		
-		hint_draw_caption( text_back_message, -BUTTON_SIZE/2 - ((text_back_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
-	}
-	else {
-		hint_draw_button( back_texture, -BUTTON_SIZE/2 );
-		hint_draw_caption( text_select_message, BUTTON_SIZE/2 + ((text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
-		hint_draw_button( select_texture, BUTTON_SIZE/2 );		
-		hint_draw_caption( text_back_message, -BUTTON_SIZE/2 - ((text_back_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
+	switch( focus_has() ) {
+		case FOCUS_MENU:
+			hint_draw_button( select_texture, 0 );
+			hint_draw_caption( text_select_message, (text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2) );
+			break;
+		case FOCUS_SUBMENU:
+			hint_draw_button( back_texture, -BUTTON_SIZE/2 );
+			hint_draw_caption( text_select_message, BUTTON_SIZE/2 + ((text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
+			hint_draw_button( select_texture, BUTTON_SIZE/2 );		
+			hint_draw_caption( text_back_message, -BUTTON_SIZE/2 - ((text_back_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
+			break;
+		case FOCUS_GAMESEL:
+			hint_draw_button( back_texture, -BUTTON_SIZE/2 );
+			hint_draw_caption( text_select_message, BUTTON_SIZE/2 + ((text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
+			hint_draw_button( select_texture, BUTTON_SIZE/2 );		
+			hint_draw_caption( text_back_message, -BUTTON_SIZE/2 - ((text_back_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
+			break;
+		default:
+			break;
 	}
 	
 	return 0;

@@ -91,6 +91,10 @@ static const char *config_tag_theme_sounds_sound		=	  "sound";
 static const char *config_tag_theme_sounds_sound_file	=	  "sound-file";
 static const char *config_tag_theme_screenshot			=	"screen-shot";
 static const char *config_tag_theme_screenshot_fix_ar	=	  "fix-aspect-ratio";
+static const char *config_tag_theme_hints				=	"hints";
+static const char *config_tag_theme_hints_pulse			=     "pulse";
+static const char *config_tag_theme_hints_label_back	=     "back-label";
+static const char *config_tag_theme_hints_label_select	=     "select-label";
 
 /* General (reused) XML tags */
 static const char *config_tag_name					= "name";
@@ -816,6 +820,36 @@ int config_read_screenshot( xmlNode *node, struct config_screenshot *screenshot 
 	return 0;
 }
 
+int config_read_hints( xmlNode *node, struct config_hints *hints ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, config_tag_offset1 ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &hints->offset1 );
+			}
+			else if( strcmp( (char*)node->name, config_tag_offset2 ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &hints->offset2 );
+			}
+			else if( strcmp( (char*)node->name, config_tag_size ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &hints->size );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_hints_pulse ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &hints->pulse );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_hints_label_back ) == 0 ) {
+				strncpy( hints->label_back, (char*)xmlNodeGetContent(node), CONFIG_LABEL_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_hints_label_select ) == 0 ) {
+				strncpy( hints->label_select, (char*)xmlNodeGetContent(node), CONFIG_LABEL_LENGTH );
+			}
+			else {
+				fprintf( stderr, warn_skip, config_tag_theme_hints, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_graphics( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
@@ -996,6 +1030,9 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, config_tag_theme_screenshot ) == 0 ) {
 				/* Ignore (for now) */
 			}
+			else if( strcmp( (char*)node->name, config_tag_theme_hints ) == 0 ) {
+				/* Ignore (for now) */
+			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
 			}
@@ -1026,6 +1063,9 @@ int config_read_theme( xmlNode *node, struct config_theme *theme ) {
 			else if( strcmp( (char*)node->name, config_tag_theme_screenshot ) == 0 ) {
 				config_read_screenshot( node->children, &theme->screenshot );
 			}
+			else if( strcmp( (char*)node->name, config_tag_theme_hints ) == 0 ) {
+				config_read_hints( node->children, &theme->hints );
+			}
 			else {
 				fprintf( stderr, warn_skip, config_tag_themes_theme, node->name );	
 			}
@@ -1055,6 +1095,9 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 			}
 			else if( strcmp( (char*)node->name, config_tag_theme_screenshot ) == 0 ) {
 				config_read_screenshot( node->children, &theme->screenshot );
+			}
+			else if( strcmp( (char*)node->name, config_tag_theme_hints ) == 0 ) {
+				config_read_hints( node->children, &theme->hints );
 			}
 			else if( strcmp( (char*)node->name, config_tag_iface_full_screen ) == 0 ) {
 				/* Ignore */
@@ -1489,6 +1532,13 @@ int config_new( void ) {
 		default_theme.screenshot.size = 1.0;
 		default_theme.screenshot.fix_aspect_ratio = 1;
 		default_theme.screenshot.auto_hide = 1;
+
+		default_theme.hints.offset1 = -2.0;
+		default_theme.hints.offset2 = -1.2;
+		default_theme.hints.size = 1;
+		default_theme.hints.pulse = 1;
+		strncpy( default_theme.hints.label_select, "Select", CONFIG_LABEL_LENGTH );
+		strncpy( default_theme.hints.label_back, "Back", CONFIG_LABEL_LENGTH );
 		
 		default_theme.game_sel.orientation = CONFIG_PORTRAIT;
 		default_theme.game_sel.offset1 = 0.9;
