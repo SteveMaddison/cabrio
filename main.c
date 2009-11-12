@@ -36,6 +36,11 @@ int main( int argc, char *arvg[] ) {
 
 	if( ogl_init() != 0 )
 		return -1;
+	
+	/* Clear the screen as soon as we can. This avoids graphics
+	 * glitches which can occur with some SDL implementations. */
+	ogl_clear();
+	sdl_swap();
 
 	if( event_init() != 0 )
 		return -1;

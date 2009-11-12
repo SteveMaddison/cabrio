@@ -1449,7 +1449,6 @@ int config_set_theme( void ) {
 		}
 	}
 	else {
-		fprintf( stderr, "Warning: Themes defined but none specified, using default\n" );
 		memcpy( &config.iface.theme, &default_theme, sizeof(struct config_theme) );
 	}
 
