@@ -165,6 +165,8 @@ static const char *tag_zoom				= "zoom";
 static const char *tag_rotation			= "rotation";
 static const char *tag_image_file		= "image-file";
 static const char *tag_size				= "size";
+static const char *tag_x_size			= "x-size";
+static const char *tag_y_size			= "y-size";
 static const char *tag_font_scale		= "font-scale";
 static const char *tag_orientation		= "orientation";
 static const char *tag_offset1			= "primary-offset";
@@ -983,8 +985,11 @@ int config_read_game_selector( xmlNode *node, struct config_game_sel *game_sel )
 			else if( strcmp( (char*)node->name, tag_offset2 ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->offset2 );
 			}
-			else if( strcmp( (char*)node->name, tag_size ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->size );
+			else if( strcmp( (char*)node->name, tag_x_size ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->size_x );
+			}
+			else if( strcmp( (char*)node->name, tag_y_size ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->size_y );
 			}
 			else if( strcmp( (char*)node->name, tag_theme_game_sel_tile_size ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->tile_size );
@@ -1712,7 +1717,8 @@ int config_new( void ) {
 		default_theme.game_sel.orientation = CONFIG_PORTRAIT;
 		default_theme.game_sel.offset1 = 0.9;
 		default_theme.game_sel.offset2 = 0;
-		default_theme.game_sel.size = 1.0;
+		default_theme.game_sel.size_x = 1.0;
+		default_theme.game_sel.size_y = 1.0;
 		default_theme.game_sel.tile_size = 1.0;
 		default_theme.game_sel.tiles = NULL;
 		for( i = 0 ; i < default_num_tiles ; i++ ) {
