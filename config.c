@@ -142,6 +142,7 @@ static const char *tag_theme_hints_image_select		=     "select-image";
 static const char *tag_theme_hints_image_arrow		=     "arrow-image";
 static const char *tag_theme_game_sel				=   "game-selector";
 static const char *tag_theme_game_sel_selected		=     "selected";
+static const char *tag_theme_game_sel_tile_size		=     "tile-size";
 static const char *tag_theme_game_sel_tiles			=     "tiles";
 static const char *tag_theme_game_sel_tiles_tile	=       "tile";
 
@@ -985,6 +986,9 @@ int config_read_game_selector( xmlNode *node, struct config_game_sel *game_sel )
 			else if( strcmp( (char*)node->name, tag_size ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->size );
 			}
+			else if( strcmp( (char*)node->name, tag_theme_game_sel_tile_size ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->tile_size );
+			}
 			else if( strcmp( (char*)node->name, tag_theme_game_sel_selected ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->selected );
 			}
@@ -1709,6 +1713,7 @@ int config_new( void ) {
 		default_theme.game_sel.offset1 = 0.9;
 		default_theme.game_sel.offset2 = 0;
 		default_theme.game_sel.size = 1.0;
+		default_theme.game_sel.tile_size = 1.0;
 		default_theme.game_sel.tiles = NULL;
 		for( i = 0 ; i < default_num_tiles ; i++ ) {
 			struct config_game_sel_tile *tile = malloc( sizeof(struct config_game_sel_tile) );

@@ -110,6 +110,7 @@ struct config_game_sel {
 	float offset1;
 	float offset2;
 	float size;
+	float tile_size;
 	int orientation;
 	int selected;
 	struct config_game_sel_tile *tiles;
