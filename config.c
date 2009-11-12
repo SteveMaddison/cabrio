@@ -989,11 +989,11 @@ int config_read_game_selector( xmlNode *node, struct config_game_sel *game_sel )
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->orientation );
 			}
 			else if( strcmp( (char*)node->name, tag_theme_game_sel_tiles ) == 0 ) {
-				if( strcmp( (char*)node->parent->name, tag_themes_theme ) == 0 ) {
+				if( strcmp( (char*)node->parent->parent->name, tag_themes_theme ) == 0 ) {
 					config_read_game_selector_tiles( node->children, game_sel );
 				}
 				else {
-					fprintf( stderr, "Warning: Game selector tiles may not be overridden in '%s'\n", (char*)node->parent->name );
+					fprintf( stderr, "Warning: Game selector tiles may not be overridden in '%s'\n", (char*)node->parent->parent->name );
 				}
 			}
 			else {
@@ -1188,7 +1188,7 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
 				/* Ignore (for now) */
 			}
-			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_game_sel ) == 0 ) {
 				/* Ignore (for now) */
 			}
 			else {
@@ -1224,7 +1224,7 @@ int config_read_theme( xmlNode *node, struct config_theme *theme ) {
 			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
 				config_read_hints( node->children, &theme->hints );
 			}
-			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_game_sel ) == 0 ) {
 				config_read_game_selector( node->children, &theme->game_sel );
 			}
 			else {
@@ -1260,7 +1260,7 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
 				config_read_hints( node->children, &theme->hints );
 			}
-			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_game_sel ) == 0 ) {
 				config_read_game_selector( node->children, &theme->game_sel );
 			}
 			else if( strcmp( (char*)node->name, tag_iface_full_screen ) == 0 ) {
@@ -1587,7 +1587,6 @@ int config_set_theme( void ) {
 		}
 		if( ct ) {
 			memcpy( &config.iface.theme, ct, sizeof(struct config_theme) );
-			config_set_theme_override( &config.iface.theme );
 		}
 		else {
 			fprintf( stderr, "Warning: Couldn't find theme '%s', using default\n", config.iface.theme_name );
@@ -1597,6 +1596,7 @@ int config_set_theme( void ) {
 	else {
 		memcpy( &config.iface.theme, &default_theme, sizeof(struct config_theme) );
 	}
+	config_set_theme_override( &config.iface.theme );
 
 	return 0;
 }
