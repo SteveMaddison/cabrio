@@ -400,11 +400,14 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 		}
 		if( zoom && tile == game_tile_current ) {
 			glTranslatef( 0.0, 0.0, (steps-zoom)/5 );
-			alpha = (1.0/steps)*(zoom);
+			alpha = (tile->alpha/steps)*(zoom);
 			zoom--;
 		}
 		else if( hide_direction != 0 ) {
-			alpha = 1.0 - (1.0/(GLfloat)steps)*(GLfloat)(step+1);
+			alpha = tile->alpha - (tile->alpha/(GLfloat)steps)*(GLfloat)(step+1);
+		}
+		else {
+			alpha = tile->alpha + ((dest->alpha - tile->alpha)/steps) * step;
 		}
 		glColor4f( 1.0, 1.0, 1.0, alpha );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);

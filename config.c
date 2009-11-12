@@ -82,6 +82,9 @@ static const float default_tile_angle[][3] = {
 	{ 0.0, 0.0, -46.0 },
 	{ 0.0, 0.0, -55.0 }
 };
+static const int default_tile_transparency[] = {
+	100, 60, 20, 10, 0, 0, 0, 0, 0, 10, 20, 60, 100
+};
 
 static struct config_theme default_theme;
 static const char *default_theme_name 	= "default";
@@ -1714,7 +1717,7 @@ int config_new( void ) {
 				if( i == (default_num_tiles/2) )
 					default_theme.game_sel.selected = tile->order;
 				
-				tile->transparency = 0;
+				tile->transparency = default_tile_transparency[i];
 				
 				tile->pos[0] = default_tile_pos[i][0];
 				tile->pos[1] = default_tile_pos[i][1];
