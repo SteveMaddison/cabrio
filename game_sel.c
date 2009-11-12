@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
+#include <limits.h>
 #include "game_sel.h"
 #include "bg.h"
 #include "config.h"
@@ -11,15 +12,19 @@
 #include "submenu.h"
 #include "screenshot.h"
 
-static const int IMAGE_SCALE = 200;
-static const int NUM_GAME_TILES = 13;
-static const int IDLE_TIME = 5;
+static const GLfloat IMAGE_SCALE = 0.005;
 static const int MAX_STEPS = 25;
+
+static GLfloat scale = 0.005;
+static int tile_count = 0;
+static int idle_time = 5;
 static int steps = 0;
 
 struct game_tile *game_tile_start = NULL;
 struct game_tile *game_tile_end = NULL;
 struct game_tile *game_tile_current = NULL;
+struct game_tile *game_tile_depth_start = NULL;
+struct game_tile *game_tile_depth_end = NULL;
 
 static int scroll_direction = 0;
 static int step = 0;
@@ -30,108 +35,84 @@ static int idle_counter = 0;
 static int skipping = 0;
 static int zoom = 0;
 
-int game_sel_init( int theme ) {
-	int i;
-	int mid = NUM_GAME_TILES/2;
+int game_sel_init( void ) {
 	int frame_rate = config_get()->iface.frame_rate;
+	struct config_game_sel_tile *config_tile = NULL;
+	int config_tile_count = 0;
+	int next = INT_MAX;
 	
-	if( frame_rate )
+	if( frame_rate ) {
 		steps = frame_rate/5;
-	else
+		idle_time = frame_rate/10;
+	}
+	else {
 		steps = MAX_STEPS;
+		idle_time = 0;
+	}
 	
-	for( i = 0 ; i < NUM_GAME_TILES ; i++ ) {
-		struct game_tile *tile = malloc(sizeof(struct game_tile));
-		if( tile == NULL ) {
+	tile_count = 0;
+	
+	config_tile = config_get()->iface.theme.game_sel.tiles;
+	if( !config_tile ) {
+		fprintf( stderr, "Error: Game selector has no tiles\n" );
+		return -1;
+	}
+	
+	/* Wonderfully ineffecient sorting, but we only need to do it once... */
+	while( config_tile ) {
+		if( config_tile->order == next && config_tile_count != 0 ) {
+			fprintf( stderr, "Error: Duplicate 'order' paramemter in game selector tile: %d\n", next );
 			return -1;
 		}
-		else {
-			float offset = i<mid ? (float)mid-i : (float)i-mid;
-			memset(tile,0,sizeof(struct game_tile));
-			if( theme == 1 ) {
-				if( i < mid ) {
-					tile->pos[0] = -((offset/4)+(0.5*offset))-1;
-					tile->pos[1] = 0.0;
-					tile->pos[2] = -offset*(offset/5);
-					tile->angle[0] = 0.0;
-					tile->angle[1] = (GLfloat)95+((offset)*1.0);
-					tile->angle[2] = 0.0;
-				}
-				else if( i > mid ) {
-					tile->pos[0] = (offset/4)+(0.5*offset)+1;
-					tile->pos[1] = 0.0;
-					tile->pos[2] = -offset*(offset/5);
-					tile->angle[0] = 0.0;
-					tile->angle[1] = -(GLfloat)95-((offset)*1.0);
-					tile->angle[2] = 0.0;
-				}
-				else {
-					tile->pos[0] = 0.0;
-					tile->pos[1] = 0.0;
-					tile->pos[2] = 1.25;
-					tile->angle[0] = 0.0;
-					tile->angle[1] = 0.0;
-					tile->angle[2] = 0.0;
-				}
-			}
-			else if ( theme == 2 ) {
-				if( i < mid ) {
-					tile->pos[0] = -((offset/3)+(0.5*offset))-1;
-					tile->pos[1] = -(offset/3);
-					tile->pos[2] = -offset*(offset/5);
-					tile->angle[0] = 0.0;
-					tile->angle[1] = (GLfloat)95+((offset)*1.0);
-					tile->angle[2] = offset*3;
-				}
-				else if( i > mid ) {
-					tile->pos[0] = (offset/3)+(0.5*offset)+1;
-					tile->pos[1] = -(offset/3);
-					tile->pos[2] = -offset*(offset/5);
-					tile->angle[0] = 0.0;
-					tile->angle[1] = -(GLfloat)95-((offset)*1.0);
-					tile->angle[2] = -offset*3;
-				}
-				else {
-					tile->pos[0] = 0.0;
-					tile->pos[1] = 0.0;
-					tile->pos[2] = 1.25;
-					tile->angle[0] = 0.0;
-					tile->angle[1] = 0.0;
-					tile->angle[2] = 0.0;
-				}
-			}
-			else  {
-				if( i < mid ) {
-					tile->pos[0] = offset * 0.6;
-					tile->pos[1] = (0.5 + (offset/2));
-					tile->pos[2] = -offset/2;
-					tile->angle[0] = 0.0;
-					tile->angle[1] = 0.0;
-					tile->angle[2] = -(offset*(120/(float)NUM_GAME_TILES));
-				}
-				else if( i > mid ) {
-					tile->pos[0] = offset * 0.6;
-					tile->pos[1] = -(0.5 + (offset/2));
-					tile->pos[2] = -offset/2;
-					tile->angle[0] = 0.0;
-					tile->angle[1] = 0.0;
-					tile->angle[2] = (offset*(120/(float)NUM_GAME_TILES));
-				}
-				else {
-					tile->pos[0] = 0.0;
-					tile->pos[1] = 0.0;
-					tile->pos[2] = 1.5;
-					tile->angle[0] = 0.0;
-					tile->angle[1] = 0.0;
-					tile->angle[2] = 0.0;
-				}
-			}
-			if( offset == 0) {
-				game_tile_current = tile;
-			}
-			game_tile_add( tile );
+		else if( config_tile->order < next ) {
+			next = config_tile->order;
 		}
+		config_tile_count++;
+		config_tile = config_tile->next;
 	}
+	
+	config_tile = config_get()->iface.theme.game_sel.tiles;
+	while( tile_count < config_tile_count ) {
+		while( config_tile ) {
+			if( config_tile->order == next )
+				break;
+			config_tile = config_tile->next;
+		}
+		if( config_tile->order == next ) {
+			struct game_tile *tile = malloc(sizeof(struct game_tile));
+			if( tile == NULL ) {
+				fprintf( stderr, "Error: Couldn't allocate memory for game tile\n" );
+				return -1;
+			}
+			else {
+				memset( tile, 0, sizeof(struct game_tile) );
+				
+				tile->pos[X] = config_tile->pos[X];
+				tile->pos[Y] = config_tile->pos[Y];
+				tile->pos[Z] = config_tile->pos[Z];
+
+				tile->angle[X] = config_tile->angle[X];
+				tile->angle[Y] = config_tile->angle[Y];
+				tile->angle[Z] = config_tile->angle[Z];
+
+				tile->alpha = 1.0 - ((GLfloat)config_tile->transparency/100);
+
+				if( config_tile->order == config_get()->iface.theme.game_sel.selected )
+					game_tile_current = tile;
+
+				game_tile_add( tile );
+				tile_count++;
+			}
+			config_tile = config_tile->next;
+		}
+		next++;
+	}
+	
+	if( !game_tile_current ) {
+		fprintf( stderr, "Error: No game selector tile marked as selected.\n" );
+		return -1;
+	}
+	
 	return 0;
 }
 
@@ -170,7 +151,7 @@ int game_sel_populate( struct game *game ) {
 		return -1;	
 	}
 	/* Make sure the first game in the list is in the center (i.e. selected) */
-	for( i = 0 ; i < NUM_GAME_TILES/2 ; i++ ) {
+	for( i = 0 ; i < tile_count/2 ; i++ ) {
 		game = game->prev;
 	}
 
@@ -183,6 +164,134 @@ int game_sel_populate( struct game *game ) {
 	}
 	
 	return 0;
+}
+
+void game_sel_shuffle_forward( int manage_textures ) {
+	struct game_tile *t = game_tile_start;
+	
+	if( t ) {
+		if( manage_textures )
+			game_load_texture( t->game->prev );
+		while( t ) {
+			if( t->game )
+				t->game = t->game->prev;
+			t = t->next;
+		}
+
+		if( manage_textures ) {
+			/* Check if we can free the last game's texture (we can't
+			 * if the game appears more than once in the selector. */
+			t = game_tile_start;
+			while( t && t->game != game_tile_end->game ) {
+				t = t->next;
+			}
+			if( t == NULL || t == game_tile_end ) {
+				game_free_texture( game_tile_end->game->next );
+			}
+		}
+	}
+}
+
+void game_sel_shuffle_back( int manage_textures ) {
+	struct game_tile *t = game_tile_start;
+	
+	if( t ) {
+		while( t ) {
+			if( t->game )
+				t->game = t->game->next;
+			if( manage_textures && t->next == NULL )
+				game_load_texture( t->game );
+			t = t->next;	
+		}
+
+		if( manage_textures ) {
+			/* Check if we can free the last game's texture (we can't
+			 * if the game appears more than once in the selector. */
+			t = game_tile_end;
+			while( t && t->game != game_tile_start->game ) {
+				t = t->prev;
+			}
+			if( t == NULL || t == game_tile_start ) {
+				game_free_texture( game_tile_start->game->prev );
+			}
+		}
+	}
+}
+
+void game_sel_do_skip( void ) {
+	struct game *current_game = game_tile_current->game;
+	struct game *pos;
+
+	if( current_game ) {
+		game_sel_free_textures();
+		if( skipping < 0 ) {
+			pos = current_game->prev;
+			game_sel_shuffle_forward( 0 );
+	
+			if( isalpha( current_game->name[0] ) ) {
+				while( strncasecmp( current_game->name, pos->name, 1 ) == 0 && pos != current_game ) {
+					game_sel_shuffle_forward( 0 );
+					pos = pos->prev;
+				}
+			}
+			else {
+				while( !isalpha( pos->name[0] ) && pos != current_game ) {
+					game_sel_shuffle_forward( 0 );
+					pos = pos->prev;
+				}
+			}	
+		}
+		else {
+			pos = current_game->next;
+			game_sel_shuffle_back( 0 );
+	
+			if( isalpha( current_game->name[0] ) ) {
+				while( strncasecmp( current_game->name, pos->name, 1 ) == 0 && pos != current_game ) {
+					game_sel_shuffle_back( 0 );
+					pos = pos->next;
+				}
+			}
+			else {
+				while( !isalpha( pos->name[0] ) && pos != current_game ) {
+					game_sel_shuffle_back( 0 );
+					pos = pos->next;
+				}
+			}	
+		}
+		skipping = 0;
+		game_sel_load_textures();
+	}
+	game_sel_show();
+}
+
+void game_sel_skip_forward( void ) {
+	if( visible && !game_sel_busy() ) {
+		game_sel_hide( HIDE_TARGET_SELECTED );
+		skipping = 1;
+	}
+}
+
+void game_sel_skip_back( void ) {
+	if( visible && !game_sel_busy() ) {
+		game_sel_hide( HIDE_TARGET_SELECTED );
+		skipping = -1;
+	}
+}
+
+void game_sel_retreat( void ) {
+	if( visible && !game_sel_busy() ) {
+		game_tile_current = game_tile_current->prev;
+		scroll_direction = 1;
+		step = 1;
+	}
+}
+
+void game_sel_advance( void ) {
+	if( visible && !game_sel_busy() ) {
+		game_sel_shuffle_back( 1 );
+		scroll_direction = -1;
+		step = steps-1;
+	}
 }
 
 int game_sel_event( int event ) {
@@ -265,8 +374,8 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 	const struct config_game_sel *config = &config_get()->iface.theme.game_sel;
 	
 	if( tile && tile->game && tile->game->texture && dest ) {
-		GLfloat width = (((GLfloat)tile->game->texture->width/IMAGE_SCALE)/2) * xfactor;
-		GLfloat height = (((GLfloat)tile->game->texture->height/IMAGE_SCALE)/2) * xfactor;
+		GLfloat width = (((GLfloat)tile->game->texture->width * scale)/2) * xfactor;
+		GLfloat height = (((GLfloat)tile->game->texture->height * scale)/2) * xfactor;
 		if( config->orientation == CONFIG_PORTRAIT ) {
 			glTranslatef(
 				(tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step)) * xfactor,
@@ -341,22 +450,10 @@ struct game_tile *next_dest( struct game_tile *tile ) {
 }
 
 void game_sel_draw_step( int step ) {
-	int i;
-	int mid = NUM_GAME_TILES/2;
-	struct game_tile *gl,*gr;
-		
-	gl = game_tile_first();
-	gr = game_tile_last();
-	if( gl && gr ) {
-		for( i = 0 ; i < mid ; i++ ) {
-			game_tile_draw( gl, next_dest(gl), step );
-			gl = gl->next;
-		}
-		for( i = 0 ; i < mid ; i++ ) {
-			game_tile_draw( gr, next_dest(gr), step );
-			gr = gr->prev;
-		}
-		game_tile_draw( gr, next_dest(gr), step );
+	struct game_tile *tile = game_tile_depth_start;
+	while( tile ) {
+		game_tile_draw( tile, next_dest(tile), step );
+		tile = tile->depth_next;
 	}
 }
 
@@ -374,134 +471,6 @@ void game_sel_hide( int target ) {
 		hide_direction = -1;
 		step = 1;
 		visible = 1;
-	}
-}
-
-void game_sel_shuffle_forward( int manage_textures ) {
-	struct game_tile *t = game_tile_start;
-	
-	if( t ) {
-		if( manage_textures )
-			game_load_texture( t->game->prev );
-		while( t ) {
-			if( t->game )
-				t->game = t->game->prev;
-			t = t->next;
-		}
-
-		if( manage_textures ) {
-			/* Check if we can free the last game's texture (we can't
-			 * if the game appears more than once in the selector. */
-			t = game_tile_start;
-			while( t && t->game != game_tile_end->game ) {
-				t = t->next;
-			}
-			if( t == NULL || t == game_tile_end ) {
-				game_free_texture( game_tile_end->game->next );
-			}
-		}
-	}
-}
-
-void game_sel_shuffle_back( int manage_textures ) {
-	struct game_tile *t = game_tile_start;
-	
-	if( t ) {
-		while( t ) {
-			if( t->game )
-				t->game = t->game->next;
-			if( manage_textures && t->next == NULL )
-				game_load_texture( t->game );
-			t = t->next;	
-		}
-
-		if( manage_textures ) {
-			/* Check if we can free the last game's texture (we can't
-			 * if the game appears more than once in the selector. */
-			t = game_tile_end;
-			while( t && t->game != game_tile_start->game ) {
-				t = t->prev;
-			}
-			if( t == NULL || t == game_tile_start ) {
-				game_free_texture( game_tile_start->game->prev );
-			}
-		}
-	}
-}
-
-void game_sel_retreat( void ) {
-	if( visible && !game_sel_busy() ) {
-		game_tile_current = game_tile_current->prev;
-		scroll_direction = 1;
-		step = 1;
-	}
-}
-
-void game_sel_advance( void ) {
-	if( visible && !game_sel_busy() ) {
-		game_sel_shuffle_back( 1 );
-		scroll_direction = -1;
-		step = steps-1;
-	}
-}
-
-void game_sel_do_skip( void ) {
-	struct game *current_game = game_tile_current->game;
-	struct game *pos;
-
-	if( current_game ) {
-		game_sel_free_textures();
-		if( skipping < 0 ) {
-			pos = current_game->prev;
-			game_sel_shuffle_forward( 0 );
-	
-			if( isalpha( current_game->name[0] ) ) {
-				while( strncasecmp( current_game->name, pos->name, 1 ) == 0 && pos != current_game ) {
-					game_sel_shuffle_forward( 0 );
-					pos = pos->prev;
-				}
-			}
-			else {
-				while( !isalpha( pos->name[0] ) && pos != current_game ) {
-					game_sel_shuffle_forward( 0 );
-					pos = pos->prev;
-				}
-			}	
-		}
-		else {
-			pos = current_game->next;
-			game_sel_shuffle_back( 0 );
-	
-			if( isalpha( current_game->name[0] ) ) {
-				while( strncasecmp( current_game->name, pos->name, 1 ) == 0 && pos != current_game ) {
-					game_sel_shuffle_back( 0 );
-					pos = pos->next;
-				}
-			}
-			else {
-				while( !isalpha( pos->name[0] ) && pos != current_game ) {
-					game_sel_shuffle_back( 0 );
-					pos = pos->next;
-				}
-			}	
-		}
-		skipping = 0;
-		game_sel_load_textures();
-	}
-	game_sel_show();
-}
-
-void game_sel_skip_forward( void ) {
-	if( visible && !game_sel_busy() ) {
-		game_sel_hide( HIDE_TARGET_SELECTED );
-		skipping = 1;
-	}
-}
-
-void game_sel_skip_back( void ) {
-	if( visible && !game_sel_busy() ) {
-		game_sel_hide( HIDE_TARGET_SELECTED );
-		skipping = -1;
 	}
 }
 
@@ -524,7 +493,7 @@ void game_sel_draw( void ) {
 			game_sel_draw_step( step );
 			if( step == 0 ) {
 				scroll_direction = 0;
-				idle_counter = IDLE_TIME;
+				idle_counter = idle_time;
 			}
 		}
 		else {
@@ -538,7 +507,7 @@ void game_sel_draw( void ) {
 				hide_direction = 0;
 				if( skipping != 0 ) {
 					game_sel_do_skip();
-					idle_counter = IDLE_TIME;
+					idle_counter = idle_time;
 				}
 			}
 		}
@@ -549,18 +518,49 @@ void game_sel_zoom( void ) {
 	zoom = steps;
 }
 
-void game_tile_add( struct game_tile *game ) {
+void game_tile_add( struct game_tile *tile ) {
 	if( game_tile_start == NULL ) {
-		game->prev = NULL;
-		game->next = NULL;
-		game_tile_start = game;
+		tile->prev = NULL;
+		tile->next = NULL;
+		game_tile_start = tile;
 	}
 	else {
-		game_tile_end->next = game;
-		game->prev = game_tile_end;
-		game->next = NULL;
+		game_tile_end->next = tile;
+		tile->prev = game_tile_end;
+		tile->next = NULL;
 	}
-	game_tile_end = game;
+	game_tile_end = tile;
+	
+	/* Sort by depth */
+	if( game_tile_depth_start == NULL ) {
+		tile->depth_prev = NULL;
+		tile->depth_next = NULL;
+		game_tile_depth_start = tile;
+		game_tile_depth_end = tile;
+	}
+	else {
+		struct game_tile *before = game_tile_depth_start;
+		while( before && tile->pos[Z] > before->pos[Z] ) {
+			before = before->depth_next;
+		}
+		if( before ) {
+			/* Insert */
+			tile->depth_prev = before->depth_prev;
+			tile->depth_next = before;
+			if( before->depth_prev )
+				before->depth_prev->depth_next = tile;
+			else 
+				game_tile_depth_start = tile;
+			before->depth_prev = tile;
+		}
+		else {
+			/* Append */
+			game_tile_depth_end->depth_next = tile;
+			tile->depth_prev = game_tile_depth_end;
+			tile->depth_next = NULL;
+			game_tile_depth_end = tile;
+		}
+	}
 }
 
 struct game_tile *game_tile_first( void ) {

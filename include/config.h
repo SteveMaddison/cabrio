@@ -98,10 +98,21 @@ struct config_menu {
 	int auto_hide;
 };
 
+struct config_game_sel_tile {
+	struct config_game_sel_tile *next;
+	int order;
+	float pos[3];
+	float angle[3];
+	int transparency;
+};
+
 struct config_game_sel {
 	float offset1;
 	float offset2;
+	float size;
 	int orientation;
+	int selected;
+	struct config_game_sel_tile *tiles;
 };
 
 struct config_screenshot {

@@ -70,7 +70,7 @@ int main( int argc, char *arvg[] ) {
 	if( category_init() != 0 )
 		return -1;
 
-	if( game_sel_init( 0 ) != 0 )
+	if( game_sel_init() != 0 )
 		return -1;
 
 	if( menu_init() != 0 )
@@ -117,7 +117,7 @@ int main( int argc, char *arvg[] ) {
 		}
 		if( supress_wait > 0 )
 			supress_wait--;
-			
+		
 		sdl_frame_delay();
 	}
 

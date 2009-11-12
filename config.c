@@ -47,6 +47,40 @@ static const char *config_default_sounds[] = {
 	"/sounds/select.wav"
 };
 #endif
+
+/* Game selector defaults, listed in reverse order */
+static const int config_default_num_tiles = 13;
+static const float config_default_tile_pos[][3] = {
+	{ 3.6, -3.5, -3.0 },
+	{ 3.0, -3.0, -2.5 },
+	{ 2.4, -2.5, -2.0 },
+	{ 1.8, -2.0, -1.5 },
+	{ 1.2, -1.5, -1.0 },
+	{ 0.6, -1.0, -0.5 },
+	{ 0.0,  0.0,  1.5 },
+	{ 0.6,  1.0, -0.5 },
+	{ 1.2,  1.5, -1.0 },
+	{ 1.8,  2.0, -1.5 },
+	{ 2.4,  2.5, -2.0 },
+	{ 3.0,  3.0, -2.5 },
+	{ 3.6,  3.5, -3.0 }
+};
+static const float config_default_tile_angle[][3] = {
+	{ 0.0, 0.0,  54.0 },
+	{ 0.0, 0.0,  45.0 },
+	{ 0.0, 0.0,  36.0 },
+	{ 0.0, 0.0,  27.0 },
+	{ 0.0, 0.0,  18.0 },
+	{ 0.0, 0.0,   9.0 },
+	{ 0.0, 0.0,   0.0 },
+	{ 0.0, 0.0,  -9.0 },
+	{ 0.0, 0.0, -18.0 },
+	{ 0.0, 0.0, -27.0 },
+	{ 0.0, 0.0, -36.0 },
+	{ 0.0, 0.0, -46.0 },
+	{ 0.0, 0.0, -55.0 }
+};
+
 static struct config_theme default_theme;
 static const char *config_default_theme_name 	= "default";
 static const char *config_default_file 			= "config.xml";
@@ -1563,6 +1597,33 @@ int config_new( void ) {
 		default_theme.game_sel.orientation = CONFIG_PORTRAIT;
 		default_theme.game_sel.offset1 = 0.9;
 		default_theme.game_sel.offset2 = 0;
+		default_theme.game_sel.size = 1.0;
+		default_theme.game_sel.tiles = NULL;
+		for( i = 0 ; i < config_default_num_tiles ; i++ ) {
+			struct config_game_sel_tile *tile = malloc( sizeof(struct config_game_sel_tile) );
+			if( tile ) {
+				tile->order = config_default_num_tiles - i;
+				if( i == (config_default_num_tiles/2) )
+					default_theme.game_sel.selected = tile->order;
+				
+				tile->transparency = 0;
+				
+				tile->pos[0] = config_default_tile_pos[i][0];
+				tile->pos[1] = config_default_tile_pos[i][1];
+				tile->pos[2] = config_default_tile_pos[i][2];
+				
+				tile->angle[0] = config_default_tile_angle[i][0];
+				tile->angle[1] = config_default_tile_angle[i][1];
+				tile->angle[2] = config_default_tile_angle[i][2];
+				
+				tile->next = default_theme.game_sel.tiles;
+				default_theme.game_sel.tiles = tile;
+			}
+			else {
+				fprintf( stderr, "Error: Couldn't allocate configuration game tile structure\n" );
+				return -1;	
+			}	
+		}
 		
 		for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
 			snprintf( default_theme.sounds[i], CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, (char*)config_default_sounds[i] );
