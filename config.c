@@ -22,25 +22,27 @@
 struct config config;
 
 #ifdef __WIN32__
-static const char *config_default_font				= "\\fonts\\FreeSans.ttf";
-static const char *config_default_menu_texture		= "\\pixmaps\\menu_item.png";
-static const char *config_default_back_texture		= "\\pixmaps\\button_blue.png";
-static const char *config_default_select_texture	= "\\pixmaps\\button_red.png";
-static const char *config_default_arrow_texture		= "\\pixmaps\\arrow.png";
-static const char *config_default_sounds[] = {
+static const char *default_background		= "\\pixmaps\\default_background.jpg";
+static const char *default_font				= "\\fonts\\FreeSans.ttf";
+static const char *default_menu_texture		= "\\pixmaps\\menu_item.png";
+static const char *default_back_texture		= "\\pixmaps\\button_blue.png";
+static const char *default_select_texture	= "\\pixmaps\\button_red.png";
+static const char *default_arrow_texture	= "\\pixmaps\\arrow.png";
+static const char *default_sounds[] = {
 	"\\sounds\\back.wav",
 	"\\sounds\\blip.wav",
 	"\\sounds\\no.wav",
 	"\\sounds\\select.wav"
 };
 #else
-static const char *config_default_dir 				= ".cabrio"; /* Relative to user's home */
-static const char *config_default_font 				= "/fonts/FreeSans.ttf";
-static const char *config_default_menu_texture		= "/pixmaps/menu_item.png";
-static const char *config_default_back_texture		= "/pixmaps/button_blue.png";
-static const char *config_default_select_texture	= "/pixmaps/button_red.png";
-static const char *config_default_arrow_texture		= "/pixmaps/arrow.png";
-static const char *config_default_sounds[] = {
+static const char *default_dir 				= ".cabrio"; /* Relative to user's home */
+static const char *default_background		= "/pixmaps/default_background.jpg";
+static const char *default_font 			= "/fonts/FreeSans.ttf";
+static const char *default_menu_texture		= "/pixmaps/menu_item.png";
+static const char *default_back_texture		= "/pixmaps/button_blue.png";
+static const char *default_select_texture	= "/pixmaps/button_red.png";
+static const char *default_arrow_texture	= "/pixmaps/arrow.png";
+static const char *default_sounds[] = {
 	"/sounds/back.wav",
 	"/sounds/blip.wav",
 	"/sounds/no.wav",
@@ -49,8 +51,8 @@ static const char *config_default_sounds[] = {
 #endif
 
 /* Game selector defaults, listed in reverse order */
-static const int config_default_num_tiles = 13;
-static const float config_default_tile_pos[][3] = {
+static const int default_num_tiles = 13;
+static const float default_tile_pos[][3] = {
 	{ 3.6, -3.5, -3.0 },
 	{ 3.0, -3.0, -2.5 },
 	{ 2.4, -2.5, -2.0 },
@@ -65,7 +67,7 @@ static const float config_default_tile_pos[][3] = {
 	{ 3.0,  3.0, -2.5 },
 	{ 3.6,  3.5, -3.0 }
 };
-static const float config_default_tile_angle[][3] = {
+static const float default_tile_angle[][3] = {
 	{ 0.0, 0.0,  54.0 },
 	{ 0.0, 0.0,  45.0 },
 	{ 0.0, 0.0,  36.0 },
@@ -82,103 +84,108 @@ static const float config_default_tile_angle[][3] = {
 };
 
 static struct config_theme default_theme;
-static const char *config_default_theme_name 	= "default";
-static const char *config_default_file 			= "config.xml";
+static const char *default_theme_name 	= "default";
+static const char *default_file 		= "config.xml";
 
 static char config_directory[CONFIG_FILE_NAME_LENGTH] 	= "";
 static char config_filename[CONFIG_FILE_NAME_LENGTH] 	= "";
 
-/* Defaults */
-static const char *BG_DEFAULT = DATA_DIR "/pixmaps/default_background.jpg";
-
 /* Specific XML tags */
-static const char *config_tag_root						= "cabrio-config";
-static const char *config_tag_emulators					= "emulators";
-static const char *config_tag_emulator					= 	"emulator";
-static const char *config_tag_emulator_executable		= 		"executable";
-static const char *config_tag_games						= "games";
-static const char *config_tag_game						=   "game";
-static const char *config_tag_game_rom_image			=     "rom-image";
-static const char *config_tag_game_logo_image			=     "logo-image";
-static const char *config_tag_game_background_image		=     "background-image";
-static const char *config_tag_game_categories			=     "categories";
-static const char *config_tag_game_category				=     "category";
-static const char *config_tag_game_screen_shot			=     "screen-shot";
-static const char *config_tag_iface						= "interface";
-static const char *config_tag_iface_full_screen			= 	"full-screen";
-static const char *config_tag_iface_screen				=   "screen";
-static const char *config_tag_iface_screen_hflip		=     "flip-horizontal";
-static const char *config_tag_iface_screen_vflip		=     "flip-vertical";
-static const char *config_tag_iface_controls			=   "controls";
-static const char *config_tag_iface_frame_rate			=   "frame-rate";
-static const char *config_tag_iface_gfx					=   "graphics";
-static const char *config_tag_iface_gfx_quality			=     "quality";
-static const char *config_tag_iface_gfx_max_width		=     "max-image-width";
-static const char *config_tag_iface_gfx_max_height		=     "max-image-height";
-static const char *config_tag_iface_theme				=     "theme";
-static const char *config_tag_themes					=   "themes";
-static const char *config_tag_themes_theme				=     "theme";
-static const char *config_tag_theme_menu				=   "menu";
-static const char *config_tag_theme_menu_item_width		=     "item-width";
-static const char *config_tag_theme_menu_item_height	=     "item-height";
-static const char *config_tag_theme_menu_items_visible	=     "items-visible";
-static const char *config_tag_theme_menu_spacing		=     "spacing";
-static const char *config_tag_theme_background			=   "background";
-static const char *config_tag_theme_font				=   "font";
-static const char *config_tag_theme_font_file			=     "font-file";
-static const char *config_tag_theme_sounds				=	"sounds";
-static const char *config_tag_theme_sounds_sound		=	  "sound";
-static const char *config_tag_theme_sounds_sound_file	=	  "sound-file";
-static const char *config_tag_theme_screenshot			=	"screen-shot";
-static const char *config_tag_theme_screenshot_fix_ar	=	  "fix-aspect-ratio";
-static const char *config_tag_theme_hints				=	"hints";
-static const char *config_tag_theme_hints_pulse			=     "pulse";
-static const char *config_tag_theme_hints_label_back	=     "back-label";
-static const char *config_tag_theme_hints_label_select	=     "select-label";
-static const char *config_tag_theme_hints_image_back	=     "back-image";
-static const char *config_tag_theme_hints_image_select	=     "select-image";
-static const char *config_tag_theme_hints_image_arrow	=     "arrow-image";
+static const char *tag_root							= "cabrio-config";
+static const char *tag_emulators					= "emulators";
+static const char *tag_emulator						= 	"emulator";
+static const char *tag_emulator_executable			= 		"executable";
+static const char *tag_games						= "games";
+static const char *tag_game							=   "game";
+static const char *tag_game_rom_image				=     "rom-image";
+static const char *tag_game_logo_image				=     "logo-image";
+static const char *tag_game_background_image		=     "background-image";
+static const char *tag_game_categories				=     "categories";
+static const char *tag_game_category				=     "category";
+static const char *tag_game_screen_shot				=     "screen-shot";
+static const char *tag_iface						= "interface";
+static const char *tag_iface_full_screen			= 	"full-screen";
+static const char *tag_iface_screen					=   "screen";
+static const char *tag_iface_screen_hflip			=     "flip-horizontal";
+static const char *tag_iface_screen_vflip			=     "flip-vertical";
+static const char *tag_iface_controls				=   "controls";
+static const char *tag_iface_frame_rate				=   "frame-rate";
+static const char *tag_iface_gfx					=   "graphics";
+static const char *tag_iface_gfx_quality			=     "quality";
+static const char *tag_iface_gfx_max_width			=     "max-image-width";
+static const char *tag_iface_gfx_max_height			=     "max-image-height";
+static const char *tag_iface_theme					=     "theme";
+static const char *tag_themes						=   "themes";
+static const char *tag_themes_theme					=     "theme";
+static const char *tag_theme_menu					=   "menu";
+static const char *tag_theme_menu_item_width		=     "item-width";
+static const char *tag_theme_menu_item_height		=     "item-height";
+static const char *tag_theme_menu_items_visible		=     "items-visible";
+static const char *tag_theme_menu_spacing			=     "spacing";
+static const char *tag_theme_background				=   "background";
+static const char *tag_theme_font					=   "font";
+static const char *tag_theme_font_file				=     "font-file";
+static const char *tag_theme_sounds					=	"sounds";
+static const char *tag_theme_sounds_sound			=	  "sound";
+static const char *tag_theme_sounds_sound_file		=	  "sound-file";
+static const char *tag_theme_screenshot				=	"screen-shot";
+static const char *tag_theme_screenshot_fix_ar		=	  "fix-aspect-ratio";
+static const char *tag_theme_hints					=	"hints";
+static const char *tag_theme_hints_pulse			=     "pulse";
+static const char *tag_theme_hints_label_back		=     "back-label";
+static const char *tag_theme_hints_label_select		=     "select-label";
+static const char *tag_theme_hints_image_back		=     "back-image";
+static const char *tag_theme_hints_image_select		=     "select-image";
+static const char *tag_theme_hints_image_arrow		=     "arrow-image";
+static const char *tag_theme_game_sel				=   "game-selector";
+static const char *tag_theme_game_sel_selected		=     "selected";
+static const char *tag_theme_game_sel_tiles			=     "tiles";
+static const char *tag_theme_game_sel_tiles_tile	=       "tile";
 
 /* General (reused) XML tags */
-static const char *config_tag_name					= "name";
-static const char *config_tag_value					= "value";
-static const char *config_tag_id					= "id";
-static const char *config_tag_display_name			= "display-name";
-static const char *config_tag_platform				= "platform";
-static const char *config_tag_params				= "params";
-static const char *config_tag_param					= "param";
-static const char *config_tag_control				= "control";
-static const char *config_tag_event					= "event";
-static const char *config_tag_device				= "device";
-static const char *config_tag_type					= "type";
-static const char *config_tag_width					= "width";
-static const char *config_tag_height				= "height";
-static const char *config_tag_transparency			= "transparency";
-static const char *config_tag_zoom					= "zoom";
-static const char *config_tag_rotation				= "rotation";
-static const char *config_tag_image_file			= "image-file";
-static const char *config_tag_size					= "size";
-static const char *config_tag_font_scale			= "font-scale";
-static const char *config_tag_orientation			= "orientation";
-static const char *config_tag_offset1				= "primary-offset";
-static const char *config_tag_offset2				= "secondary-offset";
-static const char *config_tag_auto_hide				= "auto-hide";
-static const char *config_tag_angle_x				= "angle-x";
-static const char *config_tag_angle_y				= "angle-y";
-static const char *config_tag_angle_z				= "angle-z";
+static const char *tag_name				= "name";
+static const char *tag_value			= "value";
+static const char *tag_id				= "id";
+static const char *tag_display_name		= "display-name";
+static const char *tag_platform			= "platform";
+static const char *tag_params			= "params";
+static const char *tag_param			= "param";
+static const char *tag_control			= "control";
+static const char *tag_event			= "event";
+static const char *tag_device			= "device";
+static const char *tag_type				= "type";
+static const char *tag_width			= "width";
+static const char *tag_height			= "height";
+static const char *tag_transparency		= "transparency";
+static const char *tag_zoom				= "zoom";
+static const char *tag_rotation			= "rotation";
+static const char *tag_image_file		= "image-file";
+static const char *tag_size				= "size";
+static const char *tag_font_scale		= "font-scale";
+static const char *tag_orientation		= "orientation";
+static const char *tag_offset1			= "primary-offset";
+static const char *tag_offset2			= "secondary-offset";
+static const char *tag_auto_hide		= "auto-hide";
+static const char *tag_angle_x			= "x-angle";
+static const char *tag_angle_y			= "y-angle";
+static const char *tag_angle_z			= "z-angle";
+static const char *tag_position_x		= "x-position";
+static const char *tag_position_y		= "y-position";
+static const char *tag_position_z		= "z-position";
+static const char *tag_order			= "order";
 
-
-static const char *config_empty		= "";
-static const char *config_true		= "true";
-static const char *config_false		= "false";
-static const char *config_yes		= "yes";
-static const char *config_no		= "no";
-static const char *config_low		= "low";
-static const char *config_medium	= "medium";
-static const char *config_high		= "high";
-static const char *config_portrait	= "portrait";
-static const char *config_landscape	= "landscape";
-static const char *config_auto		= "auto";
+/* Common values */
+static const char *config_empty			= "";
+static const char *config_true			= "true";
+static const char *config_false			= "false";
+static const char *config_yes			= "yes";
+static const char *config_no			= "no";
+static const char *config_low			= "low";
+static const char *config_medium		= "medium";
+static const char *config_high			= "high";
+static const char *config_portrait		= "portrait";
+static const char *config_landscape		= "landscape";
+static const char *config_auto			= "auto";
 
 static const char *warn_alloc = "Warning: Couldn't allocate memory for '%s' object\n";
 static const char *warn_skip = "Warning: Skipping unrecognised XML element in '%s': '%s'\n";
@@ -312,14 +319,14 @@ struct config_platform *config_platform( const char *name ) {
 int config_read_param( xmlNode *node, struct config_param *param ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				strncpy( param->name, (char*)xmlNodeGetContent(node), CONFIG_PARAM_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_value ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_value ) == 0 ) {
 				strncpy( param->value, (char*)xmlNodeGetContent(node), CONFIG_PARAM_LENGTH );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_param, node->name );	
+				fprintf( stderr, warn_skip, tag_param, node->name );	
 			}
 		}
 		node = node->next;
@@ -330,7 +337,7 @@ int config_read_param( xmlNode *node, struct config_param *param ) {
 int config_read_emulator_params( xmlNode *node, struct config_emulator *emulator ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_param ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_param ) == 0 ) {
 				struct config_param *param = malloc( sizeof(struct config_param ) );
 				if( param ) {
 					memset( param, 0, sizeof(struct config_param ) );
@@ -339,12 +346,12 @@ int config_read_emulator_params( xmlNode *node, struct config_emulator *emulator
 					emulator->params = param;
 				}
 				else {
-					fprintf( stderr, warn_alloc, config_tag_param );
+					fprintf( stderr, warn_alloc, tag_param );
 					return -1;
 				}				
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_params, node->name );	
+				fprintf( stderr, warn_skip, tag_params, node->name );	
 			}
 		}
 		node = node->next;
@@ -355,20 +362,20 @@ int config_read_emulator_params( xmlNode *node, struct config_emulator *emulator
 int config_read_emulator( xmlNode *node, struct config_emulator *emulator ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				strncpy( emulator->name, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_display_name ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_display_name ) == 0 ) {
 				strncpy( emulator->display_name, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_emulator_executable ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_emulator_executable ) == 0 ) {
 				strncpy( emulator->executable, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_params ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_params ) == 0 ) {
 				config_read_emulator_params( node->children, emulator );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_emulator, node->name );	
+				fprintf( stderr, warn_skip, tag_emulator, node->name );	
 			}
 		}
 		node = node->next;
@@ -379,7 +386,7 @@ int config_read_emulator( xmlNode *node, struct config_emulator *emulator ) {
 int config_read_emulators( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_emulator ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_emulator ) == 0 ) {
 				struct config_emulator *emulator = malloc( sizeof(struct config_emulator ) );
 				if( emulator ) {
 					memset( emulator, 0, sizeof(struct config_emulator ) );
@@ -388,12 +395,12 @@ int config_read_emulators( xmlNode *node ) {
 					config.emulators = emulator;
 				}
 				else {
-					fprintf( stderr, warn_alloc, config_tag_emulator );
+					fprintf( stderr, warn_alloc, tag_emulator );
 					return -1;
 				}
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_emulators, node->name );	
+				fprintf( stderr, warn_skip, tag_emulators, node->name );	
 			}
 		}
 		node = node->next;
@@ -414,7 +421,7 @@ struct config_category *config_category( const char *name ) {
 			/* add new */
 			c = malloc( sizeof(struct config_category) );
 			if( c == NULL ) {
-				fprintf( stderr, warn_alloc, config_tag_game_category );
+				fprintf( stderr, warn_alloc, tag_game_category );
 			}
 			else {
 				memset( c, 0, sizeof(struct config_category) );
@@ -470,7 +477,7 @@ int config_read_game_category( xmlNode *node, struct config_game_category *gc ) 
 	if( node ) {
 		while( node ) {
 			if( node->type == XML_ELEMENT_NODE ) {
-				if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+				if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 					gc->category = config_category( (char*)xmlNodeGetContent(node) );
 				}
 			}
@@ -483,16 +490,16 @@ int config_read_game_category( xmlNode *node, struct config_game_category *gc ) 
 		node = tmp;
 		while( node ) {
 			if( node->type == XML_ELEMENT_NODE ) {
-				if( strcmp( (char*)node->name, config_tag_value ) == 0 ) {
+				if( strcmp( (char*)node->name, tag_value ) == 0 ) {
 					if( xmlNodeGetContent(node)[0] ) { 
 						gc->value = config_category_value( gc->category, (char*)xmlNodeGetContent(node) );
 					}
 				}
-				else if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+				else if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 					/* Already got it... */
 				}
 				else {
-					fprintf( stderr, warn_skip, config_tag_game_category, node->name );
+					fprintf( stderr, warn_skip, tag_game_category, node->name );
 				}
 			}
 			node = node->next;
@@ -503,7 +510,7 @@ int config_read_game_category( xmlNode *node, struct config_game_category *gc ) 
 		}
 	}
 	else {
-		fprintf( stderr, "Warning: game category has no '%s' element\n", config_tag_name );
+		fprintf( stderr, "Warning: game category has no '%s' element\n", tag_name );
 		return -1;
 	}
 	
@@ -513,7 +520,7 @@ int config_read_game_category( xmlNode *node, struct config_game_category *gc ) 
 int config_read_game_categories( xmlNode *node, struct config_game *game ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_game_category ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_game_category ) == 0 ) {
 				struct config_game_category *gc = malloc( sizeof(struct config_game_category) );
 				if( gc ) {
 					memset( gc, 0, sizeof(struct config_game_category) );
@@ -527,12 +534,12 @@ int config_read_game_categories( xmlNode *node, struct config_game *game ) {
 					}
 				}
 				else {
-					fprintf( stderr, warn_alloc, config_tag_game_category );
+					fprintf( stderr, warn_alloc, tag_game_category );
 					return -1;					
 				}
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_params, node->name );	
+				fprintf( stderr, warn_skip, tag_params, node->name );	
 			}
 		}
 		node = node->next;
@@ -543,7 +550,7 @@ int config_read_game_categories( xmlNode *node, struct config_game *game ) {
 int config_read_game_params( xmlNode *node, struct config_game *game ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_param ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_param ) == 0 ) {
 				struct config_param *param = malloc( sizeof(struct config_param ) );
 				if( param ) {
 					memset( param, 0, sizeof(struct config_param ) );
@@ -552,12 +559,12 @@ int config_read_game_params( xmlNode *node, struct config_game *game ) {
 					game->params = param;
 				}
 				else {
-					fprintf( stderr, warn_alloc, config_tag_param );
+					fprintf( stderr, warn_alloc, tag_param );
 					return -1;
 				}					
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_params, node->name );	
+				fprintf( stderr, warn_skip, tag_params, node->name );	
 			}
 		}
 		node = node->next;
@@ -568,32 +575,32 @@ int config_read_game_params( xmlNode *node, struct config_game *game ) {
 int config_read_game( xmlNode *node, struct config_game *game ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				strncpy( game->name, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_game_rom_image ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_game_rom_image ) == 0 ) {
 				strncpy( game->rom_image, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_game_logo_image ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_game_logo_image ) == 0 ) {
 				strncpy( game->logo_image, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_game_background_image ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_game_background_image ) == 0 ) {
 				strncpy( game->background_image, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_game_screen_shot ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_game_screen_shot ) == 0 ) {
 				strncpy( game->screen_shot, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_game_categories ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_game_categories ) == 0 ) {
 				config_read_game_categories( node->children, game );
 			}
-			else if( strcmp( (char*)node->name, config_tag_platform ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_platform ) == 0 ) {
 				game->platform = config_platform( (char*)xmlNodeGetContent(node) );
 			}
-			else if( strcmp( (char*)node->name, config_tag_params ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_params ) == 0 ) {
 				config_read_game_params( node->children, game );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_game, node->name );	
+				fprintf( stderr, warn_skip, tag_game, node->name );	
 			}
 		}
 		node = node->next;
@@ -622,7 +629,7 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 int config_read_games( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_game ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_game ) == 0 ) {
 				struct config_game *game = malloc( sizeof(struct config_game ) );
 				if( game ) {
 					memset( game, 0, sizeof(struct config_game ) );
@@ -631,12 +638,12 @@ int config_read_games( xmlNode *node ) {
 					config.games = game;
 				}
 				else {
-					fprintf( stderr, warn_alloc, config_tag_game );
+					fprintf( stderr, warn_alloc, tag_game );
 					return -1;
 				}
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_games, node->name );	
+				fprintf( stderr, warn_skip, tag_games, node->name );	
 			}
 		}
 		node = node->next;
@@ -647,14 +654,14 @@ int config_read_games( xmlNode *node ) {
 int config_read_device( xmlNode *node, struct config_control *control ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_type ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_type ) == 0 ) {
 				control->device_type = device_id( (char*)xmlNodeGetContent(node) );
 			}
-			else if( strcmp( (char*)node->name, config_tag_id ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_id ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &control->device_id );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_device, node->name );	
+				fprintf( stderr, warn_skip, tag_device, node->name );	
 			}
 		}
 		node = node->next;
@@ -666,14 +673,14 @@ int config_read_device( xmlNode *node, struct config_control *control ) {
 int config_read_control( xmlNode *node, struct config_control *control ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_type ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_type ) == 0 ) {
 				control->control_type = control_id( (char*)xmlNodeGetContent(node) );
 			}
-			else if( strcmp( (char*)node->name, config_tag_id ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_id ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &control->control_id );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_control, node->name );	
+				fprintf( stderr, warn_skip, tag_control, node->name );	
 			}
 		}
 		node = node->next;
@@ -690,26 +697,26 @@ int config_read_event( xmlNode *node ) {
 	memset( &tmp, 0, sizeof(struct config_control) );
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				if(!( event = event_id( (char*)xmlNodeGetContent(node) ) )) {
 					return -1;
 				}
 			}
-			else if( strcmp( (char*)node->name, config_tag_device ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_device ) == 0 ) {
 				if( config_read_device( node->children, &tmp ) != 0 ) {
 					return -1;
 				}
 			}
-			else if( strcmp( (char*)node->name, config_tag_control ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_control ) == 0 ) {
 				if( config_read_control( node->children, &tmp ) != 0 ) {
 					return -1;
 				}
 			}
-			else if( strcmp( (char*)node->name, config_tag_value ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_value ) == 0 ) {
 				value = (char*)xmlNodeGetContent(node);
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_event, node->name );	
+				fprintf( stderr, warn_skip, tag_event, node->name );	
 			}
 		}
 		node = node->next;
@@ -736,7 +743,7 @@ int config_read_event( xmlNode *node ) {
 					tmp.value = axis_dir_value( value );
 					break;
 				case CTRL_BUTTON:
-					config_read_integer( (char*)config_tag_id, value, &tmp.value );
+					config_read_integer( (char*)tag_id, value, &tmp.value );
 					break;
 				default:
 					break;
@@ -747,11 +754,11 @@ int config_read_event( xmlNode *node ) {
 				tmp.value = axis_dir_value( value );
 			}
 			else {
-				config_read_integer( (char*)config_tag_id, value, &tmp.value );
+				config_read_integer( (char*)tag_id, value, &tmp.value );
 			}
 			break;
 		default:
-			config_read_integer( (char*)config_tag_id, value, &tmp.value );
+			config_read_integer( (char*)tag_id, value, &tmp.value );
 			break;
 	}
 	
@@ -764,11 +771,11 @@ int config_read_event( xmlNode *node ) {
 int config_read_controls( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_event ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_event ) == 0 ) {
 				config_read_event( node->children );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_iface_controls, node->name );	
+				fprintf( stderr, warn_skip, tag_iface_controls, node->name );	
 			}
 		}
 		node = node->next;
@@ -779,47 +786,47 @@ int config_read_controls( xmlNode *node ) {
 int config_read_menu( xmlNode *node, struct config_menu *menu ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_image_file ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_image_file ) == 0 ) {
 				strncpy( menu->texture, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_menu_item_width ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_menu_item_width ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->item_width );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_menu_item_height ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_menu_item_height ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->item_height );
 			}
-			else if( strcmp( (char*)node->name, config_tag_font_scale ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_font_scale ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->font_scale );
 			}
-			else if( strcmp( (char*)node->name, config_tag_zoom ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_zoom ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->zoom );
 			}
-			else if( strcmp( (char*)node->name, config_tag_transparency ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_transparency ) == 0 ) {
 				config_read_percentage( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->transparency );
 			}
-			else if( strcmp( (char*)node->name, config_tag_offset1 ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_offset1 ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->offset1 );
 			}
-			else if( strcmp( (char*)node->name, config_tag_offset2 ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_offset2 ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->offset2 );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_menu_items_visible ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_menu_items_visible ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->max_visible );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_menu_spacing ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_menu_spacing ) == 0 ) {
 				if( strcasecmp( (char*)xmlNodeGetContent(node), config_auto ) == 0 )
 					menu->spacing = -1;
 				else
 					config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->spacing );
 			}
-			else if( strcmp( (char*)node->name, config_tag_orientation ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_orientation ) == 0 ) {
 				config_read_orientation( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->orientation );
 			}
-			else if( strcmp( (char*)node->name, config_tag_auto_hide ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_auto_hide ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->auto_hide );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_theme_menu, node->name );	
+				fprintf( stderr, warn_skip, tag_theme_menu, node->name );	
 			}
 		}
 		node = node->next;
@@ -830,32 +837,32 @@ int config_read_menu( xmlNode *node, struct config_menu *menu ) {
 int config_read_screenshot( xmlNode *node, struct config_screenshot *screenshot ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_offset1 ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_offset1 ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->offset1 );
 			}
-			else if( strcmp( (char*)node->name, config_tag_offset2 ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_offset2 ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->offset2 );
 			}
-			else if( strcmp( (char*)node->name, config_tag_angle_x ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_angle_x ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->angle_x );
 			}
-			else if( strcmp( (char*)node->name, config_tag_angle_y ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_angle_y ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->angle_y );
 			}
-			else if( strcmp( (char*)node->name, config_tag_angle_z ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_angle_z ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->angle_z );
 			}
-			else if( strcmp( (char*)node->name, config_tag_size ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_size ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->size );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_screenshot_fix_ar ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_screenshot_fix_ar ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->fix_aspect_ratio );
 			}
-			else if( strcmp( (char*)node->name, config_tag_auto_hide ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_auto_hide ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->auto_hide );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_theme_screenshot, node->name );	
+				fprintf( stderr, warn_skip, tag_theme_screenshot, node->name );	
 			}
 		}
 		node = node->next;
@@ -866,35 +873,131 @@ int config_read_screenshot( xmlNode *node, struct config_screenshot *screenshot 
 int config_read_hints( xmlNode *node, struct config_hints *hints ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_offset1 ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_offset1 ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &hints->offset1 );
 			}
-			else if( strcmp( (char*)node->name, config_tag_offset2 ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_offset2 ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &hints->offset2 );
 			}
-			else if( strcmp( (char*)node->name, config_tag_size ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_size ) == 0 ) {
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &hints->size );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_hints_pulse ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_hints_pulse ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &hints->pulse );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_hints_label_back ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_hints_label_back ) == 0 ) {
 				strncpy( hints->label_back, (char*)xmlNodeGetContent(node), CONFIG_LABEL_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_hints_label_select ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_hints_label_select ) == 0 ) {
 				strncpy( hints->label_select, (char*)xmlNodeGetContent(node), CONFIG_LABEL_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_hints_image_back ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_hints_image_back ) == 0 ) {
 				strncpy( hints->image_back, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_hints_image_select ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_hints_image_select ) == 0 ) {
 				strncpy( hints->image_select, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_hints_image_arrow ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_hints_image_arrow ) == 0 ) {
 				strncpy( hints->image_arrow, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_theme_hints, node->name );	
+				fprintf( stderr, warn_skip, tag_theme_hints, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+int config_read_game_selector_tile( xmlNode *node, struct config_game_sel_tile *tile ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_order ) == 0 ) {
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &tile->order );
+			}
+			else if( strcmp( (char*)node->name, tag_angle_x ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &tile->angle[0] );
+			}
+			else if( strcmp( (char*)node->name, tag_angle_y ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &tile->angle[1] );
+			}
+			else if( strcmp( (char*)node->name, tag_angle_z ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &tile->angle[2] );
+			}
+			else if( strcmp( (char*)node->name, tag_position_x ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &tile->pos[0] );
+			}
+			else if( strcmp( (char*)node->name, tag_position_y ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &tile->pos[1] );
+			}
+			else if( strcmp( (char*)node->name, tag_position_z ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &tile->pos[2] );
+			}
+			else if( strcmp( (char*)node->name, tag_transparency ) == 0 ) {
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &tile->transparency );
+			}
+			else {
+				fprintf( stderr, warn_skip, tag_theme_game_sel_tiles_tile, node->name );
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+int config_read_game_selector_tiles( xmlNode *node, struct config_game_sel *game_sel ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_theme_game_sel_tiles_tile ) == 0 ) {
+				struct config_game_sel_tile *tile = malloc( sizeof(struct config_game_sel_tile) );
+				if( tile ) {
+					memset( tile, 0, sizeof(struct config_game_sel_tile) );
+					config_read_game_selector_tile( node->children, tile );
+					tile->next = game_sel->tiles;
+					game_sel->tiles = tile;
+				}
+				else {
+					fprintf( stderr, warn_alloc, tag_theme_game_sel_tiles_tile );
+					return -1;
+				}
+			}
+			else {
+				fprintf( stderr, warn_skip, tag_theme_game_sel_tiles, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;	
+}
+
+int config_read_game_selector( xmlNode *node, struct config_game_sel *game_sel ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_offset1 ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->offset1 );
+			}
+			else if( strcmp( (char*)node->name, tag_offset2 ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->offset2 );
+			}
+			else if( strcmp( (char*)node->name, tag_size ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->size );
+			}
+			else if( strcmp( (char*)node->name, tag_theme_game_sel_selected ) == 0 ) {
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->selected );
+			}
+			else if( strcmp( (char*)node->name, tag_orientation ) == 0 ) {
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->orientation );
+			}
+			else if( strcmp( (char*)node->name, tag_theme_game_sel_tiles ) == 0 ) {
+				if( strcmp( (char*)node->parent->name, tag_themes_theme ) == 0 ) {
+					config_read_game_selector_tiles( node->children, game_sel );
+				}
+				else {
+					fprintf( stderr, "Warning: Game selector tiles may not be overridden in '%s'\n", (char*)node->parent->name );
+				}
+			}
+			else {
+				fprintf( stderr, warn_skip, tag_theme_game_sel, node->name );	
 			}
 		}
 		node = node->next;
@@ -905,17 +1008,17 @@ int config_read_hints( xmlNode *node, struct config_hints *hints ) {
 int config_read_graphics( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_iface_gfx_quality ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_iface_gfx_quality ) == 0 ) {
 				config_read_lmh( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_quality );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_gfx_max_width ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_gfx_max_width ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_max_width );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_gfx_max_height ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_gfx_max_height ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.gfx_max_height );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_iface_gfx, node->name );	
+				fprintf( stderr, warn_skip, tag_iface_gfx, node->name );	
 			}
 		}
 		node = node->next;
@@ -926,14 +1029,14 @@ int config_read_graphics( xmlNode *node ) {
 int config_read_font( xmlNode *node, struct config_theme *theme ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_theme_font_file ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_theme_font_file ) == 0 ) {
 				strncpy( theme->font_file, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_size ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_size ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &theme->font_size );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_theme_font, node->name );	
+				fprintf( stderr, warn_skip, tag_theme_font, node->name );	
 			}
 		}
 		node = node->next;
@@ -948,7 +1051,7 @@ int config_read_sound( xmlNode *node, struct config_theme *theme ) {
 	
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				name = (char*)xmlNodeGetContent(node);
 				break;
 			}
@@ -960,14 +1063,14 @@ int config_read_sound( xmlNode *node, struct config_theme *theme ) {
 		node = tmp;
 		while( node ) {
 			if( node->type == XML_ELEMENT_NODE ) {
-				if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+				if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 					/* Already got it */
 				}
-				else if( strcmp( (char*)node->name, config_tag_theme_sounds_sound_file ) == 0 ) {
+				else if( strcmp( (char*)node->name, tag_theme_sounds_sound_file ) == 0 ) {
 					strncpy( theme->sounds[id], (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 				}
 				else {
-					fprintf( stderr, warn_skip, config_tag_theme_sounds_sound, node->name );	
+					fprintf( stderr, warn_skip, tag_theme_sounds_sound, node->name );	
 				}
 			}
 			node = node->next;
@@ -983,11 +1086,11 @@ int config_read_sound( xmlNode *node, struct config_theme *theme ) {
 int config_read_sounds( xmlNode *node, struct config_theme *theme ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_theme_sounds_sound ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_theme_sounds_sound ) == 0 ) {
 				config_read_sound( node->children, theme );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_theme_sounds, node->name );	
+				fprintf( stderr, warn_skip, tag_theme_sounds, node->name );	
 			}
 		}
 		node = node->next;
@@ -998,17 +1101,17 @@ int config_read_sounds( xmlNode *node, struct config_theme *theme ) {
 int config_read_theme_background( xmlNode *node, struct config_theme *theme ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_image_file ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_image_file ) == 0 ) {
 				strncpy( theme->background_image, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_rotation ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_rotation ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &theme->background_rotation );
 			}
-			else if( strcmp( (char*)node->name, config_tag_transparency ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_transparency ) == 0 ) {
 				config_read_percentage( (char*)node->name, (char*)xmlNodeGetContent(node), &theme->background_transparency );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_theme_background, node->name );
+				fprintf( stderr, warn_skip, tag_theme_background, node->name );
 			}
 		}
 		node = node->next;
@@ -1019,23 +1122,23 @@ int config_read_theme_background( xmlNode *node, struct config_theme *theme ) {
 int config_read_interface_screen( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_width ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_width ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_width );
 			}
-			else if( strcmp( (char*)node->name, config_tag_height ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_height ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_height );
 			}
-			else if( strcmp( (char*)node->name, config_tag_rotation ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_rotation ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_rotation );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_screen_hflip ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_screen_hflip ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_hflip );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_screen_vflip ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_screen_vflip ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.screen_vflip );
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_iface_screen, node->name );	
+				fprintf( stderr, warn_skip, tag_iface_screen, node->name );	
 			}
 		}
 		node = node->next;
@@ -1046,47 +1149,50 @@ int config_read_interface_screen( xmlNode *node ) {
 int config_read_interface( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_iface_full_screen ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_iface_full_screen ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.full_screen );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_screen ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_screen ) == 0 ) {
 				config_read_interface_screen( node->children );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_frame_rate ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_frame_rate ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.frame_rate );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_controls ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_controls ) == 0 ) {
 				config_read_controls( node->children );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_gfx ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_gfx ) == 0 ) {
 				config_read_graphics( node->children );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_theme ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_theme ) == 0 ) {
 				strncpy( config.iface.theme_name, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				/* Ignore (for now) */
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_background ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_background ) == 0 ) {
 				/* Ignore (for now) */
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_font ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_font ) == 0 ) {
 				/* Ignore (for now) */
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_menu ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_menu ) == 0 ) {
 				/* Ignore (for now) */
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_sounds ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_sounds ) == 0 ) {
 				/* Ignore (for now) */
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_screenshot ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_screenshot ) == 0 ) {
 				/* Ignore (for now) */
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_hints ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
+				/* Ignore (for now) */
+			}
+			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
 				/* Ignore (for now) */
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
+				fprintf( stderr, warn_skip, tag_iface, node->name );	
 			}
 		}
 		node = node->next;
@@ -1097,29 +1203,32 @@ int config_read_interface( xmlNode *node ) {
 int config_read_theme( xmlNode *node, struct config_theme *theme ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				strncpy( theme->name, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_background ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_background ) == 0 ) {
 				config_read_theme_background( node->children, theme );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_font ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_font ) == 0 ) {
 				config_read_font( node->children, theme );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_menu ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_menu ) == 0 ) {
 				config_read_menu( node->children, &theme->menu );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_sounds ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_sounds ) == 0 ) {
 				config_read_sounds( node->children, theme );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_screenshot ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_screenshot ) == 0 ) {
 				config_read_screenshot( node->children, &theme->screenshot );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_hints ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
 				config_read_hints( node->children, &theme->hints );
 			}
+			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
+				config_read_game_selector( node->children, &theme->game_sel );
+			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_themes_theme, node->name );	
+				fprintf( stderr, warn_skip, tag_themes_theme, node->name );	
 			}
 		}
 		node = node->next;
@@ -1130,47 +1239,50 @@ int config_read_theme( xmlNode *node, struct config_theme *theme ) {
 int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_name ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				strncpy( theme->name, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_background ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_background ) == 0 ) {
 				config_read_theme_background( node->children, theme );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_font ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_font ) == 0 ) {
 				config_read_font( node->children, theme );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_menu ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_menu ) == 0 ) {
 				config_read_menu( node->children, &theme->menu );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_sounds ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_sounds ) == 0 ) {
 				config_read_sounds( node->children, theme );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_screenshot ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_screenshot ) == 0 ) {
 				config_read_screenshot( node->children, &theme->screenshot );
 			}
-			else if( strcmp( (char*)node->name, config_tag_theme_hints ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
 				config_read_hints( node->children, &theme->hints );
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_full_screen ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
+				config_read_game_selector( node->children, &theme->game_sel );
+			}
+			else if( strcmp( (char*)node->name, tag_iface_full_screen ) == 0 ) {
 				/* Ignore */
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_screen ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_screen ) == 0 ) {
 				/* Ignore */
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_frame_rate ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_frame_rate ) == 0 ) {
 				/* Ignore */
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_controls ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_controls ) == 0 ) {
 				/* Ignore */
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_gfx ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_gfx ) == 0 ) {
 				/* Ignore */
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface_theme ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_theme ) == 0 ) {
 				/* Ignore */
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_iface, node->name );	
+				fprintf( stderr, warn_skip, tag_iface, node->name );	
 			}
 		}
 		node = node->next;
@@ -1181,7 +1293,7 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 int config_read_themes( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_themes_theme ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_themes_theme ) == 0 ) {
 				struct config_theme *theme = malloc( sizeof(struct config_theme ) );
 				if( theme ) {
 					memcpy( theme, &default_theme, sizeof(struct config_theme ) );
@@ -1190,12 +1302,12 @@ int config_read_themes( xmlNode *node ) {
 					config.themes = theme;
 				}
 				else {
-					fprintf( stderr, warn_alloc, config_tag_themes_theme );
+					fprintf( stderr, warn_alloc, tag_themes_theme );
 					return -1;
 				}
 			}
 			else {
-				fprintf( stderr, warn_skip, config_tag_themes, node->name );	
+				fprintf( stderr, warn_skip, tag_themes, node->name );	
 			}
 		}
 		node = node->next;
@@ -1206,27 +1318,27 @@ int config_read_themes( xmlNode *node ) {
 int config_read( xmlNode *root ) {
 	xmlNode *node = root;
 	
-	if( strcmp( (char*)node->name, config_tag_root ) != 0 ) {
-		fprintf( stderr, "Warning: Config file does not contain '%s' root element\n", config_tag_root );
+	if( strcmp( (char*)node->name, tag_root ) != 0 ) {
+		fprintf( stderr, "Warning: Config file does not contain '%s' root element\n", tag_root );
 		return -1;
 	}
 	
 	node = node->children;
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, config_tag_emulators ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_emulators ) == 0 ) {
 				if( config_read_emulators( node->children ) != 0 )
 					return -1;
 			}
-			else if( strcmp( (char*)node->name, config_tag_games ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_games ) == 0 ) {
 				if( config_read_games( node->children ) != 0 )
 					return -1;
 			}
-			else if( strcmp( (char*)node->name, config_tag_iface ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface ) == 0 ) {
 				if( config_read_interface( node->children ) != 0 )
 					return -1;
 			}
-			else if( strcmp( (char*)node->name, config_tag_themes ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_themes ) == 0 ) {
 				if( config_read_themes( node->children ) != 0 )
 					return -1;
 			}
@@ -1276,25 +1388,25 @@ xmlChar *config_write_percentage( int value ) {
 }
 
 int config_write_emulators( xmlNodePtr root ) {
-	xmlNodePtr xml_emulators = xmlNewNode( NULL, (xmlChar*)config_tag_emulators );
+	xmlNodePtr xml_emulators = xmlNewNode( NULL, (xmlChar*)tag_emulators );
 	xmlNodePtr xml_emulator,xml_params,xml_param = NULL;
 	struct config_emulator *emulator = config.emulators;
 	
 	while( emulator ) {
 		struct config_param *param = emulator->params;
 		
-		xml_emulator = xmlNewNode( NULL, (xmlChar*)config_tag_emulator );
-		xmlNewChild( xml_emulator, NULL, (xmlChar*)config_tag_name, (xmlChar*)emulator->name );
-		xmlNewChild( xml_emulator, NULL, (xmlChar*)config_tag_display_name, (xmlChar*)emulator->display_name );
-		xmlNewChild( xml_emulator, NULL, (xmlChar*)config_tag_emulator_executable, (xmlChar*)emulator->executable );
+		xml_emulator = xmlNewNode( NULL, (xmlChar*)tag_emulator );
+		xmlNewChild( xml_emulator, NULL, (xmlChar*)tag_name, (xmlChar*)emulator->name );
+		xmlNewChild( xml_emulator, NULL, (xmlChar*)tag_display_name, (xmlChar*)emulator->display_name );
+		xmlNewChild( xml_emulator, NULL, (xmlChar*)tag_emulator_executable, (xmlChar*)emulator->executable );
 		
 		if( param ) {
-			xml_params = xmlNewNode( NULL, (xmlChar*)config_tag_params );
+			xml_params = xmlNewNode( NULL, (xmlChar*)tag_params );
 			while( param ) {
-				xml_param = xmlNewNode( NULL, (xmlChar*)config_tag_param );
-				xmlNewChild( xml_param, NULL, (xmlChar*)config_tag_name, (xmlChar*)param->name );
+				xml_param = xmlNewNode( NULL, (xmlChar*)tag_param );
+				xmlNewChild( xml_param, NULL, (xmlChar*)tag_name, (xmlChar*)param->name );
 				if( param->value[0] ) {
-					xmlNewChild( xml_param, NULL, (xmlChar*)config_tag_value, (xmlChar*)param->value );
+					xmlNewChild( xml_param, NULL, (xmlChar*)tag_value, (xmlChar*)param->value );
 				}
 				xmlAddChild( xml_params, xml_param );
 				param = param->next;
@@ -1311,52 +1423,52 @@ int config_write_emulators( xmlNodePtr root ) {
 
 int config_write_interface( xmlNodePtr root ) {
 	int i;
-	xmlNodePtr interface = xmlNewNode( NULL, (xmlChar*)config_tag_iface );
-	xmlNewChild( interface, NULL, (xmlChar*)config_tag_iface_full_screen, config_write_boolean( config.iface.full_screen ) );
+	xmlNodePtr interface = xmlNewNode( NULL, (xmlChar*)tag_iface );
+	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_full_screen, config_write_boolean( config.iface.full_screen ) );
 	
-	xmlNodePtr screen = xmlNewNode( NULL, (xmlChar*)config_tag_iface_screen );
-	xmlNewChild( screen, NULL, (xmlChar*)config_tag_width, config_write_numeric( config.iface.screen_width ) );
-	xmlNewChild( screen, NULL, (xmlChar*)config_tag_height, config_write_numeric( config.iface.screen_height ) );
-	xmlNewChild( screen, NULL, (xmlChar*)config_tag_rotation, config_write_numeric( config.iface.screen_rotation ) );
-	xmlNewChild( screen, NULL, (xmlChar*)config_tag_iface_screen_hflip, config_write_numeric( config.iface.screen_hflip ) );
-	xmlNewChild( screen, NULL, (xmlChar*)config_tag_iface_screen_vflip, config_write_numeric( config.iface.screen_vflip ) );
+	xmlNodePtr screen = xmlNewNode( NULL, (xmlChar*)tag_iface_screen );
+	xmlNewChild( screen, NULL, (xmlChar*)tag_width, config_write_numeric( config.iface.screen_width ) );
+	xmlNewChild( screen, NULL, (xmlChar*)tag_height, config_write_numeric( config.iface.screen_height ) );
+	xmlNewChild( screen, NULL, (xmlChar*)tag_rotation, config_write_numeric( config.iface.screen_rotation ) );
+	xmlNewChild( screen, NULL, (xmlChar*)tag_iface_screen_hflip, config_write_numeric( config.iface.screen_hflip ) );
+	xmlNewChild( screen, NULL, (xmlChar*)tag_iface_screen_vflip, config_write_numeric( config.iface.screen_vflip ) );
 	xmlAddChild( interface, screen );
 
-	xmlNodePtr graphics = xmlNewNode( NULL, (xmlChar*)config_tag_iface_gfx );
-	xmlNewChild( graphics, NULL, (xmlChar*)config_tag_iface_gfx_quality, config_write_lmh( config.iface.gfx_quality ) );
-	xmlNewChild( graphics, NULL, (xmlChar*)config_tag_iface_gfx_max_width, config_write_numeric( config.iface.gfx_max_width ) );
-	xmlNewChild( graphics, NULL, (xmlChar*)config_tag_iface_gfx_max_height, config_write_numeric( config.iface.gfx_max_height ) );
+	xmlNodePtr graphics = xmlNewNode( NULL, (xmlChar*)tag_iface_gfx );
+	xmlNewChild( graphics, NULL, (xmlChar*)tag_iface_gfx_quality, config_write_lmh( config.iface.gfx_quality ) );
+	xmlNewChild( graphics, NULL, (xmlChar*)tag_iface_gfx_max_width, config_write_numeric( config.iface.gfx_max_width ) );
+	xmlNewChild( graphics, NULL, (xmlChar*)tag_iface_gfx_max_height, config_write_numeric( config.iface.gfx_max_height ) );
 	xmlAddChild( interface, graphics );
 
-	xmlNodePtr controls = xmlNewNode( NULL, (xmlChar*)config_tag_iface_controls );
+	xmlNodePtr controls = xmlNewNode( NULL, (xmlChar*)tag_iface_controls );
 
 	for( i = 1 ; i < NUM_EVENTS ; i++ ) {
-		xmlNodePtr event = xmlNewNode( NULL, (xmlChar*)config_tag_event );
-		xmlNodePtr device = xmlNewNode( NULL, (xmlChar*)config_tag_device );
+		xmlNodePtr event = xmlNewNode( NULL, (xmlChar*)tag_event );
+		xmlNodePtr device = xmlNewNode( NULL, (xmlChar*)tag_device );
 		xmlNodePtr control = NULL;
 		
-		xmlNewChild( event, NULL, (xmlChar*)config_tag_name, (xmlChar*)event_name( i ) );
-		xmlNewChild( device, NULL, (xmlChar*)config_tag_type, (xmlChar*)device_name( config.iface.controls[i].device_type ) );
-		xmlNewChild( device, NULL, (xmlChar*)config_tag_id, config_write_numeric( config.iface.controls[i].device_id ) );
+		xmlNewChild( event, NULL, (xmlChar*)tag_name, (xmlChar*)event_name( i ) );
+		xmlNewChild( device, NULL, (xmlChar*)tag_type, (xmlChar*)device_name( config.iface.controls[i].device_type ) );
+		xmlNewChild( device, NULL, (xmlChar*)tag_id, config_write_numeric( config.iface.controls[i].device_id ) );
 		
 		switch( config.iface.controls[i].device_type ) {
 			case DEV_KEYBOARD:
-				xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)key_name( config.iface.controls[i].value ) );
+				xmlNewChild( event, NULL, (xmlChar*)tag_value, (xmlChar*)key_name( config.iface.controls[i].value ) );
 				break;
 			case DEV_JOYSTICK:
-				control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
-				xmlNewChild( control, NULL, (xmlChar*)config_tag_type, (xmlChar*)control_name( config.iface.controls[i].control_type ) );
-				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( config.iface.controls[i].control_id ) );
+				control = xmlNewNode( NULL, (xmlChar*)tag_control );
+				xmlNewChild( control, NULL, (xmlChar*)tag_type, (xmlChar*)control_name( config.iface.controls[i].control_type ) );
+				xmlNewChild( control, NULL, (xmlChar*)tag_id, config_write_numeric( config.iface.controls[i].control_id ) );
 				switch( config.iface.controls[i].control_type ) {
 					case CTRL_BUTTON:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, config_write_numeric( config.iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)tag_value, config_write_numeric( config.iface.controls[i].value ) );
 						break;
 					case CTRL_AXIS:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( config.iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)tag_value, (xmlChar*)axis_dir_name( config.iface.controls[i].value ) );
 						break;
 					case CTRL_HAT:
 					case CTRL_BALL:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)direction_name( config.iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)tag_value, (xmlChar*)direction_name( config.iface.controls[i].value ) );
 						break;
 					default:
 						fprintf( stderr, "Warning: Not sure how write control config for unknown joystick control type %d\n", config.iface.controls[i].control_type );
@@ -1364,15 +1476,15 @@ int config_write_interface( xmlNodePtr root ) {
 				}
 				break;
 			case DEV_MOUSE:
-				control = xmlNewNode( NULL, (xmlChar*)config_tag_control );
-				xmlNewChild( control, NULL, (xmlChar*)config_tag_type, (xmlChar*)control_name( config.iface.controls[i].control_type ) );
-				xmlNewChild( control, NULL, (xmlChar*)config_tag_id, config_write_numeric( config.iface.controls[i].control_id ) );
+				control = xmlNewNode( NULL, (xmlChar*)tag_control );
+				xmlNewChild( control, NULL, (xmlChar*)tag_type, (xmlChar*)control_name( config.iface.controls[i].control_type ) );
+				xmlNewChild( control, NULL, (xmlChar*)tag_id, config_write_numeric( config.iface.controls[i].control_id ) );
 				switch( config.iface.controls[i].control_type ) {
 					case CTRL_BUTTON:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, config_write_numeric( config.iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)tag_value, config_write_numeric( config.iface.controls[i].value ) );
 						break;
 					case CTRL_AXIS:
-						xmlNewChild( event, NULL, (xmlChar*)config_tag_value, (xmlChar*)axis_dir_name( config.iface.controls[i].value ) );
+						xmlNewChild( event, NULL, (xmlChar*)tag_value, (xmlChar*)axis_dir_name( config.iface.controls[i].value ) );
 						break;
 					default:
 						fprintf( stderr, "Warning: Not sure how write control config for unknown mouse control type %d\n", config.iface.controls[i].control_type );
@@ -1416,7 +1528,7 @@ int config_update( void ) {
 
 int config_write() {
 	xmlDocPtr config_doc = xmlNewDoc( (xmlChar*)"1.0" );
-	xmlNodePtr config_root = xmlNewNode( NULL, (xmlChar*)config_tag_root );
+	xmlNodePtr config_root = xmlNewNode( NULL, (xmlChar*)tag_root );
 	xmlDocSetRootElement( config_doc, config_root );
 	
 	config_write_interface( config_root );
@@ -1443,14 +1555,14 @@ int config_set_theme_override( struct config_theme *theme ) {
 			fprintf( stderr, "Warning: Couldn't get root element of config file\n" );
 		}
 		else {
-			if( strcmp( (char*)config_root->name, config_tag_root ) != 0 ) {
-				fprintf( stderr, "Warning: Config file does not contain '%s' root element\n", config_tag_root );
+			if( strcmp( (char*)config_root->name, tag_root ) != 0 ) {
+				fprintf( stderr, "Warning: Config file does not contain '%s' root element\n", tag_root );
 			}
 			else {
 				xmlNodePtr node = config_root->children;
 				while( node ) {
 					if( node->type == XML_ELEMENT_NODE ) {
-						if( strcmp( (char*)node->name, config_tag_iface ) == 0 ) {
+						if( strcmp( (char*)node->name, tag_iface ) == 0 ) {
 							retval = config_read_interface_theme( node->children, theme );
 							break;
 						}
@@ -1554,8 +1666,8 @@ int config_new( void ) {
 
 		/* Default theme */
 		default_theme.next = NULL;
-		strncpy( default_theme.name, config_default_theme_name, CONFIG_NAME_LENGTH );
-		snprintf( default_theme.menu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_menu_texture );
+		strncpy( default_theme.name, default_theme_name, CONFIG_NAME_LENGTH );
+		snprintf( default_theme.menu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_menu_texture );
 		default_theme.menu.item_width = 0.8;
 		default_theme.menu.item_height = 0.5;
 		default_theme.menu.font_scale = 0.0025;
@@ -1568,11 +1680,11 @@ int config_new( void ) {
 		default_theme.menu.orientation = CONFIG_LANDSCAPE;
 		default_theme.menu.auto_hide = 0;
 
-		strncpy( default_theme.background_image, BG_DEFAULT, CONFIG_FILE_NAME_LENGTH );
+		snprintf( default_theme.background_image, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_background );
 		default_theme.background_rotation = 20;
 		default_theme.background_transparency = 30;
 		
-		snprintf( default_theme.font_file, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_font );
+		snprintf( default_theme.font_file, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_font );
 		default_theme.font_size = 50;
 		
 		default_theme.screenshot.offset1 = -0.8;
@@ -1590,31 +1702,31 @@ int config_new( void ) {
 		default_theme.hints.pulse = 1;
 		strncpy( default_theme.hints.label_select, "Select", CONFIG_LABEL_LENGTH );
 		strncpy( default_theme.hints.label_back, "Back", CONFIG_LABEL_LENGTH );
-		snprintf( default_theme.hints.image_back, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_back_texture );
-		snprintf( default_theme.hints.image_select, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_select_texture );
-		snprintf( default_theme.hints.image_arrow, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, config_default_arrow_texture );
+		snprintf( default_theme.hints.image_back, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_back_texture );
+		snprintf( default_theme.hints.image_select, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_select_texture );
+		snprintf( default_theme.hints.image_arrow, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_arrow_texture );
 		
 		default_theme.game_sel.orientation = CONFIG_PORTRAIT;
 		default_theme.game_sel.offset1 = 0.9;
 		default_theme.game_sel.offset2 = 0;
 		default_theme.game_sel.size = 1.0;
 		default_theme.game_sel.tiles = NULL;
-		for( i = 0 ; i < config_default_num_tiles ; i++ ) {
+		for( i = 0 ; i < default_num_tiles ; i++ ) {
 			struct config_game_sel_tile *tile = malloc( sizeof(struct config_game_sel_tile) );
 			if( tile ) {
-				tile->order = config_default_num_tiles - i;
-				if( i == (config_default_num_tiles/2) )
+				tile->order = default_num_tiles - i;
+				if( i == (default_num_tiles/2) )
 					default_theme.game_sel.selected = tile->order;
 				
 				tile->transparency = 0;
 				
-				tile->pos[0] = config_default_tile_pos[i][0];
-				tile->pos[1] = config_default_tile_pos[i][1];
-				tile->pos[2] = config_default_tile_pos[i][2];
+				tile->pos[0] = default_tile_pos[i][0];
+				tile->pos[1] = default_tile_pos[i][1];
+				tile->pos[2] = default_tile_pos[i][2];
 				
-				tile->angle[0] = config_default_tile_angle[i][0];
-				tile->angle[1] = config_default_tile_angle[i][1];
-				tile->angle[2] = config_default_tile_angle[i][2];
+				tile->angle[0] = default_tile_angle[i][0];
+				tile->angle[1] = default_tile_angle[i][1];
+				tile->angle[2] = default_tile_angle[i][2];
 				
 				tile->next = default_theme.game_sel.tiles;
 				default_theme.game_sel.tiles = tile;
@@ -1626,7 +1738,7 @@ int config_new( void ) {
 		}
 		
 		for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
-			snprintf( default_theme.sounds[i], CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, (char*)config_default_sounds[i] );
+			snprintf( default_theme.sounds[i], CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, (char*)default_sounds[i] );
 		}
 		
 		config.themes = &default_theme;
@@ -1706,7 +1818,7 @@ int config_open( const char *filename ) {
 		return -1;
 	}
 
-	snprintf( config_directory, CONFIG_FILE_NAME_LENGTH, "%s/%s", passwd->pw_dir, config_default_dir );
+	snprintf( config_directory, CONFIG_FILE_NAME_LENGTH, "%s/%s", passwd->pw_dir, default_dir );
 #else
 	strcpy( config_directory, "." );
 #endif
@@ -1724,9 +1836,9 @@ int config_open( const char *filename ) {
 		FILE *file;
 		
 #ifdef __unix__
-		snprintf( config_filename, CONFIG_FILE_NAME_LENGTH, "%s/%s", config_directory, config_default_file );
+		snprintf( config_filename, CONFIG_FILE_NAME_LENGTH, "%s/%s", config_directory, default_file );
 #else
-		strcpy( config_filename, config_default_file );
+		strcpy( config_filename, default_file );
 #endif
 		file = fopen( config_filename, "r" );
 		if( file == NULL ) {
@@ -1766,10 +1878,10 @@ int config_open( const char *filename ) {
 
 			if( dot && strcasecmp( dot, ".xml" ) == 0 ) {
 #ifdef __WIN32__
-				if( strcasecmp( dentry->d_name, config_default_file ) != 0 ) {
+				if( strcasecmp( dentry->d_name, default_file ) != 0 ) {
 					snprintf( filename, CONFIG_FILE_NAME_LENGTH, "%s\\%s", config_directory, dentry->d_name );
 #else
-				if( strcmp( dentry->d_name, config_default_file ) != 0 ) {
+				if( strcmp( dentry->d_name, default_file ) != 0 ) {
 					snprintf( filename, CONFIG_FILE_NAME_LENGTH, "%s/%s", config_directory, dentry->d_name );
 #endif
 					if( config_read_file( filename ) != 0 ) {
