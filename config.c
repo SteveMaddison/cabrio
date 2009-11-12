@@ -934,7 +934,7 @@ int config_read_game_selector_tile( xmlNode *node, struct config_game_sel_tile *
 				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &tile->pos[2] );
 			}
 			else if( strcmp( (char*)node->name, tag_transparency ) == 0 ) {
-				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &tile->transparency );
+				config_read_percentage( (char*)node->name, (char*)xmlNodeGetContent(node), &tile->transparency );
 			}
 			else {
 				fprintf( stderr, warn_skip, tag_theme_game_sel_tiles_tile, node->name );
@@ -989,12 +989,8 @@ int config_read_game_selector( xmlNode *node, struct config_game_sel *game_sel )
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->orientation );
 			}
 			else if( strcmp( (char*)node->name, tag_theme_game_sel_tiles ) == 0 ) {
-				if( strcmp( (char*)node->parent->parent->name, tag_themes_theme ) == 0 ) {
-					config_read_game_selector_tiles( node->children, game_sel );
-				}
-				else {
-					fprintf( stderr, "Warning: Game selector tiles may not be overridden in '%s'\n", (char*)node->parent->parent->name );
-				}
+				game_sel->tiles = NULL;
+				config_read_game_selector_tiles( node->children, game_sel );
 			}
 			else {
 				fprintf( stderr, warn_skip, tag_theme_game_sel, node->name );	

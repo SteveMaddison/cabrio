@@ -50,6 +50,8 @@ int game_sel_init( void ) {
 		idle_time = 0;
 	}
 	
+	scale = config_get()->iface.theme.game_sel.size * IMAGE_SCALE;
+	
 	tile_count = 0;
 	
 	config_tile = config_get()->iface.theme.game_sel.tiles;
