@@ -77,14 +77,16 @@ int game_sel_init( void ) {
 		config_tile = config_tile->next;
 	}
 	
-	config_tile = config_get()->iface.theme.game_sel.tiles;
 	while( tile_count < config_tile_count ) {
+		config_tile = config_get()->iface.theme.game_sel.tiles;
+
 		while( config_tile ) {
 			if( config_tile->order == next )
 				break;
 			config_tile = config_tile->next;
 		}
-		if( config_tile->order == next ) {
+		
+		if( config_tile && config_tile->order == next ) {
 			struct game_tile *tile = malloc(sizeof(struct game_tile));
 			if( tile == NULL ) {
 				fprintf( stderr, "Error: Couldn't allocate memory for game tile\n" );
@@ -286,7 +288,8 @@ void game_sel_skip_back( void ) {
 
 void game_sel_retreat( void ) {
 	if( visible && !game_sel_busy() ) {
-		game_tile_current = game_tile_current->prev;
+		if( game_tile_current->prev )
+			game_tile_current = game_tile_current->prev;
 		scroll_direction = 1;
 		step = 1;
 	}
@@ -455,7 +458,10 @@ struct game_tile *next_dest( struct game_tile *tile ) {
 		}
 	}
 	else {
-		return tile->next;
+		if( tile->next )
+			return tile->next;
+		else
+			return tile;
 	}
 }
 
@@ -497,7 +503,8 @@ void game_sel_draw( void ) {
 			step += scroll_direction;
 			if( step > steps-1 ) {
 				game_sel_shuffle_forward( 1 );
-				game_tile_current = game_tile_current->next;
+				if( game_tile_current->next )
+					game_tile_current = game_tile_current->next;
 				step = 0;
 			}
 			game_sel_draw_step( step );
