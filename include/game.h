@@ -11,6 +11,12 @@ struct game_category {
 	char *value;
 };
 
+struct game_image {
+	struct game_image *next;
+	char *type;
+	char *file_name;
+};
+
 struct game {
 	struct game *next;
 	struct game *prev;
@@ -19,12 +25,10 @@ struct game {
 	struct platform *platform;
 	struct game_category *categories;
 	struct texture *texture;
-	char *name;
-	char *logo_image;
-	char *bg_image;
-	char *screen_shot;
-	char *rom_path;
 	struct config_param *params;
+	struct game_image *images;
+	char *name;
+	char *rom_path;
 };
 
 struct game *game_first( void );
@@ -38,9 +42,7 @@ int game_list_resume( void );
 void game_list_free( void );
 int game_load_texture( struct game *game );
 void game_free_texture( struct game *game );
-
-
-void game_free( struct game* game );
+const char *game_image_get( struct game *game, const char *type );
 
 #endif
 

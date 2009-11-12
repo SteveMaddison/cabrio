@@ -63,16 +63,25 @@ struct config_game_category {
 	struct config_category_value *value;
 };
 
+struct config_image_type {
+	struct config_image_type *next;
+	char name[CONFIG_NAME_LENGTH];
+};
+
+struct config_image {
+	struct config_image *next;
+	struct config_image_type *type;
+	char file_name[CONFIG_FILE_NAME_LENGTH];
+};
+
 struct config_game {
 	struct config_game *next;
 	char name[CONFIG_NAME_LENGTH];
 	char rom_image[CONFIG_FILE_NAME_LENGTH];
-	char logo_image[CONFIG_FILE_NAME_LENGTH];
-	char background_image[CONFIG_FILE_NAME_LENGTH];
-	char screen_shot[CONFIG_FILE_NAME_LENGTH];
 	struct config_game_category *categories;
 	struct config_param *params;
 	struct config_platform *platform;
+	struct config_image *images;
 };
 
 struct config_control {
@@ -177,6 +186,7 @@ struct config {
 	struct config_category *categories;
 	struct config_game *games;
 	struct config_theme *themes;
+	struct config_image_type *image_types;
 	struct config_iface iface;
 };
 
@@ -185,6 +195,7 @@ int config_open( const char *filename );
 int config_create( void );
 int config_write( void );
 int config_update( void );
+struct config_image_type *config_image_type( char *name );
 
 #endif
 

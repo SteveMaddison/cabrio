@@ -101,11 +101,10 @@ static const char *tag_emulator_executable			= 		"executable";
 static const char *tag_games						= "games";
 static const char *tag_game							=   "game";
 static const char *tag_game_rom_image				=     "rom-image";
-static const char *tag_game_logo_image				=     "logo-image";
-static const char *tag_game_background_image		=     "background-image";
 static const char *tag_game_categories				=     "categories";
 static const char *tag_game_category				=     "category";
-static const char *tag_game_screen_shot				=     "screen-shot";
+static const char *tag_game_images					=   "images";
+static const char *tag_game_images_image			=     "image";
 static const char *tag_iface						= "interface";
 static const char *tag_iface_full_screen			= 	"full-screen";
 static const char *tag_iface_screen					=   "screen";
@@ -578,6 +577,78 @@ int config_read_game_params( xmlNode *node, struct config_game *game ) {
 	return 0;
 }
 
+struct config_image_type *config_image_type( char *name ) {
+	struct config_image_type *t = config.image_types;
+
+	if( name && *name ) {
+		while( t ) {
+			if( strncasecmp( name, t->name, CONFIG_NAME_LENGTH ) == 0 )
+				break;
+			t = t->next;
+		}
+		if( t == NULL ) {
+			/* add new */
+			t = malloc( sizeof(struct config_image_type) );
+			if( t == NULL ) {
+				fprintf( stderr, warn_alloc, "image type" );
+			}
+			else {
+				memset( t, 0, sizeof(struct config_image_type) );
+				strncpy( t->name, name, CONFIG_NAME_LENGTH );
+				t->next = config.image_types;
+				config.image_types = t;
+			}
+		}
+	}
+	else {
+		t = NULL;
+	}
+	return t;
+}
+
+int config_read_image( xmlNode *node, struct config_image *image ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_type ) == 0 ) {
+				image->type = config_image_type( (char*)xmlNodeGetContent(node) );
+			}
+			else if( strcmp( (char*)node->name, tag_image_file ) == 0 ) {
+				strncpy( image->file_name, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}	
+			else {
+				fprintf( stderr, warn_skip, tag_game_images_image, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+int config_read_game_images( xmlNode *node, struct config_game *game ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_game_images_image ) == 0 ) {
+				struct config_image *image = malloc( sizeof(struct config_image ) );
+				if( image ) {
+					memset( image, 0, sizeof(struct config_image ) );
+					config_read_image( node->children, image );
+					image->next = game->images;
+					game->images = image;
+				}
+				else {
+					fprintf( stderr, warn_alloc, tag_param );
+					return -1;
+				}
+			}
+			else {
+				fprintf( stderr, warn_skip, tag_game_images, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_game( xmlNode *node, struct config_game *game ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
@@ -587,14 +658,8 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 			else if( strcmp( (char*)node->name, tag_game_rom_image ) == 0 ) {
 				strncpy( game->rom_image, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
-			else if( strcmp( (char*)node->name, tag_game_logo_image ) == 0 ) {
-				strncpy( game->logo_image, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
-			}
-			else if( strcmp( (char*)node->name, tag_game_background_image ) == 0 ) {
-				strncpy( game->background_image, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
-			}
-			else if( strcmp( (char*)node->name, tag_game_screen_shot ) == 0 ) {
-				strncpy( game->screen_shot, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			else if( strcmp( (char*)node->name, tag_game_images ) == 0 ) {
+				config_read_game_images( node->children, game );
 			}
 			else if( strcmp( (char*)node->name, tag_game_categories ) == 0 ) {
 				config_read_game_categories( node->children, game );

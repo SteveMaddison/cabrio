@@ -6,12 +6,15 @@
 #include "ogl.h"
 #include "sdl_ogl.h"
 #include "font.h"
+#include "image.h"
 
 struct game *game_start = NULL;
 struct game *game_filter_start = NULL;
 
 const int IMAGE_MAX_HEIGHT = 280;
 const int IMAGE_MAX_WIDTH = 360;
+
+char *game_image_type = NULL;
 
 struct game *game_first( void ) {
 	return game_filter_start;
@@ -50,40 +53,45 @@ void game_list_free( void ) {
 		game_free( game_start );
 }
 
-int game_load_texture( struct game *game ) {
+int game_load_texture( struct game *game ) {	
+	const char *filename = game_image_get( game, game_image_type );
+	
+	if( game->texture ) {
+		game_free_texture( game );
+	}
+
+	if( game && filename ) {
+		game->texture = sdl_create_texture( filename );
+	}
 	if( game->texture == NULL ) {
-		if( game && game->logo_image && game->logo_image[0] ) {
-			game->texture = sdl_create_texture( game->logo_image );
-		}
-		if( game->texture == NULL ) {
-			if( game && game->name && *game->name ) {
-				game->texture = font_create_texture( game->name );
-			}
-			else {
-				game->texture = font_create_texture( "<No Name>" );
-			}
-		}
-		
-		if( game->texture == NULL ) {
-			return -1;
+		if( game && game->name && *game->name ) {
+			game->texture = font_create_texture( game->name );
 		}
 		else {
-			if( game->texture->width > game->texture->height ) {
-				/* Landscape */
-				if( game->texture->width > IMAGE_MAX_WIDTH ) {
-					game->texture->height = (int)(float)game->texture->height/((float)game->texture->width/IMAGE_MAX_WIDTH);
-					game->texture->width = IMAGE_MAX_WIDTH;
-				}
+			game->texture = font_create_texture( "<No Name>" );
+		}
+	}
+
+	if( game->texture == NULL ) {
+		return -1;
+	}
+	else {
+		if( game->texture->width > game->texture->height ) {
+			/* Landscape */
+			if( game->texture->width > IMAGE_MAX_WIDTH ) {
+				game->texture->height = (int)(float)game->texture->height/((float)game->texture->width/IMAGE_MAX_WIDTH);
+				game->texture->width = IMAGE_MAX_WIDTH;
 			}
-			else {
-				/* Portrait (or square) */
-				if( game->texture->height > IMAGE_MAX_HEIGHT ) {
-					game->texture->width = (int)(float)game->texture->width/((float)game->texture->height/IMAGE_MAX_HEIGHT);
-					game->texture->height = IMAGE_MAX_HEIGHT;
-				}
+		}
+		else {
+			/* Portrait (or square) */
+			if( game->texture->height > IMAGE_MAX_HEIGHT ) {
+				game->texture->width = (int)(float)game->texture->width/((float)game->texture->height/IMAGE_MAX_HEIGHT);
+				game->texture->height = IMAGE_MAX_HEIGHT;
 			}
 		}
 	}
+
 	return 0;
 }
 
@@ -138,6 +146,8 @@ int game_list_create( void ) {
 	if( !config_game )
 		platform_add_unknown();
 	
+	game_image_type = (char*)image_type( IMAGE_LOGO );
+	
 	while( config_game ) {
 		game = malloc(sizeof(struct game));
 		if( game == NULL ) {
@@ -145,12 +155,10 @@ int game_list_create( void ) {
 		}
 		else {
 			struct config_game_category *config_game_category = config_game->categories;
+			struct config_image *config_game_image = config_game->images;
 			struct category *category = category_first();
 			game->name = config_game->name;
-			game->logo_image = config_game->logo_image;
 			game->texture = NULL;
-			game->bg_image = config_game->background_image;
-			game->screen_shot = config_game->screen_shot;
 			game->rom_path = config_game->rom_image;
 			game->params = config_game->params;
 			if( config_game->platform ) {
@@ -168,6 +176,21 @@ int game_list_create( void ) {
 				config_game_category = config_game_category->next;
 			}
 			
+			game->images = NULL;
+			while( config_game_image ) {
+				struct game_image *image = malloc( sizeof(struct game_image) );
+				if( image ) {
+					image->type = config_game_image->type->name;
+					image->file_name = config_game_image->file_name;
+					image->next = game->images;
+					game->images = image;
+				}
+				else {
+					fprintf( stderr, "Warning: Couldn't allocate game image object for '%s'\n", config_game_image->file_name );
+				}
+				config_game_image = config_game_image->next;
+			}
+
 			/* Fill in "unknown" values for categories undefined for this game. */
 			if( category) {
 				do {
@@ -207,21 +230,20 @@ int game_list_create( void ) {
 	}
 	game_list_unfilter();
 
-/*
-	if( game_start ) {
+/*  if( game_start ) {
 		struct game *g = game_start;
 		while( g ) {
-			struct game_category *gc = g->categories;
+			struct game_image *gi = g->images;
 			printf("Game: %s\n", g->name );
-			while( gc ) {
-				printf("  '%s' = '%s'\n", gc->name, gc->value );
-				gc = gc->next;
+			while( gi ) {
+				printf("  '%s' = '%s'\n", gi->type, gi->file_name );
+				gi = gi->next;
 			}
 			g = g->all_next;
 			if( g == game_start ) break;
 		}
-	}
-*/
+	}*/
+
 	return 0;
 }
 
@@ -304,5 +326,19 @@ int game_list_unfilter( void ) {
 	game_filter_start = game_start;
 
 	return count;
+}
+
+const char *game_image_get( struct game *game, const char *type ) {
+	struct game_image *image = game->images;
+	
+	if( type ) {
+		while( image ) {
+			if( strcasecmp( image->type, type ) == 0 )
+				return image->file_name;
+			image = image->next;
+		}
+	}
+	
+	return NULL;
 }
 
