@@ -382,8 +382,8 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 		GLfloat height = (((GLfloat)tile->game->texture->height * tile_scale)/2) * xfactor;
 		if( config->orientation == CONFIG_PORTRAIT ) {
 			glTranslatef(
-				-(tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step)) * scale * xfactor,
-				-(tile->pos[Y] + config->offset2 + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * scale * xfactor,
+				(tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step)) * scale * xfactor,
+				(tile->pos[Y] + config->offset2 + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * scale * xfactor,
 				tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/steps)*step) -5.0
 				);
 			glRotatef( tile->angle[X] + (((dest->angle[X]-tile->angle[X])/steps)*step), 1.0, 0.0, 0.0 );
@@ -392,8 +392,8 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 		}
 		else {
 			glTranslatef(
-				(tile->pos[Y] + config->offset2 + (((dest->pos[Y]-tile->pos[Y])/steps)*step) * scale * xfactor),
-				(tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step) * scale * xfactor),
+				-(tile->pos[Y] + config->offset2 + (((dest->pos[Y]-tile->pos[Y])/steps)*step) * scale * xfactor),
+				-(tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step) * scale * xfactor),
 				tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/steps)*step) -5.0
 				);
 			glRotatef( -(tile->angle[Y] + (((dest->angle[Y]-tile->angle[Y])/steps)*step)), 1.0, 0.0, 0.0 );
