@@ -54,7 +54,7 @@ int game_sel_init( void ) {
 	
 	x_scale = config_get()->iface.theme.game_sel.size_x;
 	y_scale = config_get()->iface.theme.game_sel.size_y;
-	tile_scale = config_get()->iface.theme.game_sel.tile_size * ((x_scale + y_scale)/2) * IMAGE_SCALE;
+	tile_scale = config_get()->iface.theme.game_sel.tile_size * IMAGE_SCALE;
 	
 	tile_count = 0;
 	
@@ -396,8 +396,8 @@ void game_tile_draw( struct game_tile* tile, struct game_tile* dest, int step ) 
 		}
 		else {
 			glTranslatef(
-				-(tile->pos[Y] + config->offset2 + (((dest->pos[Y]-tile->pos[Y])/steps)*step) * x_scale * xfactor),
-				-(tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step) * y_scale * xfactor),
+				-((tile->pos[Y] + config->offset2 + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * x_scale * xfactor),
+				-((tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step)) * y_scale * xfactor),
 				tile->pos[Z] + (((dest->pos[Z]-tile->pos[Z])/steps)*step) -5.0
 				);
 			glRotatef( -(tile->angle[Y] + (((dest->angle[Y]-tile->angle[Y])/steps)*step)), 1.0, 0.0, 0.0 );

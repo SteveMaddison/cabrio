@@ -3,9 +3,10 @@
 #include "ogl.h"
 #include "sdl_ogl.h"
 
+static const GLfloat DEPTH = -8;
 static const GLfloat max_size = 280;
 static const GLfloat hidden_offset = -4.0;
-static const GLfloat scale_fator = 0.0072;
+static const GLfloat scale_fator = 0.0144;
 static struct texture *current = NULL;
 #define NUM_NOISE 3
 static struct texture *noise[NUM_NOISE];
@@ -149,10 +150,10 @@ void screenshot_draw( void ) {
 
 		ogl_load_alterego();
 		if( hide_direction == -1 ) {
-			glTranslatef( (hidden_offset - hide_offset) * xfactor, config->offset2 * yfactor, -4 );
+			glTranslatef( (hidden_offset - hide_offset) * xfactor, config->offset2 * yfactor, DEPTH );
 		}
 		else {
-			glTranslatef( (config->offset1 + hide_offset) * xfactor, config->offset2 * yfactor, -4 );
+			glTranslatef( (config->offset1 + hide_offset) * xfactor, config->offset2 * yfactor, DEPTH );
 		}
 		glRotatef( config->angle_x, 1.0, 0.0, 0.0 );
 		glRotatef( config->angle_y, 0.0, 1.0, 0.0 );

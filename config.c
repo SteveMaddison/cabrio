@@ -1695,7 +1695,7 @@ int config_new( void ) {
 		snprintf( default_theme.font_file, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_font );
 		default_theme.font_size = 50;
 		
-		default_theme.screenshot.offset1 = -0.8;
+		default_theme.screenshot.offset1 = -1.6;
 		default_theme.screenshot.offset2 = 0;
 		default_theme.screenshot.angle_x = -10;
 		default_theme.screenshot.angle_y = 30;
