@@ -993,7 +993,7 @@ int config_read_game_selector( xmlNode *node, struct config_game_sel *game_sel )
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->selected );
 			}
 			else if( strcmp( (char*)node->name, tag_orientation ) == 0 ) {
-				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->orientation );
+				config_read_orientation( (char*)node->name, (char*)xmlNodeGetContent(node), &game_sel->orientation );
 			}
 			else if( strcmp( (char*)node->name, tag_theme_game_sel_tiles ) == 0 ) {
 				game_sel->tiles = NULL;
