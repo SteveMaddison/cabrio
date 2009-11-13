@@ -14,7 +14,7 @@ struct game_category {
 struct game_image {
 	struct game_image *next;
 	char *type;
-	char *file_name;
+	char file_name[CONFIG_FILE_NAME_LENGTH];
 };
 
 struct game {

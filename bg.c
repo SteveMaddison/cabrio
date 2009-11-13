@@ -1,6 +1,8 @@
 #include "bg.h"
 #include "config.h"
 #include "sdl_ogl.h"
+#include "image.h"
+#include "location.h"
 
 static const GLfloat BG_SIZE = 7.0;
 static struct texture *bg_clear_texture = NULL;
@@ -15,9 +17,11 @@ void bg_clear( void ) {
 
 int bg_init( void ) {
 	const struct config *config = config_get();
+	char filename[CONFIG_FILE_NAME_LENGTH];
 
 	if( config->iface.theme.background_image[0] != '\0' ) {
-		bg_clear_texture = sdl_create_texture( config->iface.theme.background_image );	
+		location_get_path( image_type(IMAGE_BACKGROUND), config->iface.theme.background_image , filename );
+		bg_clear_texture = sdl_create_texture( filename );	
 		if( bg_clear_texture == NULL ) {
 			fprintf( stderr, "Warning: couldn't create default background texture from '%s'\n", config->iface.theme.background_image );
 			return -1;

@@ -15,6 +15,7 @@
 #include "setup.h"
 #include "focus.h"
 #include "snap.h"
+#include "location.h"
 
 static int supress_wait = 0;
 
@@ -56,6 +57,8 @@ int main( int argc, char *arvg[] ) {
 		if( config_create() != 0 )
 			return -1;
 	}
+
+	location_init();
 
 	/* Large game lists take a while to initialise,
 	 * so show the background while we wait... */
@@ -129,6 +132,7 @@ int main( int argc, char *arvg[] ) {
 	hint_free();
 	font_free();
 	bg_free();
+	location_free();
 	event_free();
 	sdl_free();
 

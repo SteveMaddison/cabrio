@@ -190,6 +190,17 @@ struct config_iface {
 	struct config_theme theme;
 };
 
+struct config_location_type {
+	struct config_location_type *next;
+	char name[CONFIG_NAME_LENGTH];
+};
+
+struct config_location {
+	struct config_location *next;
+	struct config_location_type *type;
+	char directory[CONFIG_FILE_NAME_LENGTH];
+};
+
 struct config {
 	struct config_emulator *emulators;
 	struct config_platform *platforms;
@@ -197,6 +208,8 @@ struct config {
 	struct config_game *games;
 	struct config_theme *themes;
 	struct config_image_type *image_types;
+	struct config_location *locations;
+	struct config_location_type *location_types;
 	struct config_iface iface;
 };
 

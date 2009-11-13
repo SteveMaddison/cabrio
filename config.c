@@ -149,6 +149,8 @@ static const char *tag_theme_game_sel_selected		=     "selected";
 static const char *tag_theme_game_sel_tile_size		=     "tile-size";
 static const char *tag_theme_game_sel_tiles			=     "tiles";
 static const char *tag_theme_game_sel_tiles_tile	=       "tile";
+static const char *tag_locations					= "locations";
+static const char *tag_locations_location			=   "location";
 
 /* General (reused) XML tags */
 static const char *tag_name				= "name";
@@ -183,6 +185,7 @@ static const char *tag_position_x		= "x-position";
 static const char *tag_position_y		= "y-position";
 static const char *tag_position_z		= "z-position";
 static const char *tag_order			= "order";
+static const char *tag_directory		= "directory";
 
 /* Common values */
 static const char *config_empty			= "";
@@ -1432,6 +1435,78 @@ int config_read_themes( xmlNode *node ) {
 	return 0;
 }
 
+struct config_location_type *config_location_type( char *name ) {
+	struct config_location_type *t = config.location_types;
+
+	if( name && *name ) {
+		while( t ) {
+			if( strncasecmp( name, t->name, CONFIG_NAME_LENGTH ) == 0 )
+				break;
+			t = t->next;
+		}
+		if( t == NULL ) {
+			/* add new */
+			t = malloc( sizeof(struct config_location_type) );
+			if( t == NULL ) {
+				fprintf( stderr, warn_alloc, "location type" );
+			}
+			else {
+				memset( t, 0, sizeof(struct config_location_type) );
+				strncpy( t->name, name, CONFIG_NAME_LENGTH );
+				t->next = config.location_types;
+				config.location_types = t;
+			}
+		}
+	}
+	else {
+		t = NULL;
+	}
+	return t;
+}
+
+int config_read_location( xmlNode *node, struct config_location *location ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_type ) == 0 ) {
+				location->type = config_location_type( (char*)xmlNodeGetContent(node) );
+			}
+			else if( strcmp( (char*)node->name, tag_directory ) == 0 ) {
+				strncpy( location->directory, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}	
+			else {
+				fprintf( stderr, warn_skip, tag_locations_location, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+int config_read_locations( xmlNode *node ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_locations_location ) == 0 ) {
+				struct config_location *location = malloc( sizeof(struct config_location ) );
+				if( location ) {
+					memset( location, 0, sizeof(struct config_location ) );
+					config_read_location( node->children, location );
+					location->next = config.locations;
+					config.locations = location;
+				}
+				else {
+					fprintf( stderr, warn_alloc, tag_locations_location );
+					return -1;
+				}
+			}
+			else {
+				fprintf( stderr, warn_skip, tag_locations, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read( xmlNode *root ) {
 	xmlNode *node = root;
 	
@@ -1457,6 +1532,10 @@ int config_read( xmlNode *root ) {
 			}
 			else if( strcmp( (char*)node->name, tag_themes ) == 0 ) {
 				if( config_read_themes( node->children ) != 0 )
+					return -1;
+			}
+			else if( strcmp( (char*)node->name, tag_locations ) == 0 ) {
+				if( config_read_locations( node->children ) != 0 )
 					return -1;
 			}
 			else {
@@ -1781,6 +1860,9 @@ int config_new( void ) {
 			config.iface.controls[i].value = key_id( (char*)keys[i] );
 		}
 
+		config.locations = NULL;
+		config.location_types = NULL;
+		
 		/* Default theme */
 		default_theme.next = NULL;
 		strncpy( default_theme.name, default_theme_name, CONFIG_NAME_LENGTH );

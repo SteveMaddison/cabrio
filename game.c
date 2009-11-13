@@ -7,6 +7,7 @@
 #include "sdl_ogl.h"
 #include "font.h"
 #include "image.h"
+#include "location.h"
 
 struct game *game_start = NULL;
 struct game *game_filter_start = NULL;
@@ -181,7 +182,7 @@ int game_list_create( void ) {
 				struct game_image *image = malloc( sizeof(struct game_image) );
 				if( image ) {
 					image->type = config_game_image->type->name;
-					image->file_name = config_game_image->file_name;
+					location_get_path( image->type, config_game_image->file_name, image->file_name );
 					image->next = game->images;
 					game->images = image;
 				}
