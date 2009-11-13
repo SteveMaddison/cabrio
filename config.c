@@ -130,8 +130,8 @@ static const char *tag_theme_font_file				=     "font-file";
 static const char *tag_theme_sounds					=	"sounds";
 static const char *tag_theme_sounds_sound			=	  "sound";
 static const char *tag_theme_sounds_sound_file		=	  "sound-file";
-static const char *tag_theme_screenshot				=	"screen-shot";
-static const char *tag_theme_screenshot_fix_ar		=	  "fix-aspect-ratio";
+static const char *tag_theme_snap					=	"snap";
+static const char *tag_theme_snap_fix_ar			=	  "fix-aspect-ratio";
 static const char *tag_theme_hints					=	"hints";
 static const char *tag_theme_hints_pulse			=     "pulse";
 static const char *tag_theme_hints_label_back		=     "back-label";
@@ -905,35 +905,35 @@ int config_read_menu( xmlNode *node, struct config_menu *menu ) {
 	return 0;
 }
 
-int config_read_screenshot( xmlNode *node, struct config_screenshot *screenshot ) {
+int config_read_snap( xmlNode *node, struct config_snap *snap ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, tag_offset1 ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->offset1 );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &snap->offset1 );
 			}
 			else if( strcmp( (char*)node->name, tag_offset2 ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->offset2 );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &snap->offset2 );
 			}
 			else if( strcmp( (char*)node->name, tag_angle_x ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->angle_x );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &snap->angle_x );
 			}
 			else if( strcmp( (char*)node->name, tag_angle_y ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->angle_y );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &snap->angle_y );
 			}
 			else if( strcmp( (char*)node->name, tag_angle_z ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->angle_z );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &snap->angle_z );
 			}
 			else if( strcmp( (char*)node->name, tag_size ) == 0 ) {
-				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->size );
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &snap->size );
 			}
-			else if( strcmp( (char*)node->name, tag_theme_screenshot_fix_ar ) == 0 ) {
-				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->fix_aspect_ratio );
+			else if( strcmp( (char*)node->name, tag_theme_snap_fix_ar ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &snap->fix_aspect_ratio );
 			}
 			else if( strcmp( (char*)node->name, tag_auto_hide ) == 0 ) {
-				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &screenshot->auto_hide );
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &snap->auto_hide );
 			}
 			else {
-				fprintf( stderr, warn_skip, tag_theme_screenshot, node->name );	
+				fprintf( stderr, warn_skip, tag_theme_snap, node->name );	
 			}
 		}
 		node = node->next;
@@ -1255,7 +1255,7 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, tag_theme_sounds ) == 0 ) {
 				/* Ignore (for now) */
 			}
-			else if( strcmp( (char*)node->name, tag_theme_screenshot ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_theme_snap ) == 0 ) {
 				/* Ignore (for now) */
 			}
 			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
@@ -1291,8 +1291,8 @@ int config_read_theme( xmlNode *node, struct config_theme *theme ) {
 			else if( strcmp( (char*)node->name, tag_theme_sounds ) == 0 ) {
 				config_read_sounds( node->children, theme );
 			}
-			else if( strcmp( (char*)node->name, tag_theme_screenshot ) == 0 ) {
-				config_read_screenshot( node->children, &theme->screenshot );
+			else if( strcmp( (char*)node->name, tag_theme_snap ) == 0 ) {
+				config_read_snap( node->children, &theme->snap );
 			}
 			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
 				config_read_hints( node->children, &theme->hints );
@@ -1327,8 +1327,8 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 			else if( strcmp( (char*)node->name, tag_theme_sounds ) == 0 ) {
 				config_read_sounds( node->children, theme );
 			}
-			else if( strcmp( (char*)node->name, tag_theme_screenshot ) == 0 ) {
-				config_read_screenshot( node->children, &theme->screenshot );
+			else if( strcmp( (char*)node->name, tag_theme_snap ) == 0 ) {
+				config_read_snap( node->children, &theme->snap );
 			}
 			else if( strcmp( (char*)node->name, tag_theme_hints ) == 0 ) {
 				config_read_hints( node->children, &theme->hints );
@@ -1760,14 +1760,14 @@ int config_new( void ) {
 		snprintf( default_theme.font_file, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_font );
 		default_theme.font_size = 50;
 		
-		default_theme.screenshot.offset1 = -1.6;
-		default_theme.screenshot.offset2 = 0;
-		default_theme.screenshot.angle_x = -10;
-		default_theme.screenshot.angle_y = 30;
-		default_theme.screenshot.angle_z = 10;
-		default_theme.screenshot.size = 1.0;
-		default_theme.screenshot.fix_aspect_ratio = 1;
-		default_theme.screenshot.auto_hide = 1;
+		default_theme.snap.offset1 = -1.6;
+		default_theme.snap.offset2 = 0;
+		default_theme.snap.angle_x = -10;
+		default_theme.snap.angle_y = 30;
+		default_theme.snap.angle_z = 10;
+		default_theme.snap.size = 1.0;
+		default_theme.snap.fix_aspect_ratio = 1;
+		default_theme.snap.auto_hide = 1;
 
 		default_theme.hints.offset1 = -2.0;
 		default_theme.hints.offset2 = -1.2;

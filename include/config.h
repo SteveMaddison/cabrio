@@ -126,7 +126,7 @@ struct config_game_sel {
 	struct config_game_sel_tile *tiles;
 };
 
-struct config_screenshot {
+struct config_snap {
 	float offset1;
 	float offset2;
 	float angle_x;
@@ -160,7 +160,7 @@ struct config_theme {
 	char sounds[NUM_SOUNDS][CONFIG_FILE_NAME_LENGTH];
 	struct config_menu menu;
 	struct config_game_sel game_sel;
-	struct config_screenshot screenshot;
+	struct config_snap snap;
 	struct config_hints hints;
 };
 

@@ -28,7 +28,7 @@ int snap_init( void ) {
 	noise[2] = sdl_create_texture( DATA_DIR "/pixmaps/noise3.png" );
 	
 	if( noise[0] == 0 || noise[1] == 0 || noise[2] == 0 ) {
-		fprintf( stderr, "Warning: Couldn't create texture for screenshot noise\n" );
+		fprintf( stderr, "Warning: Couldn't create texture for snap noise\n" );
 		return -1;
 	}
 	
@@ -45,7 +45,7 @@ int snap_init( void ) {
 		steps = MAX_STEPS;
 	}
 	
-	scale = config->iface.theme.screenshot.size * scale_fator;
+	scale = config->iface.theme.snap.size * scale_fator;
 	
 	return 0;
 }
@@ -72,7 +72,7 @@ int snap_resume( void ) {
 }
 
 int snap_set( const char *filename ) {
-	const struct config_screenshot *config = &config_get()->iface.theme.screenshot;
+	const struct config_snap *config = &config_get()->iface.theme.snap;
 
 	snap_clear();
 	if( filename && filename[0] ) {
@@ -132,7 +132,7 @@ void snap_hide( void ) {
 }
 
 void snap_draw( void ) {
-	const struct config_screenshot *config = &config_get()->iface.theme.screenshot;
+	const struct config_snap *config = &config_get()->iface.theme.snap;
 	
 	if( visible ) {
 		GLfloat xfactor = ogl_xfactor();
