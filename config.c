@@ -25,6 +25,7 @@ struct config config;
 static const char *default_background		= "\\pixmaps\\default_background.jpg";
 static const char *default_font				= "\\fonts\\FreeSans.ttf";
 static const char *default_menu_texture		= "\\pixmaps\\menu_item.png";
+static const char *default_submenu_texture	= "\\pixmaps\\submenu_item.png";
 static const char *default_back_texture		= "\\pixmaps\\button_blue.png";
 static const char *default_select_texture	= "\\pixmaps\\button_red.png";
 static const char *default_arrow_texture	= "\\pixmaps\\arrow.png";
@@ -39,6 +40,7 @@ static const char *default_dir 				= ".cabrio"; /* Relative to user's home */
 static const char *default_background		= "/pixmaps/default_background.jpg";
 static const char *default_font 			= "/fonts/FreeSans.ttf";
 static const char *default_menu_texture		= "/pixmaps/menu_item.png";
+static const char *default_submenu_texture	= "/pixmaps/submenu_item.png";
 static const char *default_back_texture		= "/pixmaps/button_blue.png";
 static const char *default_select_texture	= "/pixmaps/button_red.png";
 static const char *default_arrow_texture	= "/pixmaps/arrow.png";
@@ -124,6 +126,9 @@ static const char *tag_theme_menu_item_width		=     "item-width";
 static const char *tag_theme_menu_item_height		=     "item-height";
 static const char *tag_theme_menu_items_visible		=     "items-visible";
 static const char *tag_theme_menu_spacing			=     "spacing";
+static const char *tag_theme_submenu				=   "submenu";
+static const char *tag_theme_submenu_item_width		=     "item-width";
+static const char *tag_theme_submenu_item_height	=     "item-height";
 static const char *tag_theme_background				=   "background";
 static const char *tag_theme_font					=   "font";
 static const char *tag_theme_font_file				=     "font-file";
@@ -905,6 +910,36 @@ int config_read_menu( xmlNode *node, struct config_menu *menu ) {
 	return 0;
 }
 
+int config_read_submenu( xmlNode *node, struct config_submenu *submenu ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_image_file ) == 0 ) {
+				strncpy( submenu->texture, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, tag_theme_submenu_item_width ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &submenu->item_width );
+			}
+			else if( strcmp( (char*)node->name, tag_theme_submenu_item_height ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &submenu->item_height );
+			}
+			else if( strcmp( (char*)node->name, tag_font_scale ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &submenu->font_scale );
+			}
+			else if( strcmp( (char*)node->name, tag_offset1 ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &submenu->offset1 );
+			}
+			else if( strcmp( (char*)node->name, tag_offset2 ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &submenu->offset2 );
+			}
+			else {
+				fprintf( stderr, warn_skip, tag_theme_submenu, node->name );
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_snap( xmlNode *node, struct config_snap *snap ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
@@ -1252,6 +1287,9 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, tag_theme_menu ) == 0 ) {
 				/* Ignore (for now) */
 			}
+			else if( strcmp( (char*)node->name, tag_theme_submenu ) == 0 ) {
+				/* Ignore (for now) */
+			}
 			else if( strcmp( (char*)node->name, tag_theme_sounds ) == 0 ) {
 				/* Ignore (for now) */
 			}
@@ -1288,6 +1326,9 @@ int config_read_theme( xmlNode *node, struct config_theme *theme ) {
 			else if( strcmp( (char*)node->name, tag_theme_menu ) == 0 ) {
 				config_read_menu( node->children, &theme->menu );
 			}
+			else if( strcmp( (char*)node->name, tag_theme_submenu ) == 0 ) {
+				config_read_submenu( node->children, &theme->submenu );
+			}
 			else if( strcmp( (char*)node->name, tag_theme_sounds ) == 0 ) {
 				config_read_sounds( node->children, theme );
 			}
@@ -1323,6 +1364,9 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 			}
 			else if( strcmp( (char*)node->name, tag_theme_menu ) == 0 ) {
 				config_read_menu( node->children, &theme->menu );
+			}
+			else if( strcmp( (char*)node->name, tag_theme_submenu ) == 0 ) {
+				config_read_submenu( node->children, &theme->submenu );
 			}
 			else if( strcmp( (char*)node->name, tag_theme_sounds ) == 0 ) {
 				config_read_sounds( node->children, theme );
@@ -1740,10 +1784,11 @@ int config_new( void ) {
 		/* Default theme */
 		default_theme.next = NULL;
 		strncpy( default_theme.name, default_theme_name, CONFIG_NAME_LENGTH );
+		
 		snprintf( default_theme.menu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_menu_texture );
-		default_theme.menu.item_width = 0.8;
-		default_theme.menu.item_height = 0.5;
-		default_theme.menu.font_scale = 0.0025;
+		default_theme.menu.item_width = 1;
+		default_theme.menu.item_height = 0.6;
+		default_theme.menu.font_scale = 1;
 		default_theme.menu.zoom = 1.2;
 		default_theme.menu.transparency = 40;
 		default_theme.menu.offset1 = -1.2;
@@ -1752,6 +1797,13 @@ int config_new( void ) {
 		default_theme.menu.spacing = -1;
 		default_theme.menu.orientation = CONFIG_LANDSCAPE;
 		default_theme.menu.auto_hide = 0;
+
+		snprintf( default_theme.submenu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_submenu_texture );
+		default_theme.submenu.item_width = 1;
+		default_theme.submenu.item_height = 0.25;
+		default_theme.submenu.font_scale = 1;
+		default_theme.submenu.offset1 = -0.3;
+		default_theme.submenu.offset2 = 0.0;
 
 		snprintf( default_theme.background_image, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_background );
 		default_theme.background_rotation = 20;

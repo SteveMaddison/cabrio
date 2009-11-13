@@ -107,6 +107,15 @@ struct config_menu {
 	int auto_hide;
 };
 
+struct config_submenu {
+	char texture[CONFIG_FILE_NAME_LENGTH];
+	float item_width;
+	float item_height;
+	float font_scale;
+	float offset1;
+	float offset2;
+};
+
 struct config_game_sel_tile {
 	struct config_game_sel_tile *next;
 	int order;
@@ -159,6 +168,7 @@ struct config_theme {
 	int font_size;
 	char sounds[NUM_SOUNDS][CONFIG_FILE_NAME_LENGTH];
 	struct config_menu menu;
+	struct config_submenu submenu;
 	struct config_game_sel game_sel;
 	struct config_snap snap;
 	struct config_hints hints;

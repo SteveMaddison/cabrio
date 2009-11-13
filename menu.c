@@ -8,6 +8,8 @@
 #include "font.h"
 
 static const int MAX_STEPS = 100;
+static const GLfloat FONT_SCALE = 0.0025;
+static const GLfloat ITEM_SCALE = 0.8;
 static const GLfloat MENU_DEPTH = -6;
 static const GLfloat SPACING_FACTOR = 1.1;
 static const char *menu_text_all = "All";
@@ -145,9 +147,9 @@ int menu_init( void ) {
 	if( spacing < 0 ) {
 		/* auto spacing */
 		if( config->iface.theme.menu.orientation == CONFIG_LANDSCAPE )
-			spacing = (GLfloat)config->iface.theme.menu.item_width * zoom * SPACING_FACTOR;
+			spacing = (GLfloat)config->iface.theme.menu.item_width * ITEM_SCALE * zoom * SPACING_FACTOR;
 		else
-			spacing = (GLfloat)config->iface.theme.menu.item_height * zoom * SPACING_FACTOR;
+			spacing = (GLfloat)config->iface.theme.menu.item_height * ITEM_SCALE * zoom * SPACING_FACTOR;
 	}
 
 	min_alpha = 1.0 - (GLfloat)(config->iface.theme.menu.transparency)/100;
@@ -232,21 +234,21 @@ int menu_init( void ) {
 	tile_end->x = tile_end->prev->x;
 	tile_end->y = tile_end->prev->y;
 
-	arrow_retreat.size = config->iface.theme.menu.item_height * 1.5;
-	arrow_advance.size = config->iface.theme.menu.item_height * 1.5;
+	arrow_retreat.size = config->iface.theme.menu.item_height * ITEM_SCALE * 1.5;
+	arrow_advance.size = config->iface.theme.menu.item_height * ITEM_SCALE * 1.5;
 	if( config->iface.theme.menu.orientation == CONFIG_LANDSCAPE ) {
-		arrow_retreat.x = tile_start->x - config->iface.theme.menu.item_width;
+		arrow_retreat.x = tile_start->x - (config->iface.theme.menu.item_width * ITEM_SCALE);
 		arrow_retreat.y = tile_start->y;
-		arrow_advance.x = tile_end->x + config->iface.theme.menu.item_width;
+		arrow_advance.x = tile_end->x + (config->iface.theme.menu.item_width * ITEM_SCALE);
 		arrow_advance.y = tile_end->y;
 		arrow_retreat.angle = 90;
 		arrow_advance.angle = -90;
 	}
 	else {
 		arrow_retreat.x = tile_start->x;
-		arrow_retreat.y = tile_start->y + config->iface.theme.menu.item_height;
+		arrow_retreat.y = tile_start->y + (config->iface.theme.menu.item_height * ITEM_SCALE);
 		arrow_advance.x = tile_end->x;
-		arrow_advance.y = tile_end->y - config->iface.theme.menu.item_height;
+		arrow_advance.y = tile_end->y - (config->iface.theme.menu.item_height * ITEM_SCALE);
 		arrow_retreat.angle = 0;
 		arrow_advance.angle = 180;	
 	}
@@ -296,14 +298,14 @@ void menu_draw( void ) {
 					}
 				}
 	
-				mx = (config->item_width/2) * xfactor * item_zoom;
-				my = (config->item_height/2) * xfactor * item_zoom;
+				mx = ((config->item_width * ITEM_SCALE)/2) * xfactor * item_zoom;
+				my = ((config->item_height * ITEM_SCALE)/2) * xfactor * item_zoom;
 				
 				/* Make sure the text fits inside the box */
-				tx = ((GLfloat)tile->item->message->width * config->font_scale) * xfactor * item_zoom;
+				tx = ((GLfloat)tile->item->message->width * (config->font_scale * FONT_SCALE)) * xfactor * item_zoom;
 				if( tx > mx )
 					tx = mx * 0.9;
-				ty = ((GLfloat)tile->item->message->height * config->font_scale) * xfactor * item_zoom;
+				ty = ((GLfloat)tile->item->message->height * (config->font_scale * FONT_SCALE)) * xfactor * item_zoom;
 				if( ty > my )
 					ty = my * 0.9;
 	

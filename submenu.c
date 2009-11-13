@@ -9,14 +9,15 @@
 #include "hint.h"
 #include "sound.h"
 
+static const GLfloat ITEM_SCALE = 1.2;
+static const GLfloat FONT_SCALE = 0.0035;
 static struct texture *texture = NULL;
 static int type = MENU_ALL;
 static int selected = 0;
 static int items = 0;
-static const GLfloat item_width = 1.2;
-static const GLfloat item_height = 0.3;
-static const GLfloat font_scale = 0.0035;
-static const GLfloat offset = 0.3;
+static GLfloat item_width = 1.0;
+static GLfloat item_height = 0.25;
+static GLfloat font_scale = 1.0;
 static const char *VALUE_UNKNOWN = "???";
 static const int MAX_STEPS = 100;
 
@@ -33,10 +34,16 @@ static int hide_direction = 0;
 static int visible = 0;
 
 int submenu_init( void ) {
+	const struct config_submenu *config = &config_get()->iface.theme.submenu;
+
 	if( config_get()->iface.frame_rate )
 		steps = config_get()->iface.frame_rate/4;
 	else
 		steps = MAX_STEPS;
+	
+	item_width = config->item_width * ITEM_SCALE;
+	item_height = config->item_height * ITEM_SCALE;
+	font_scale = config->font_scale * FONT_SCALE;
 	
 	return 0;
 }
@@ -50,7 +57,7 @@ int submenu_items( void ) {
 }
 
 int submenu_load_texture( void ) {
-	texture = sdl_create_texture( DATA_DIR "/pixmaps/submenu_item.png" );
+	texture = sdl_create_texture( config_get()->iface.theme.submenu.texture );
 	if( texture == NULL ) {
 		fprintf( stderr, "Warning: Couldn't create texture for submenu items\n" );
 		return -1;
@@ -94,18 +101,19 @@ int submenu_resume( void ) {
 }
 
 int submenu_create( struct menu_item *item ) {
+	const struct config_submenu *config = &config_get()->iface.theme.submenu;
 	items = 0;
 	
 	if( submenu_load_texture() != 0 )
 		return -1;
 
 	arrow_retreat.x = menu_tile_selected()->x - ((item_width/2) + item_height);
-	arrow_retreat.y = (menu_tile_selected()->y - offset);
+	arrow_retreat.y = (menu_tile_selected()->y + config->offset1 );
 	arrow_retreat.size = item_height * 2;
 	arrow_retreat.angle = 90;
 	
 	arrow_advance.x = menu_tile_selected()->x + ((item_width/2) + item_height);
-	arrow_advance.y = (menu_tile_selected()->y - offset);
+	arrow_advance.y = (menu_tile_selected()->y + config->offset1 );
 	arrow_advance.size = item_height * 2;
 	arrow_advance.angle = -90;
 
@@ -264,6 +272,8 @@ void submenu_free( void ) {
 }
 
 void submenu_draw( void ) {
+	const struct config_submenu *config = &config_get()->iface.theme.submenu;
+	
 	if( visible && type != MENU_ALL ) {
 		GLfloat xfactor = ogl_xfactor();
 		GLfloat yfactor = ogl_yfactor();
@@ -302,7 +312,7 @@ void submenu_draw( void ) {
 		}
 
 		ogl_load_alterego();
-		glTranslatef( menu_tile_selected()->x * xfactor, (menu_tile_selected()->y- offset) * yfactor, -6 );
+		glTranslatef( (menu_tile_selected()->x + config->offset2 ) * xfactor, (menu_tile_selected()->y + config->offset1) * yfactor, -6 );
 		glColor4f( 1.0, 1.0, 1.0, 1.0 );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
