@@ -1,4 +1,4 @@
-#include "screenshot.h"
+#include "snap.h"
 #include "config.h"
 #include "ogl.h"
 #include "sdl_ogl.h"
@@ -20,7 +20,7 @@ static int visible = 0;
 static char last_file[CONFIG_FILE_NAME_LENGTH];
 static GLfloat scale = 0.006;
 
-int screenshot_init( void ) {
+int snap_init( void ) {
 	const struct config *config = config_get();
 	int i;
 	noise[0] = sdl_create_texture( DATA_DIR "/pixmaps/noise1.png" );
@@ -50,7 +50,7 @@ int screenshot_init( void ) {
 	return 0;
 }
 
-void screenshot_free( void ) {
+void snap_free( void ) {
 	int i;
 	
 	for( i = 0 ; i < NUM_NOISE ; i++ )
@@ -61,20 +61,20 @@ void screenshot_free( void ) {
 	current = NULL;
 }
 
-void screenshot_pause( void ) {
-	screenshot_free();
+void snap_pause( void ) {
+	snap_free();
 }
 
-int screenshot_resume( void ) {
-	int ret = screenshot_init();
-	screenshot_set( last_file );
+int snap_resume( void ) {
+	int ret = snap_init();
+	snap_set( last_file );
 	return ret;
 }
 
-int screenshot_set( const char *filename ) {
+int snap_set( const char *filename ) {
 	const struct config_screenshot *config = &config_get()->iface.theme.screenshot;
 
-	screenshot_clear();
+	snap_clear();
 	if( filename && filename[0] ) {
 		strncpy( last_file, filename, CONFIG_FILE_NAME_LENGTH );
 		current = sdl_create_texture( filename );
@@ -110,13 +110,13 @@ int screenshot_set( const char *filename ) {
 	return 0;
 }
 
-void screenshot_clear( void ) {
+void snap_clear( void ) {
 	if( current )
 		ogl_free_texture( current );
 	current = NULL;
 }
 
-void screenshot_show( void ) {
+void snap_show( void ) {
 	if( !visible ) {
 		visible = 1;
 		hide_direction = 1;
@@ -124,14 +124,14 @@ void screenshot_show( void ) {
 	}
 }
 
-void screenshot_hide( void ) {
+void snap_hide( void ) {
 	if( visible ) {
 		hide_direction = -1;
 		step = steps;
 	}	
 }
 
-void screenshot_draw( void ) {
+void snap_draw( void ) {
 	const struct config_screenshot *config = &config_get()->iface.theme.screenshot;
 	
 	if( visible ) {

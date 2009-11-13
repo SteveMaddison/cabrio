@@ -10,7 +10,7 @@
 #include "emulator.h"
 #include "menu.h"
 #include "submenu.h"
-#include "screenshot.h"
+#include "snap.h"
 #include "image.h"
 
 static const GLfloat IMAGE_SCALE = 0.005;
@@ -352,7 +352,7 @@ int game_sel_event( int event ) {
 int game_sel_got_focus( void ) {
 	if( game_sel_populate( game_first() ) == 0 ) {
 		game_sel_show();
-		screenshot_show();
+		snap_show();
 		idle_counter = 1;
 		
 		if( config_get()->iface.theme.menu.auto_hide ) {
@@ -369,7 +369,7 @@ int game_sel_got_focus( void ) {
 
 int game_sel_lost_focus( void ) {
 	game_sel_hide(HIDE_TARGET_START);
-	screenshot_hide();
+	snap_hide();
 
 	if( config_get()->iface.theme.menu.auto_hide ) {
 		menu_show();
@@ -496,7 +496,7 @@ void game_sel_draw( void ) {
 		idle_counter--;
 		if( idle_counter == 0 && game_tile_current->game ) {
 			bg_set( game_image_get( game_tile_current->game, image_type(IMAGE_BACKGROUND) ) );
-			screenshot_set( game_image_get( game_tile_current->game, image_type(IMAGE_SCREENSHOT) ) );
+			snap_set( game_image_get( game_tile_current->game, image_type(IMAGE_SCREENSHOT) ) );
 		}
 	}
 	if( visible ) {

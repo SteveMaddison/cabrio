@@ -18,12 +18,12 @@
 #include "sound.h"
 #include "font.h"
 #include "event.h"
-#include "screenshot.h"
+#include "snap.h"
 
 
 void pause_all( void ) {
 	sound_pause();
-	screenshot_pause();
+	snap_pause();
 	game_sel_pause();
 	game_list_pause();
 	submenu_pause();
@@ -50,7 +50,7 @@ int resume_all( void ) {
 		return -7;
 	if( game_sel_resume() != 0 )
 		return -8;
-	if( screenshot_resume() != 0 )
+	if( snap_resume() != 0 )
 		return -9;
 	sound_resume();
 	

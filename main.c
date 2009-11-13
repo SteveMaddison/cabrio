@@ -14,7 +14,7 @@
 #include "event.h"
 #include "setup.h"
 #include "focus.h"
-#include "screenshot.h"
+#include "snap.h"
 
 static int supress_wait = 0;
 
@@ -85,7 +85,7 @@ int main( int argc, char *arvg[] ) {
 	if( game_list_create() != 0 )
 		return -1;
 		
-	if( screenshot_init() != 0 )
+	if( snap_init() != 0 )
 		return -1;
 
 	sound_init();
@@ -97,7 +97,7 @@ int main( int argc, char *arvg[] ) {
 	while( !quit ) {
 		ogl_clear();
 		bg_draw();
-		screenshot_draw();
+		snap_draw();
 		hint_draw();
 		menu_draw();
 		submenu_draw();
@@ -122,6 +122,7 @@ int main( int argc, char *arvg[] ) {
 	}
 
 	sound_free();
+	snap_free();
 	game_list_free();
 	submenu_free();
 	menu_free();
