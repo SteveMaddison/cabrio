@@ -1410,13 +1410,23 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 	return 0;
 }
 
-int config_read_themes( xmlNode *node ) {
+int config_read_themes( xmlNode *node, const char *filename ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, tag_themes_theme ) == 0 ) {
 				struct config_theme *theme = malloc( sizeof(struct config_theme ) );
 				if( theme ) {
+					char *slash = NULL;
 					memcpy( theme, &default_theme, sizeof(struct config_theme ) );
+					strncpy( theme->directory, filename, CONFIG_FILE_NAME_LENGTH );
+#ifdef __WIN32__
+					slash = strrchr( theme->directory, '\\' );
+#else
+					slash = strrchr( theme->directory, '/' );
+#endif
+					if( slash )
+						*slash = '\0';
+
 					config_read_theme( node->children, theme );
 					theme->next = config.themes;
 					config.themes = theme;
@@ -1507,7 +1517,7 @@ int config_read_locations( xmlNode *node ) {
 	return 0;
 }
 
-int config_read( xmlNode *root ) {
+int config_read( xmlNode *root, const char *filename ) {
 	xmlNode *node = root;
 	
 	if( strcmp( (char*)node->name, tag_root ) != 0 ) {
@@ -1531,7 +1541,7 @@ int config_read( xmlNode *root ) {
 					return -1;
 			}
 			else if( strcmp( (char*)node->name, tag_themes ) == 0 ) {
-				if( config_read_themes( node->children ) != 0 )
+				if( config_read_themes( node->children, filename ) != 0 )
 					return -1;
 			}
 			else if( strcmp( (char*)node->name, tag_locations ) == 0 ) {
@@ -1865,6 +1875,7 @@ int config_new( void ) {
 		
 		/* Default theme */
 		default_theme.next = NULL;
+		strncpy( default_theme.directory, "", CONFIG_FILE_NAME_LENGTH );
 		strncpy( default_theme.name, default_theme_name, CONFIG_NAME_LENGTH );
 		
 		snprintf( default_theme.menu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_menu_texture );
@@ -2002,7 +2013,7 @@ int config_read_file( char *filename ) {
 			fprintf( stderr, "Warning: Couldn't get root element of config file\n" );
 		}
 		else {
-			retval = config_read( config_root );
+			retval = config_read( config_root, filename );
 		}
 		xmlFreeDoc( config_doc );
 	}

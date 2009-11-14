@@ -3,6 +3,7 @@
 #include "config.h"
 #include "sdl_ogl.h"
 #include "focus.h"
+#include "location.h"
 
 #define ORIENT_LEFT		0
 #define ORIENT_RIGHT	1
@@ -24,20 +25,28 @@ static struct texture *text_back_message = NULL;
 
 int hint_init( void ) {
 	const struct config_hints *config = &config_get()->iface.theme.hints;
+	char filename[CONFIG_FILE_NAME_LENGTH];
 	
-	if(!( arrow_texture = sdl_create_texture( config->image_arrow ) ))
+	location_get_theme_path( config->image_arrow, filename );
+	if(!( arrow_texture = sdl_create_texture( filename ) ))
 		return -1;
-	if(!( back_texture = sdl_create_texture( config->image_back ) ))
+
+	location_get_theme_path( config->image_back, filename );
+	if(!( back_texture = sdl_create_texture( filename ) ))
 		return -1;
-	if(!( select_texture = sdl_create_texture( config->image_select ) ))
-		return -1;	
+
+	location_get_theme_path( config->image_select, filename );
+	if(!( select_texture = sdl_create_texture( filename ) ))
+		return -1;
+		
 	if(!( text_select_message = font_create_texture( config->label_select ) ))
 		return -1;
+
 	if(!( text_back_message = font_create_texture( config->label_back ) ))
 		return -1;
 
 	if( config_get()->iface.frame_rate )
-		alpha_step = config_get()->iface.frame_rate/6000;
+		alpha_step = (GLfloat)config_get()->iface.frame_rate/6000;
 	else
 		alpha_step = ALPHA_STEP_MIN;
 	

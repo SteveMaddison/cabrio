@@ -64,3 +64,4 @@ struct texture *font_create_texture( const char *text ) {
 	}
 	return t;
 }
+

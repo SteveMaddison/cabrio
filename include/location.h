@@ -16,6 +16,7 @@ int location_init( void );
 void location_free( void );
 struct location *location_get_first( const char *type );
 int location_get_path( const char *type, const char *filename, char *path );
+int location_get_theme_path( const char *filename, char *path );
 
 #endif
 

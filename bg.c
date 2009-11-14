@@ -20,10 +20,10 @@ int bg_init( void ) {
 	char filename[CONFIG_FILE_NAME_LENGTH];
 
 	if( config->iface.theme.background_image[0] != '\0' ) {
-		location_get_path( image_type(IMAGE_BACKGROUND), config->iface.theme.background_image , filename );
+		location_get_theme_path( config->iface.theme.background_image , filename );
 		bg_clear_texture = sdl_create_texture( filename );	
 		if( bg_clear_texture == NULL ) {
-			fprintf( stderr, "Warning: couldn't create default background texture from '%s'\n", config->iface.theme.background_image );
+			fprintf( stderr, "Warning: couldn't create background texture from '%s'\n", config->iface.theme.background_image );
 			return -1;
 		}
 	}

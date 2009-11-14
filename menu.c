@@ -6,6 +6,7 @@
 #include "focus.h"
 #include "sound.h"
 #include "font.h"
+#include "location.h"
 
 static const int MAX_STEPS = 100;
 static const GLfloat FONT_SCALE = 0.0025;
@@ -46,7 +47,10 @@ int menu_item_count( void ) {
 }
 
 int menu_load_texture( void ) {
-	menu_texture = sdl_create_texture( config_get()->iface.theme.menu.texture );
+	char filename[CONFIG_FILE_NAME_LENGTH];
+	
+	location_get_theme_path( config_get()->iface.theme.menu.texture, filename );
+	menu_texture = sdl_create_texture( filename );
 	if( menu_texture == 0 ) {
 		fprintf( stderr, "Warning: Couldn't create texture for menu items\n" );
 		return -1;

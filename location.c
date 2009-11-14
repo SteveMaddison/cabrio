@@ -90,42 +90,79 @@ struct location *location_get_first( const char *type ) {
 	return NULL;
 }
 
-int location_get_path( const char *type, const char *filename, char *path ) {
-	struct location *location = location_get_first( type );
-	char test[CONFIG_FILE_NAME_LENGTH];
-
-	if( type && filename ) {
+int location_absolute( const char *filename ) {
 #ifdef __WIN32__
 		if( filename[0] && filename[1] == ':' ) {
 #else
 		if( filename[0] == '/' ) {
 #endif
-			/* File name is already absolute - return the original value */
+			return 0;
+		}
+		return -1;
+}
+
+int location_try_directory( const char *dir, const char *filename, char *path ) {
+	char test[CONFIG_FILE_NAME_LENGTH];
+
+	if( dir && filename ) {
+#ifdef __WIN32__
+		snprintf( test, CONFIG_FILE_NAME_LENGTH, "%s\\%s", dir, filename );
+#else
+		snprintf( test, CONFIG_FILE_NAME_LENGTH, "%s/%s", dir, filename );
+#endif
+		if( open( test, O_RDONLY ) == -1 ) {
+			if( errno != ENOENT ) {
+				fprintf( stderr, "Warning: Couldn't read file '%s': %s\n", test, strerror( errno ) );
+				return -1;
+			}
+		}
+		else {
+			strncpy( path, test, CONFIG_FILE_NAME_LENGTH );
+			return 0;
+		}
+	}
+
+	return -1;
+}
+
+int location_get_path( const char *type, const char *filename, char *path ) {
+	struct location *location = location_get_first( type );
+
+	if( type && filename ) {
+		if( location_absolute( filename ) == 0 ) {
 			strncpy( path, filename, CONFIG_FILE_NAME_LENGTH );
 			return 0;
 		}
 		
 		while( location ) {
-#ifdef __WIN32__
-			snprintf( test, CONFIG_FILE_NAME_LENGTH, "%s\\%s", location->directory, filename );
-#else
-			snprintf( test, CONFIG_FILE_NAME_LENGTH, "%s/%s", location->directory, filename );
-#endif
-			if( open( test, O_RDONLY ) == -1 ) {
-				if( errno != ENOENT ) {
-					fprintf( stderr, "Warning: Couldn't read file '%s': %s", test, strerror( errno ) );
-					break;
-				}
-			}
-			else {
-				strcpy( path, test );
+			if( location_try_directory( location->directory, filename, path ) == 0 ) {
 				return 0;
 			}
+			location = location->next;
 		}
+		
+		/* Not found, return the original filename for later reference. */
+		strncpy( path, filename, CONFIG_FILE_NAME_LENGTH );
 	}
 
-	fprintf( stderr, "Warning: Couldn't find file '%s' in any location with type '%s'\n", filename, type );
-	path = NULL;
+	return -1;
+}
+
+int location_get_theme_path( const char *filename, char *path ) {
+	if( filename ) {
+		if( location_absolute( filename ) == 0 ) {
+			strncpy( path, filename, CONFIG_FILE_NAME_LENGTH );
+			return 0;		
+		}
+
+		if( location_try_directory( config_get()->iface.theme.directory, filename, path ) == 0 ) {
+			return 0;
+		}
+
+		/* Not found, return the original filename for later reference. */
+		strncpy( path, filename, CONFIG_FILE_NAME_LENGTH );
+	}
+	
 	return -1;
 }
 

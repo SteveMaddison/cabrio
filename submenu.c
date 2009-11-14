@@ -8,6 +8,7 @@
 #include "game_sel.h"
 #include "hint.h"
 #include "sound.h"
+#include "location.h"
 
 static const GLfloat ITEM_SCALE = 1.2;
 static const GLfloat FONT_SCALE = 0.0035;
@@ -57,7 +58,10 @@ int submenu_items( void ) {
 }
 
 int submenu_load_texture( void ) {
-	texture = sdl_create_texture( config_get()->iface.theme.submenu.texture );
+	char filename[CONFIG_FILE_NAME_LENGTH];
+
+	location_get_theme_path( config_get()->iface.theme.submenu.texture, filename );
+	texture = sdl_create_texture( filename );
 	if( texture == NULL ) {
 		fprintf( stderr, "Warning: Couldn't create texture for submenu items\n" );
 		return -1;

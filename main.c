@@ -60,6 +60,10 @@ int main( int argc, char *arvg[] ) {
 
 	location_init();
 
+	/* If config or location results in a new font, it'll be loaded here. */
+	font_free();
+	font_init();
+
 	/* Large game lists take a while to initialise,
 	 * so show the background while we wait... */
 	bg_init();
