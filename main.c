@@ -89,12 +89,12 @@ int main( int argc, char *arvg[] ) {
 	if( hint_init() != 0 )
 		return -1;
 
-	if( game_list_create() != 0 )
-		return -1;
-		
 	if( snap_init() != 0 )
 		return -1;
 
+	if( game_list_create() != 0 )
+		return -1;
+		
 	sound_init();
 
 	event_flush();

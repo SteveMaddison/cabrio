@@ -27,7 +27,7 @@ int snap_init( void ) {
 	noise[1] = sdl_create_texture( DATA_DIR "/pixmaps/noise2.png" );
 	noise[2] = sdl_create_texture( DATA_DIR "/pixmaps/noise3.png" );
 	
-	if( noise[0] == 0 || noise[1] == 0 || noise[2] == 0 ) {
+	if( noise[0] == NULL || noise[1] == NULL || noise[2] == NULL ) {
 		fprintf( stderr, "Warning: Couldn't create texture for snap noise\n" );
 		return -1;
 	}

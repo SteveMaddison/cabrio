@@ -202,6 +202,7 @@ int location_get_match( const char *type, const char *filename, char *path ) {
 						return 0;
 					}
 				}
+				closedir( dir );
 			}
 			location = location->next;
 		}
