@@ -156,8 +156,8 @@ int game_list_create( void ) {
 		}
 		else {
 			struct config_game_category *config_game_category = config_game->categories;
-			struct config_image *config_game_image = config_game->images;
 			struct category *category = category_first();
+			int i = 0;
 			
 			memset( game, 0, sizeof(struct game) );
 			game->name = config_game->name;
@@ -180,18 +180,37 @@ int game_list_create( void ) {
 			}
 			
 			game->images = NULL;
-			while( config_game_image ) {
+			for( i = 0 ; i < NUM_IMAGE_TYPES ; i++ ) {
 				struct game_image *image = malloc( sizeof(struct game_image) );
 				if( image ) {
-					image->type = config_game_image->type->name;
-					location_get_path( image->type, config_game_image->file_name, image->file_name );
-					image->next = game->images;
-					game->images = image;
+					struct config_image *config_game_image = config_game->images;
+					
+					memset( image, 0, sizeof(struct game_image) );
+					
+					while( config_game_image ) {
+						if( strcasecmp( config_game_image->type->name, image_type(i) ) == 0 ) {
+							image->type = config_game_image->type->name;
+							location_get_path( image->type, config_game_image->file_name, image->file_name );						
+							break;
+						}
+						config_game_image = config_game_image->next;
+					}
+					if( image->file_name[0] == '\0' ) {
+						image->type = (char*)image_type(i);
+						location_get_match( image->type, game->rom_path, image->file_name );
+					}
+					
+					if( image->file_name[0] == '\0' ) {
+						free( image );
+					}
+					else {
+						image->next = game->images;
+						game->images = image;
+					}
 				}
 				else {
-					fprintf( stderr, "Warning: Couldn't allocate game image object for '%s'\n", config_game_image->file_name );
+					fprintf( stderr, "Warning: Couldn't allocate game image object for '%s'\n", game->name );
 				}
-				config_game_image = config_game_image->next;
 			}
 
 			/* Fill in "unknown" values for categories undefined for this game. */

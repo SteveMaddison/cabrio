@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <dirent.h>
 #include "location.h"
 #include "config.h"
 
@@ -163,6 +164,50 @@ int location_get_theme_path( const char *filename, char *path ) {
 		strncpy( path, filename, CONFIG_FILE_NAME_LENGTH );
 	}
 	
+	return -1;
+}
+
+int location_get_match( const char *type, const char *filename, char *path ) {
+	struct location *location = location_get_first( type );
+	char search[CONFIG_FILE_NAME_LENGTH];
+	char *pos = NULL;
+	DIR *dir = NULL;
+	struct dirent *dentry;
+
+	if( type && filename ) {
+#ifdef __WIN32__
+		pos = strrchr( filename, '\\' );
+#else
+		pos = strrchr( filename, '/' );
+#endif
+		if( pos )
+			strncpy( search, pos+1, CONFIG_FILE_NAME_LENGTH );
+		else
+			strncpy( search, filename, CONFIG_FILE_NAME_LENGTH );
+		
+		pos = strrchr( search, '.' );
+		if( pos )
+			*(pos + 1) = '\0';
+
+		while( location ) {
+			if( (dir = opendir( location->directory )) ) {
+				while( (dentry = readdir( dir )) ) {
+#ifdef __WIN32__
+					if( strncasecmp( dentry->d_name, search, strlen(search) ) == 0 ) {
+						snprintf( path, CONFIG_FILE_NAME_LENGTH, "%s\\%s", location->directory, dentry->d_name );
+#else
+					if( strncmp( dentry->d_name, search, strlen(search) ) == 0 ) {
+						snprintf( path, CONFIG_FILE_NAME_LENGTH, "%s/%s", location->directory, dentry->d_name );
+#endif
+						return 0;
+					}
+				}
+			}
+			location = location->next;
+		}
+	}
+	
+	strcpy( path, "" );
 	return -1;
 }
 
