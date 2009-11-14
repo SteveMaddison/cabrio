@@ -38,7 +38,7 @@ int submenu_init( void ) {
 	const struct config_submenu *config = &config_get()->iface.theme.submenu;
 
 	if( config_get()->iface.frame_rate )
-		steps = config_get()->iface.frame_rate/4;
+		steps = config_get()->iface.frame_rate/6;
 	else
 		steps = MAX_STEPS;
 	
