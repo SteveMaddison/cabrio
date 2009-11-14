@@ -175,10 +175,13 @@ void snap_draw( void ) {
 			frame = 0;
 			
 		if( step && --step == 0 ) {
-			if( hide_direction < 0 )
+			if( hide_direction < 0 ) {
 				visible = 0;
-			else
+				snap_clear();
+			}
+			else {
 				visible = 1;
+			}
 			hide_direction = 0;
 		}
 	}
