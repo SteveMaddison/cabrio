@@ -1,7 +1,7 @@
 <cabrio-config>
   <themes>
     <theme>
-      <name>test</name>
+      <name>industrial</name>
       <background>
         <image-file>jet.jpg</image-file>
         <transparency>75%</transparency>
