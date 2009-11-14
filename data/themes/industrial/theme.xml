@@ -1,0 +1,21 @@
+<cabrio-config>
+  <themes>
+    <theme>
+      <name>test</name>
+      <background>
+        <image-file>jet.jpg</image-file>
+        <transparency>75%</transparency>
+      </background>
+      <menu>
+        <image-file>menu-item.png</image-file>
+      </menu>
+      <submenu>
+        <image-file>submenu-item.png</image-file>
+      </submenu>
+      <hints>
+        <arrow-image>arrow.png</arrow-image>
+      </hints>
+    </theme>
+  </themes>
+</cabrio-config>
+
