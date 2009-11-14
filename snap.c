@@ -113,6 +113,7 @@ int snap_set( const char *filename ) {
 void snap_clear( void ) {
 	if( current )
 		ogl_free_texture( current );
+	last_file[0] = '\0';
 	current = NULL;
 }
 
