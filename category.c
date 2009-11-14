@@ -29,7 +29,9 @@ int category_value_add_unknown( struct category *category ) {
 	}
 	else {
 		struct category_value *value = malloc( sizeof(struct category_value) );
+		
 		if( value ) {
+			memset( value, 0, sizeof(struct category_value) );
 			value->name = NULL;
 			
 			if( category->values == NULL ) {
@@ -60,6 +62,7 @@ int category_value_add( struct category *category, char *name ) {
 	struct category_value *category_value = malloc( sizeof(struct category_value) );
 
 	if( category_value ) {
+		memset( category_value, 0, sizeof(struct category_value) );
 		category_value->name = name;
 	
 		if( after ) {
@@ -102,6 +105,7 @@ int category_init( void ) {
 	while( c ) {
 		category = malloc( sizeof(struct category) );
 		if( category ) {
+			memset( category, 0, sizeof(struct category) );
 			category->name = c->name;
 		
 			prev = category_start;
@@ -133,21 +137,22 @@ int category_init( void ) {
 		c = c->next;
 	}
 	
-/*
-	category = category_start;
+	return 0;
+}
+
+void catgeory_dump( void ) {
+	struct category *category = category_start;
 	while( category ) {
+		printf("Category: %s (%d)\n", category->name, category->value_count );
 		struct category_value *value = category->values;
 		while( value ) {
-			printf("%s: %s\n", category->name, value->name );
+			printf("  Value: %s\n", value->name );
 			value = value->next;
 			if( value == category->values ) break;
 		}
 		category = category->next;
 		if( category == category_start ) break;
 	}
-*/
-
-	return 0;
 }
 
 struct category *category_first( void ) {

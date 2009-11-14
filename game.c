@@ -158,6 +158,8 @@ int game_list_create( void ) {
 			struct config_game_category *config_game_category = config_game->categories;
 			struct config_image *config_game_image = config_game->images;
 			struct category *category = category_first();
+			
+			memset( game, 0, sizeof(struct game) );
 			game->name = config_game->name;
 			game->texture = NULL;
 			game->rom_path = config_game->rom_image;

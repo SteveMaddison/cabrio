@@ -161,7 +161,7 @@ void submenu_advance( void ) {
 		case( MENU_PLATFORM ):
 			platform = platform->next;
 			message = font_create_texture( platform->name );
-			break;		
+			break;
 		case( MENU_CATEGORY ):
 			category_value = category_value->next;
 			if( category_value->name )
