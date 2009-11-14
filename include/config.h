@@ -160,8 +160,8 @@ struct config_hints {
 
 struct config_theme {
 	struct config_theme *next;
-	char directory[CONFIG_FILE_NAME_LENGTH];
 	char name[CONFIG_NAME_LENGTH];
+	char directory[CONFIG_FILE_NAME_LENGTH];
 	char background_image[CONFIG_FILE_NAME_LENGTH];
 	int background_rotation;
 	int background_transparency;

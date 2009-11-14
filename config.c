@@ -22,6 +22,7 @@
 struct config config;
 
 #ifdef __WIN32__
+static const char *default_theme_dir		= "\\themes";
 static const char *default_background		= "\\pixmaps\\default_background.jpg";
 static const char *default_font				= "\\fonts\\FreeSans.ttf";
 static const char *default_menu_texture		= "\\pixmaps\\menu_item.png";
@@ -37,6 +38,7 @@ static const char *default_sounds[] = {
 };
 #else
 static const char *default_dir 				= ".cabrio"; /* Relative to user's home */
+static const char *default_theme_dir		= "/themes";
 static const char *default_background		= "/pixmaps/default_background.jpg";
 static const char *default_font 			= "/fonts/FreeSans.ttf";
 static const char *default_menu_texture		= "/pixmaps/menu_item.png";
@@ -91,6 +93,7 @@ static const int default_tile_transparency[] = {
 static struct config_theme default_theme;
 static const char *default_theme_name 	= "default";
 static const char *default_file 		= "config.xml";
+static const char *default_theme_file 	= "theme.xml";
 
 static char config_directory[CONFIG_FILE_NAME_LENGTH] 	= "";
 static char config_filename[CONFIG_FILE_NAME_LENGTH] 	= "";
@@ -2020,6 +2023,32 @@ int config_read_file( char *filename ) {
 	return retval;
 }
 
+void config_load_themes( const char *directory ) {
+	char theme_dir[CONFIG_FILE_NAME_LENGTH];
+	DIR *dir = NULL;
+	
+	snprintf( theme_dir, CONFIG_FILE_NAME_LENGTH, "%s%s", directory, default_theme_dir );
+	
+	if( (dir = opendir( theme_dir )) ) {
+		struct dirent *dentry;
+		
+		while( (dentry = readdir( dir )) ) {
+			if( dentry->d_type == DT_DIR ) {
+				if( strcmp( dentry->d_name, "." ) && strcmp( dentry->d_name, ".." ) ) {
+					char theme_config_file[CONFIG_FILE_NAME_LENGTH];
+#ifdef _WIN32__
+					snprintf( theme_config_file, CONFIG_FILE_NAME_LENGTH, "%s\\%s\\%s", theme_dir, dentry->d_name, default_theme_file );
+#else
+					snprintf( theme_config_file, CONFIG_FILE_NAME_LENGTH, "%s/%s/%s", theme_dir, dentry->d_name, default_theme_file );
+#endif
+					config_read_file( theme_config_file );
+				}
+			}
+		}
+		closedir( dir );
+	}	
+}
+
 int config_open( const char *filename ) {
 	int created = 0;
 	DIR *dir = NULL;
@@ -2112,6 +2141,11 @@ int config_open( const char *filename ) {
 		}
 		closedir( dir );
 	}
+
+	config_load_themes( config_directory );
+#ifndef __WIN32__
+	config_load_themes( DATA_DIR );
+#endif
 
 	/* We now have our entire configuration, so the theming may begin... */
 	config_set_theme();
