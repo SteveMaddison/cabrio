@@ -17,7 +17,6 @@ static int steps = 50;
 static int step = 0;
 static int hide_direction = 0;
 static int visible = 0;
-static char last_file[CONFIG_FILE_NAME_LENGTH];
 static GLfloat scale = 0.006;
 
 int snap_init( void ) {
@@ -66,9 +65,7 @@ void snap_pause( void ) {
 }
 
 int snap_resume( void ) {
-	int ret = snap_init();
-	snap_set( last_file );
-	return ret;
+	return snap_init();
 }
 
 int snap_set( const char *filename ) {
@@ -76,7 +73,6 @@ int snap_set( const char *filename ) {
 
 	snap_clear();
 	if( filename && filename[0] ) {
-		strncpy( last_file, filename, CONFIG_FILE_NAME_LENGTH );
 		current = sdl_create_texture( filename );
 		if( current ) {
 			if( config->fix_aspect_ratio ) {
@@ -113,7 +109,6 @@ int snap_set( const char *filename ) {
 void snap_clear( void ) {
 	if( current )
 		ogl_free_texture( current );
-	last_file[0] = '\0';
 	current = NULL;
 }
 

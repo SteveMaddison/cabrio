@@ -23,9 +23,9 @@
 
 void pause_all( void ) {
 	sound_pause();
-	snap_pause();
 	game_sel_pause();
 	game_list_pause();
+	snap_pause();
 	submenu_pause();
 	menu_pause();
 	hint_pause();
@@ -48,9 +48,9 @@ int resume_all( void ) {
 		return -6;
 	if( game_list_resume() != 0 )
 		return -7;
-	if( game_sel_resume() != 0 )
-		return -8;
 	if( snap_resume() != 0 )
+		return -8;
+	if( game_sel_resume() != 0 )
 		return -9;
 	sound_resume();
 	
@@ -63,6 +63,7 @@ int emulator_exec( struct game *game ) {
 	int i = 0;
 	int count = 0;
 	const struct config *config = config_get();
+	char current_dir[CONFIG_FILE_NAME_LENGTH];
 #ifdef __WIN32__
 	PROCESS_INFORMATION pi;
 	STARTUPINFO si;
@@ -100,6 +101,12 @@ int emulator_exec( struct game *game ) {
 		return -1;		
 	}
 	
+	/* If emulator provided a directory, go to it. */
+	if( config->emulators->directory[0] ) {
+		getcwd( current_dir, CONFIG_FILE_NAME_LENGTH-1 );
+		chdir( config->emulators->directory );
+	}
+	
 #ifdef __unix__
 	/* Terminate param list */
 	params[count] = NULL;
@@ -123,6 +130,7 @@ int emulator_exec( struct game *game ) {
 #ifdef __WIN32__
 	memset( &pi, 0, sizeof(PROCESS_INFORMATION));
 	memset( &si, 0, sizeof(STARTUPINFO));
+	si.cb = sizeof(si);
 
 	snprintf( cmdline, CONFIG_MAX_CMD_LENGTH, "\"%s\"", config->emulators->executable );
 	for( i = 0 ; i < count ; i++ ) {
@@ -150,6 +158,9 @@ int emulator_exec( struct game *game ) {
 		fprintf( stderr, "Warning: failed to execute: %s\n", s );
 	}
 #endif
+
+	if( config->emulators->directory[0] )
+		chdir( current_dir );
 
 	return 0;
 }

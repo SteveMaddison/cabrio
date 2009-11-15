@@ -149,6 +149,7 @@ void game_sel_pause( void ) {
 
 int game_sel_resume( void ) {
 	game_sel_load_textures();
+	snap_set( game_image_get( game_tile_current->game, image_type(IMAGE_SCREENSHOT) ) );
 	return 0;
 }
 

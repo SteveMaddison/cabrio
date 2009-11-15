@@ -44,6 +44,7 @@ struct config_emulator {
 	char name[CONFIG_NAME_LENGTH];
 	char display_name[CONFIG_NAME_LENGTH];
 	char executable[CONFIG_FILE_NAME_LENGTH];
+	char directory[CONFIG_FILE_NAME_LENGTH];
 	struct config_param *params;
 };
 

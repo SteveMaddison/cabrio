@@ -416,6 +416,9 @@ int config_read_emulator( xmlNode *node, struct config_emulator *emulator ) {
 			else if( strcmp( (char*)node->name, tag_emulator_executable ) == 0 ) {
 				strncpy( emulator->executable, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
+			else if( strcmp( (char*)node->name, tag_directory ) == 0 ) {
+				strncpy( emulator->directory, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}
 			else if( strcmp( (char*)node->name, tag_params ) == 0 ) {
 				config_read_emulator_params( node->children, emulator );
 			}
@@ -803,7 +806,7 @@ int config_read_control( xmlNode *node, struct config_control *control ) {
 int config_read_event( xmlNode *node ) {
 	struct config_control tmp;
 	char *value = NULL;
-	int event;
+	int event = 0;
 	
 	memset( &tmp, 0, sizeof(struct config_control) );
 	while( node ) {
