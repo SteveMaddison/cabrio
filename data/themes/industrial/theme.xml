@@ -18,7 +18,7 @@
       </submenu>
       <hints>
         <arrow-image>arrow.png</arrow-image>
-        <secondary-offset>2.2</secondary-offset>
+        <secondary-offset>2.1</secondary-offset>
         <size>0.8</size>
       </hints>
       <snap>
