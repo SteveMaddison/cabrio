@@ -108,6 +108,7 @@ void game_list_pause( void ) {
 	if( g ) {
 		do {
 			ogl_free_texture( g->texture );
+			g->texture = NULL;
 			g = g->all_next;
 		} while( g != game_start );
 	}
