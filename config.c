@@ -2175,9 +2175,7 @@ int config_open( const char *filename ) {
 	}
 
 	config_load_themes( config_directory );
-#ifndef __WIN32__
 	config_load_themes( DATA_DIR );
-#endif
 
 	/* We now have our entire configuration, so the theming may begin... */
 	config_set_theme();
