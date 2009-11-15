@@ -8,13 +8,103 @@
       </background>
       <menu>
         <image-file>menu-item.png</image-file>
+        <orientation>portrait</orientation>
+        <items-visible>5</items-visible>
+        <primary-offset>0</primary-offset>
+        <secondary-offset>1.8</secondary-offset>
       </menu>
       <submenu>
         <image-file>submenu-item.png</image-file>
       </submenu>
       <hints>
         <arrow-image>arrow.png</arrow-image>
+        <secondary-offset>2.2</secondary-offset>
+        <size>0.8</size>
       </hints>
+      <snap>
+        <primary-offset>2.8</primary-offset>
+        <size>0.7</size>
+        <x-angle>10</x-angle>
+        <y-angle>-20</y-angle>
+        <z-angle>-5</z-angle>
+      </snap>
+      <game-selector>
+        <selected>5</selected>
+        <primary-offset>0</primary-offset>
+        <tiles>
+          <tile>
+            <order>0</order>
+            <y-position>3</y-position>
+            <z-position>-0.5</z-position>
+            <x-angle>90</x-angle>
+            <transparency>100%</transparency>
+          </tile>
+          <tile>
+            <order>1</order>
+            <y-position>2.0</y-position>
+            <z-position>-0.4</z-position>
+            <x-angle>80</x-angle>
+            <transparency>80%</transparency>
+          </tile>
+          <tile>
+            <order>2</order>
+            <y-position>1.5</y-position>
+            <z-position>-0.3</z-position>
+            <x-angle>70</x-angle>
+            <transparency>60%</transparency>
+          </tile>
+          <tile>
+            <order>3</order>
+            <y-position>1.2</y-position>
+            <z-position>-0.2</z-position>
+            <x-angle>65</x-angle>
+          </tile>
+          <tile>
+            <order>4</order>
+            <y-position>0.7</y-position>
+            <z-position>-0.1</z-position>
+            <x-angle>60</x-angle>
+          </tile>
+          <tile>
+            <order>5</order>
+            <y-position>0</y-position>
+            <z-position>1.5</z-position>
+          </tile>
+          <tile>
+            <order>6</order>
+            <y-position>-0.7</y-position>
+            <z-position>-0.1</z-position>
+            <x-angle>-60</x-angle>
+          </tile>
+          <tile>
+            <order>7</order>
+            <y-position>-1.2</y-position>
+            <z-position>-0.2</z-position>
+            <x-angle>-65</x-angle>
+          </tile>
+          <tile>
+            <order>8</order>
+            <y-position>-1.5</y-position>
+            <z-position>-0.3</z-position>
+            <x-angle>-70</x-angle>
+            <transparency>60%</transparency>
+          </tile>
+          <tile>
+            <order>9</order>
+            <y-position>-2.0</y-position>
+            <z-position>-0.4</z-position>
+            <x-angle>-80</x-angle>
+            <transparency>80%</transparency>
+          </tile>
+          <tile>
+            <order>10</order>
+            <y-position>-3</y-position>
+            <z-position>-0.5</z-position>
+            <x-angle>-90</x-angle>
+            <transparency>100%</transparency>
+          </tile>
+        </tiles>
+      </game-selector>
     </theme>
   </themes>
 </cabrio-config>

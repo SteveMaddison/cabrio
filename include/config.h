@@ -27,9 +27,9 @@ enum orient_t {
 };
 
 struct config_rgb {
-	char red;
-	char green;
-	char blue;
+	unsigned char red;
+	unsigned char green;
+	unsigned char blue;
 };
 
 struct config_param {

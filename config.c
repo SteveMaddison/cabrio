@@ -1939,6 +1939,9 @@ int config_new( void ) {
 		
 		snprintf( default_theme.font_file, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_font );
 		default_theme.font_size = 50;
+		default_theme.font_rgb.red = 255;
+		default_theme.font_rgb.green = 255;
+		default_theme.font_rgb.blue = 255;
 		
 		default_theme.snap.offset1 = -1.6;
 		default_theme.snap.offset2 = 0;
