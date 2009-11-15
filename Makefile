@@ -22,8 +22,12 @@ install: cabrio
 	$(INSTALL) -m 644 -t $(DATA_DIR)/pixmaps data/pixmaps/*
 	$(INSTALL) -m 644 -t $(DATA_DIR)/sounds data/sounds/*	
 	$(INSTALL) -m 755 -d $(DATA_DIR)/themes
+	$(INSTALL) -m 755 -d $(DATA_DIR)/themes/ice
+	$(INSTALL) -m 644 -t $(DATA_DIR)/themes/ice data/themes/ice/*
 	$(INSTALL) -m 755 -d $(DATA_DIR)/themes/industrial
 	$(INSTALL) -m 644 -t $(DATA_DIR)/themes/industrial data/themes/industrial/*
+	$(INSTALL) -m 755 -d $(DATA_DIR)/themes/wood
+	$(INSTALL) -m 644 -t $(DATA_DIR)/themes/wood data/themes/wood/*
 	$(INSTALL) -m 755 -d $(BIN_DIR)
 	$(INSTALL) -m 755 -t $(BIN_DIR) cabrio
 

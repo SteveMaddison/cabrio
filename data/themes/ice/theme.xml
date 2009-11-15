@@ -1,0 +1,25 @@
+<cabrio-config>
+  <themes>
+    <theme>
+      <name>ice</name>
+      <font>
+        <color>ffdd00</color>
+      </font>
+      <background>
+        <image-file>background.jpg</image-file>
+        <transparency>30%</transparency>
+      </background>
+      <menu>
+        <image-file>menu-item.png</image-file>
+        <transparency>20%</transparency>
+      </menu>
+      <submenu>
+        <image-file>submenu-item.png</image-file>
+      </submenu>
+      <hints>
+        <arrow-image>arrow.png</arrow-image>
+      </hints>
+    </theme>
+  </themes>
+</cabrio-config>
+

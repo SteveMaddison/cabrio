@@ -26,6 +26,12 @@ enum orient_t {
 	CONFIG_PORTRAIT
 };
 
+struct config_rgb {
+	char red;
+	char green;
+	char blue;
+};
+
 struct config_param {
 	struct config_param *next;
 	char name[CONFIG_PARAM_LENGTH];
@@ -165,9 +171,10 @@ struct config_theme {
 	char background_image[CONFIG_FILE_NAME_LENGTH];
 	int background_rotation;
 	int background_transparency;
+	char sounds[NUM_SOUNDS][CONFIG_FILE_NAME_LENGTH];
 	char font_file[CONFIG_FILE_NAME_LENGTH];
 	int font_size;
-	char sounds[NUM_SOUNDS][CONFIG_FILE_NAME_LENGTH];
+	struct config_rgb font_rgb;
 	struct config_menu menu;
 	struct config_submenu submenu;
 	struct config_game_sel game_sel;

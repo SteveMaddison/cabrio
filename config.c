@@ -189,6 +189,7 @@ static const char *tag_position_y		= "y-position";
 static const char *tag_position_z		= "z-position";
 static const char *tag_order			= "order";
 static const char *tag_directory		= "directory";
+static const char *tag_color			= "color";
 
 /* Common values */
 static const char *config_empty			= "";
@@ -299,6 +300,34 @@ int config_read_percentage( char *name, char *value, int *target ) {
 			fprintf( stderr, "Warning: Element %s percentage out of range, using 50%%\n", name );
 		}
 	}
+	return 0;
+}
+
+int config_read_rgb( char *name, char *value, struct config_rgb *rgb ) {
+	char *pos = value;
+	char hex[3];
+	
+	if( strlen( value ) != 6 ) {
+		fprintf( stderr, "Warning: Element %s requires RGB value (rrggbb)\n", name );
+		return -1;
+	}
+	while( *pos ) {
+		if( (*pos < '0' || *pos > '9')
+		&&  (*pos < 'a' || *pos > 'f')
+		&&  (*pos < 'A' || *pos > 'F') ) {
+			fprintf( stderr, "Warning: Element %s value out of range (0-f)\n", name );
+			return -1;
+		}
+		pos++;
+	}
+
+	strncpy( hex, value, 2 );
+	rgb->red	= strtol( hex, NULL, 16 );
+	strncpy( hex, value+2, 2 );
+	rgb->green	= strtol( hex, NULL, 16 );
+	strncpy( hex, value+4, 2 );
+	rgb->blue	= strtol( hex, NULL, 16 );
+	
 	return 0;
 }
 
@@ -1148,6 +1177,9 @@ int config_read_font( xmlNode *node, struct config_theme *theme ) {
 			}
 			else if( strcmp( (char*)node->name, tag_size ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &theme->font_size );
+			}
+			else if( strcmp( (char*)node->name, tag_color ) == 0 ) {
+				config_read_rgb( (char*)node->name, (char*)xmlNodeGetContent(node), &theme->font_rgb );
 			}
 			else {
 				fprintf( stderr, warn_skip, tag_theme_font, node->name );	

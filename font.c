@@ -17,6 +17,10 @@ int font_init( void ) {
 	else
 		size = DEFAULT_FONT_SIZE;
 
+	col.r = config->iface.theme.font_rgb.red;
+	col.g = config->iface.theme.font_rgb.green;
+	col.b = config->iface.theme.font_rgb.blue;
+
 	if( TTF_Init() != 0 ) {
 		fprintf( stderr, "Error: Couldn't initialise font library: %s\n", TTF_GetError() );
 		return -1;
