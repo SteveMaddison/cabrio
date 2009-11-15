@@ -2069,19 +2069,23 @@ void config_load_themes( const char *directory ) {
 	
 	if( (dir = opendir( theme_dir )) ) {
 		struct dirent *dentry;
-		
+
 		while( (dentry = readdir( dir )) ) {
+#ifdef _DIRENT_HAVE_D_TYPE
 			if( dentry->d_type == DT_DIR ) {
+#endif
 				if( strcmp( dentry->d_name, "." ) && strcmp( dentry->d_name, ".." ) ) {
 					char theme_config_file[CONFIG_FILE_NAME_LENGTH];
-#ifdef _WIN32__
+#ifdef __WIN32__
 					snprintf( theme_config_file, CONFIG_FILE_NAME_LENGTH, "%s\\%s\\%s", theme_dir, dentry->d_name, default_theme_file );
 #else
 					snprintf( theme_config_file, CONFIG_FILE_NAME_LENGTH, "%s/%s/%s", theme_dir, dentry->d_name, default_theme_file );
 #endif
 					config_read_file( theme_config_file );
 				}
+#ifdef _DIRENT_HAVE_D_TYPE
 			}
+#endif
 		}
 		closedir( dir );
 	}	

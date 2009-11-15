@@ -5,7 +5,6 @@
 
 static const GLfloat DEPTH = -8;
 static const GLfloat max_size = 280;
-static const GLfloat hidden_offset = -4.0;
 static const GLfloat scale_fator = 0.0144;
 static struct texture *current = NULL;
 #define NUM_NOISE 3
@@ -18,6 +17,7 @@ static int step = 0;
 static int hide_direction = 0;
 static int visible = 0;
 static GLfloat scale = 0.006;
+static GLfloat hidden_offset = -4.0;
 
 int snap_init( void ) {
 	const struct config *config = config_get();
@@ -45,6 +45,9 @@ int snap_init( void ) {
 	}
 	
 	scale = config->iface.theme.snap.size * scale_fator;
+	
+	if( config->iface.theme.snap.offset1 > 0 )
+		hidden_offset = -hidden_offset;
 	
 	return 0;
 }
