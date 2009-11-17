@@ -15,9 +15,10 @@ struct category {
 	struct category *next;
 	struct category *prev;
 	struct category_value *values;
-	int has_unknowns;
+	int id;
 	char *name;
 	int value_count;
+	int has_unknowns;
 };
 
 int category_init( void );

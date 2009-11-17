@@ -106,7 +106,11 @@ int category_init( void ) {
 		category = malloc( sizeof(struct category) );
 		if( category ) {
 			memset( category, 0, sizeof(struct category) );
-			category->name = c->name;
+			category->id = c->id;
+			if( category->id == 0 )
+				category->name = (char*)config_get()->iface.labels.label_lists;
+			else
+				category->name = c->name;
 		
 			prev = category_start;
 			if( category_start ) {

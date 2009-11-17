@@ -60,6 +60,7 @@ struct config_category_value {
 
 struct config_category {
 	struct config_category *next;
+	int id;
 	char name[CONFIG_NAME_LENGTH];
 	struct config_category_value *values;
 };

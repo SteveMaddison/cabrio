@@ -176,7 +176,10 @@ int game_list_create( void ) {
 			/* Add game categories. */
 			game->categories = NULL;
 			while( config_game_category ) {
-				game_add_category( game, config_game_category->category->name, config_game_category->value->name );
+				if( config_game_category->category->id == 0 )
+					game_add_category( game, (char*)config_get()->iface.labels.label_lists, config_game_category->value->name );
+				else
+					game_add_category( game, config_game_category->category->name, config_game_category->value->name );
 				config_game_category = config_game_category->next;
 			}
 			
@@ -215,7 +218,7 @@ int game_list_create( void ) {
 			}
 
 			/* Fill in "unknown" values for categories undefined for this game. */
-			if( category) {
+			if( category ) {
 				do {
 					struct game_category *gc = game->categories;
 					while( gc ) {

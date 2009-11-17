@@ -219,6 +219,7 @@ static const char *warn_alloc = "Warning: Couldn't allocate memory for '%s' obje
 static const char *warn_skip = "Warning: Skipping unrecognised XML element in '%s': '%s'\n";
 
 static char scratch[32] = "";
+static int category_count = 0;
 
 const struct config *config_get( void ) {
 	return (const struct config *)&config;
@@ -484,9 +485,12 @@ struct config_category *config_category( const char *name ) {
 			}
 			else {
 				memset( c, 0, sizeof(struct config_category) );
+				c->id = category_count;
 				strncpy( c->name, name, CONFIG_NAME_LENGTH );
 				c->next = config.categories;
 				config.categories = c;
+				
+				category_count++;
 			}
 		}
 	}
@@ -1975,6 +1979,7 @@ int config_new( void ) {
 	else {
 		int i;
 		struct config_param *prev_param = NULL;
+		struct config_category *platform_catgeory;
 		const int num_params = 4;
 		const char *params[] = { "-nowindow", "-skip_gameinfo", "-switchres", "-joystick" };
 		const char *keys[] = {
@@ -2028,7 +2033,9 @@ int config_new( void ) {
 
 		config.locations = NULL;
 		config.location_types = NULL;
-
+		
+		/* Ensure the game list category has id 0 - we need to track it later */
+		platform_catgeory = config_category( default_label_lists );
 		strncpy( config.iface.labels.label_all, default_label_all, CONFIG_LABEL_LENGTH );
 		strncpy( config.iface.labels.label_platform, default_label_platform, CONFIG_LABEL_LENGTH );		
 		strncpy( config.iface.labels.label_back, default_label_back, CONFIG_LABEL_LENGTH );
