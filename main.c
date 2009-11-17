@@ -16,6 +16,7 @@
 #include "focus.h"
 #include "snap.h"
 #include "location.h"
+#include "video.h"
 
 static int supress_wait = 0;
 
@@ -90,6 +91,9 @@ int main( int argc, char *arvg[] ) {
 		return -1;
 
 	if( snap_init() != 0 )
+		return -1;
+
+	if( video_init() != 0 )
 		return -1;
 
 	if( game_list_create() != 0 )
