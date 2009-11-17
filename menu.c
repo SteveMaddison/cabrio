@@ -3,6 +3,7 @@
 #include "hint.h"
 #include "menu.h"
 #include "submenu.h"
+#include "platform.h"
 #include "focus.h"
 #include "sound.h"
 #include "font.h"
@@ -13,8 +14,6 @@ static const GLfloat FONT_SCALE = 0.0025;
 static const GLfloat ITEM_SCALE = 0.8;
 static const GLfloat MENU_DEPTH = -6;
 static const GLfloat SPACING_FACTOR = 1.1;
-static const char *menu_text_all = "All";
-static const char *menu_text_platform = "Platform";
 
 static struct menu_item *menu_start = NULL;
 static struct menu_tile *selected = NULL;
@@ -162,11 +161,14 @@ int menu_init( void ) {
 		return -1;
 	}
 
-	menu_item_add( menu_text_all, MENU_ALL, NULL );
-	menu_item_add( menu_text_platform, MENU_PLATFORM, NULL );
-	if( category ) {
+	menu_item_add( config->iface.labels.label_all, MENU_ALL, NULL );
+	if( platform_count() > 1 ) {
+		menu_item_add( config->iface.labels.label_platform, MENU_PLATFORM, NULL );
+	}
+	if( category ) {		
 		do {
-			menu_item_add( category->name, MENU_CATEGORY, category );
+			if( category->value_count > 1 )
+				menu_item_add( category->name, MENU_CATEGORY, category );
 			category = category->next;
 		} while( category != category_first() );
 	}

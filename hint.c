@@ -24,29 +24,29 @@ static struct texture *text_select_message = NULL;
 static struct texture *text_back_message = NULL;
 
 int hint_init( void ) {
-	const struct config_hints *config = &config_get()->iface.theme.hints;
+	const struct config *config = config_get();
 	char filename[CONFIG_FILE_NAME_LENGTH];
 	
-	location_get_theme_path( config->image_arrow, filename );
+	location_get_theme_path( config->iface.theme.hints.image_arrow, filename );
 	if(!( arrow_texture = sdl_create_texture( filename ) ))
 		return -1;
 
-	location_get_theme_path( config->image_back, filename );
+	location_get_theme_path( config->iface.theme.hints.image_back, filename );
 	if(!( back_texture = sdl_create_texture( filename ) ))
 		return -1;
 
-	location_get_theme_path( config->image_select, filename );
+	location_get_theme_path( config->iface.theme.hints.image_select, filename );
 	if(!( select_texture = sdl_create_texture( filename ) ))
 		return -1;
 		
-	if(!( text_select_message = font_create_texture( config->label_select ) ))
+	if(!( text_select_message = font_create_texture( config->iface.labels.label_select ) ))
 		return -1;
 
-	if(!( text_back_message = font_create_texture( config->label_back ) ))
+	if(!( text_back_message = font_create_texture( config->iface.labels.label_back ) ))
 		return -1;
 
-	if( config_get()->iface.frame_rate )
-		alpha_step = (GLfloat)config_get()->iface.frame_rate/6000;
+	if( config->iface.frame_rate )
+		alpha_step = (GLfloat)config->iface.frame_rate/6000;
 	else
 		alpha_step = ALPHA_STEP_MIN;
 	

@@ -91,9 +91,14 @@ static const int default_tile_transparency[] = {
 };
 
 static struct config_theme default_theme;
-static const char *default_theme_name 	= "default";
-static const char *default_file 		= "config.xml";
-static const char *default_theme_file 	= "theme.xml";
+static const char *default_theme_name 			= "default";
+static const char *default_file 				= "config.xml";
+static const char *default_theme_file 			= "theme.xml";
+static const char *default_label_all 			= "All Games";
+static const char *default_label_platform 		= "Platform";
+static const char *default_label_select 		= "Select";
+static const char *default_label_back 			= "Back";
+static const char *default_label_lists 			= "Lists";
 
 static char config_directory[CONFIG_FILE_NAME_LENGTH] 	= "";
 static char config_filename[CONFIG_FILE_NAME_LENGTH] 	= "";
@@ -103,7 +108,7 @@ static const char *tag_root							= "cabrio-config";
 static const char *tag_emulators					= "emulators";
 static const char *tag_emulator						= 	"emulator";
 static const char *tag_emulator_executable			= 		"executable";
-static const char *tag_games						= "games";
+static const char *tag_games						= "game-list";
 static const char *tag_game							=   "game";
 static const char *tag_game_rom_image				=     "rom-image";
 static const char *tag_game_categories				=     "categories";
@@ -122,6 +127,8 @@ static const char *tag_iface_gfx_quality			=     "quality";
 static const char *tag_iface_gfx_max_width			=     "max-image-width";
 static const char *tag_iface_gfx_max_height			=     "max-image-height";
 static const char *tag_iface_theme					=     "theme";
+static const char *tag_iface_labels					=   "labels";
+static const char *tag_iface_labels_label			=     "label";
 static const char *tag_themes						=   "themes";
 static const char *tag_themes_theme					=     "theme";
 static const char *tag_theme_menu					=   "menu";
@@ -142,8 +149,6 @@ static const char *tag_theme_snap					=	"snap";
 static const char *tag_theme_snap_fix_ar			=	  "fix-aspect-ratio";
 static const char *tag_theme_hints					=	"hints";
 static const char *tag_theme_hints_pulse			=     "pulse";
-static const char *tag_theme_hints_label_back		=     "back-label";
-static const char *tag_theme_hints_label_select		=     "select-label";
 static const char *tag_theme_hints_image_back		=     "back-image";
 static const char *tag_theme_hints_image_select		=     "select-image";
 static const char *tag_theme_hints_image_arrow		=     "arrow-image";
@@ -203,6 +208,12 @@ static const char *config_high			= "high";
 static const char *config_portrait		= "portrait";
 static const char *config_landscape		= "landscape";
 static const char *config_auto			= "auto";
+/* Labels */
+static const char *config_label_all			= "all";
+static const char *config_label_platform	= "platform";
+static const char *config_label_back		= "back";
+static const char *config_label_select		= "select";
+static const char *config_label_lists		= "lists";
 
 static const char *warn_alloc = "Warning: Couldn't allocate memory for '%s' object\n";
 static const char *warn_skip = "Warning: Skipping unrecognised XML element in '%s': '%s'\n";
@@ -692,7 +703,7 @@ int config_read_game_images( xmlNode *node, struct config_game *game ) {
 	return 0;
 }
 
-int config_read_game( xmlNode *node, struct config_game *game ) {
+int config_read_game( xmlNode *node, struct config_game *game, const char *game_list ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, tag_name ) == 0 ) {
@@ -720,6 +731,18 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 		node = node->next;
 	}
 	
+	if( game_list && game_list[0] ) {
+		/* The list the game belongs to is just another category */
+		struct config_game_category *gc = malloc( sizeof(struct config_game_category) );
+		if( gc ) {
+			memset( gc, 0, sizeof(struct config_game_category) );
+			gc->category = config_category( default_label_lists );
+			gc->value = config_category_value( gc->category, game_list );
+			gc->next = game->categories;
+			game->categories = gc;
+		}
+	}
+	
 /*{
 	struct config_game_category *gc = game->categories;
 	printf( "Game: %s\n", game->name );
@@ -741,13 +764,26 @@ int config_read_game( xmlNode *node, struct config_game *game ) {
 }
 
 int config_read_games( xmlNode *node ) {
+	xmlNode *tmp = node;
+	char *name = NULL;
+
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_name ) == 0 ) {
+				name = (char*)xmlNodeGetContent(node);
+			}
+		}
+		node = node->next;
+	}
+
+	node = tmp;
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, tag_game ) == 0 ) {
 				struct config_game *game = malloc( sizeof(struct config_game ) );
 				if( game ) {
 					memset( game, 0, sizeof(struct config_game ) );
-					config_read_game( node->children, game );
+					config_read_game( node->children, game, name );
 					game->next = config.games;
 					config.games = game;
 				}
@@ -755,6 +791,9 @@ int config_read_games( xmlNode *node ) {
 					fprintf( stderr, warn_alloc, tag_game );
 					return -1;
 				}
+			}
+			else if( strcmp( (char*)node->name, tag_name ) == 0 ) {
+				/* Already got it */
 			}
 			else {
 				fprintf( stderr, warn_skip, tag_games, node->name );	
@@ -1029,12 +1068,6 @@ int config_read_hints( xmlNode *node, struct config_hints *hints ) {
 			else if( strcmp( (char*)node->name, tag_theme_hints_pulse ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &hints->pulse );
 			}
-			else if( strcmp( (char*)node->name, tag_theme_hints_label_back ) == 0 ) {
-				strncpy( hints->label_back, (char*)xmlNodeGetContent(node), CONFIG_LABEL_LENGTH );
-			}
-			else if( strcmp( (char*)node->name, tag_theme_hints_label_select ) == 0 ) {
-				strncpy( hints->label_select, (char*)xmlNodeGetContent(node), CONFIG_LABEL_LENGTH );
-			}
 			else if( strcmp( (char*)node->name, tag_theme_hints_image_back ) == 0 ) {
 				strncpy( hints->image_back, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
@@ -1295,6 +1328,85 @@ int config_read_interface_screen( xmlNode *node ) {
 	return 0;
 }
 
+int config_read_interface_label( xmlNode *node ) {
+	xmlNode *tmp = node;
+	char *name = NULL;
+	char *value = NULL;
+	
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_name ) == 0 ) {
+				name = (char*)xmlNodeGetContent(node);
+			}
+		}
+		node = node->next;
+	}
+
+	if( name && name[0] ) {
+		node = tmp;
+		while( node ) {
+			if( node->type == XML_ELEMENT_NODE ) {
+				if( strcmp( (char*)node->name, tag_value ) == 0 ) {
+					value = (char*)xmlNodeGetContent(node);
+				}
+				else if( strcmp( (char*)node->name, tag_name ) == 0 ) {
+					/* Already got it */
+				}
+				else {
+					fprintf( stderr, warn_skip, tag_iface_labels_label, node->name );	
+				}
+			}
+			node = node->next;
+		}
+	}
+	else {
+		fprintf( stderr, "Warning: element '%s' requires '%s'\n", tag_iface_labels_label, tag_name );
+		return -1;
+	}
+
+	if( value && value[0] ) {
+		if( strcasecmp( name, config_label_all ) == 0 ) {
+			strncpy( config.iface.labels.label_all, value, CONFIG_LABEL_LENGTH );
+		}
+		else if( strcasecmp( name, config_label_platform ) == 0 ) {
+			strncpy( config.iface.labels.label_platform, value, CONFIG_LABEL_LENGTH );
+		}
+		else if( strcasecmp( name, config_label_back ) == 0 ) {
+			strncpy( config.iface.labels.label_back, value, CONFIG_LABEL_LENGTH );
+		}
+		else if( strcasecmp( name, config_label_select ) == 0 ) {
+			strncpy( config.iface.labels.label_select, value, CONFIG_LABEL_LENGTH );
+		}
+		else if( strcasecmp( name, config_label_lists ) == 0 ) {
+			strncpy( config.iface.labels.label_lists, value, CONFIG_LABEL_LENGTH );
+		}
+		else {
+			fprintf( stderr, "Warning: Unrecognised label '%s'\n", name );
+		}
+	}
+	else {
+		fprintf( stderr, "Warning: element '%s' requires '%s'\n", tag_iface_labels_label, tag_value );
+		return -1;
+	}
+
+	return 0;
+}
+
+int config_read_interface_labels( xmlNode *node ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_iface_labels_label ) == 0 ) {
+				config_read_interface_label( node->children );
+			}
+			else {
+				fprintf( stderr, warn_skip, tag_iface_labels, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_interface( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
@@ -1315,6 +1427,9 @@ int config_read_interface( xmlNode *node ) {
 			}
 			else if( strcmp( (char*)node->name, tag_iface_theme ) == 0 ) {
 				strncpy( config.iface.theme_name, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, tag_iface_labels ) == 0 ) {
+				config_read_interface_labels( node->children );
 			}
 			else if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				/* Ignore (for now) */
@@ -1437,6 +1552,9 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 				/* Ignore */
 			}
 			else if( strcmp( (char*)node->name, tag_iface_theme ) == 0 ) {
+				/* Ignore */
+			}
+			else if( strcmp( (char*)node->name, tag_iface_labels ) == 0 ) {
 				/* Ignore */
 			}
 			else {
@@ -1910,6 +2028,12 @@ int config_new( void ) {
 
 		config.locations = NULL;
 		config.location_types = NULL;
+
+		strncpy( config.iface.labels.label_all, default_label_all, CONFIG_LABEL_LENGTH );
+		strncpy( config.iface.labels.label_platform, default_label_platform, CONFIG_LABEL_LENGTH );		
+		strncpy( config.iface.labels.label_back, default_label_back, CONFIG_LABEL_LENGTH );
+		strncpy( config.iface.labels.label_select, default_label_select, CONFIG_LABEL_LENGTH );
+		strncpy( config.iface.labels.label_lists, default_label_lists, CONFIG_LABEL_LENGTH );
 		
 		/* Default theme */
 		default_theme.next = NULL;
@@ -1959,8 +2083,6 @@ int config_new( void ) {
 		default_theme.hints.offset2 = -1.2;
 		default_theme.hints.size = 1;
 		default_theme.hints.pulse = 1;
-		strncpy( default_theme.hints.label_select, "Select", CONFIG_LABEL_LENGTH );
-		strncpy( default_theme.hints.label_back, "Back", CONFIG_LABEL_LENGTH );
 		snprintf( default_theme.hints.image_back, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_back_texture );
 		snprintf( default_theme.hints.image_select, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_select_texture );
 		snprintf( default_theme.hints.image_arrow, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_arrow_texture );

@@ -158,8 +158,6 @@ struct config_hints {
 	float offset2;
 	float size;
 	int pulse;
-	char label_back[CONFIG_LABEL_LENGTH];
-	char label_select[CONFIG_LABEL_LENGTH];
 	char image_back[CONFIG_FILE_NAME_LENGTH];
 	char image_select[CONFIG_FILE_NAME_LENGTH];
 	char image_arrow[CONFIG_FILE_NAME_LENGTH];
@@ -183,6 +181,14 @@ struct config_theme {
 	struct config_hints hints;
 };
 
+struct config_labels {
+	char label_all[CONFIG_LABEL_LENGTH];
+	char label_platform[CONFIG_LABEL_LENGTH];
+	char label_back[CONFIG_LABEL_LENGTH];
+	char label_select[CONFIG_LABEL_LENGTH];
+	char label_lists[CONFIG_LABEL_LENGTH];
+};
+
 struct config_iface {
 	int full_screen;
 	int screen_width;
@@ -194,6 +200,7 @@ struct config_iface {
 	int gfx_quality;
 	int gfx_max_width;
 	int gfx_max_height;
+	struct config_labels labels;
 	struct config_control controls[NUM_EVENTS];
 	char theme_name[CONFIG_NAME_LENGTH];
 	struct config_theme theme;
