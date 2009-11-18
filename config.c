@@ -1448,7 +1448,7 @@ int config_read_lookup( xmlNode *node, struct config_lookup *lookup ) {
 			if( strcmp( (char*)node->name, tag_match ) == 0 ) {
 				strncpy( lookup->match, (char*)xmlNodeGetContent(node), CONFIG_LABEL_LENGTH );
 			}
-			if( strcmp( (char*)node->name, tag_value ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_value ) == 0 ) {
 				strncpy( lookup->value, (char*)xmlNodeGetContent(node), CONFIG_LABEL_LENGTH );
 			}
 			else {
@@ -1469,7 +1469,7 @@ int config_read_category_lookup( xmlNode *node ) {
 			if( strcmp( (char*)node->name, tag_category ) == 0 ) {
 				category = config_category( (char*)xmlNodeGetContent(node) );
 			}
-			if( strcmp( (char*)node->name, tag_iface_lookups_lookup ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_iface_lookups_lookup ) == 0 ) {
 				/* Ignore for now */
 			}
 			else {

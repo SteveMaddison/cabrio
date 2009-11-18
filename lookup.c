@@ -16,12 +16,12 @@ int lookup_match( const char *pattern, const char *value ) {
 		
 		while( *ppos && *vpos ) {
 			if( *ppos == '*' ) {
-				if( *vpos == *(ppos+1) )
+				if( *vpos == *(ppos+1) || strncasecmp( ppos+1, vpos, 1 ) == 0 )
 					ppos++;
 				else
 					vpos++;
 			}
-			else if( *vpos == *ppos ) {
+			else if( *vpos == *ppos || strncasecmp( ppos, vpos, 1 ) == 0 ) {
 				ppos++;
 				vpos++;
 			}
