@@ -219,6 +219,8 @@ int menu_init( void ) {
 	for( i = 0 ; i < ((config->iface.theme.menu.max_visible+1)/2) ; i++ ) {
 		selected = selected->next;
 	}
+	if( !selected )
+		selected = tile_start;
 	selected->zoom = zoom;
 	selected->alpha = 1;
 
