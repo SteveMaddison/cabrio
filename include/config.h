@@ -201,6 +201,7 @@ struct config_iface {
 	int gfx_quality;
 	int gfx_max_width;
 	int gfx_max_height;
+	int prune_menus;
 	struct config_labels labels;
 	struct config_control controls[NUM_EVENTS];
 	char theme_name[CONFIG_NAME_LENGTH];

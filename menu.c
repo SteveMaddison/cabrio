@@ -162,12 +162,12 @@ int menu_init( void ) {
 	}
 
 	menu_item_add( config->iface.labels.label_all, MENU_ALL, NULL );
-	if( platform_count() > 1 ) {
+	if( platform_count() > 1 || config->iface.prune_menus == 0 ) {
 		menu_item_add( config->iface.labels.label_platform, MENU_PLATFORM, NULL );
 	}
 	if( category ) {		
 		do {
-			if( category->value_count > 1 )
+			if( category->value_count > 1 || config->iface.prune_menus == 0 )
 				menu_item_add( category->name, MENU_CATEGORY, category );
 			category = category->next;
 		} while( category != category_first() );

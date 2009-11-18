@@ -130,6 +130,7 @@ static const char *tag_iface_gfx_max_height			=     "max-image-height";
 static const char *tag_iface_theme					=     "theme";
 static const char *tag_iface_labels					=   "labels";
 static const char *tag_iface_labels_label			=     "label";
+static const char *tag_iface_prune_menus			=     "prune-menus";
 static const char *tag_themes						=   "themes";
 static const char *tag_themes_theme					=     "theme";
 static const char *tag_theme_menu					=   "menu";
@@ -1461,6 +1462,9 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, tag_iface_labels ) == 0 ) {
 				config_read_interface_labels( node->children );
 			}
+			else if( strcmp( (char*)node->name, tag_iface_prune_menus ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.prune_menus );
+			}
 			else if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				/* Ignore (for now) */
 			}
@@ -1585,6 +1589,9 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 				/* Ignore */
 			}
 			else if( strcmp( (char*)node->name, tag_iface_labels ) == 0 ) {
+				/* Ignore */
+			}
+			else if( strcmp( (char*)node->name, tag_iface_prune_menus ) == 0 ) {
 				/* Ignore */
 			}
 			else {
@@ -2059,6 +2066,7 @@ int config_new( void ) {
 
 		config.locations = NULL;
 		config.location_types = NULL;
+		config.iface.prune_menus = 1;
 		
 		/* Ensure the game list category has id 0 - we need to track it later */
 		platform_catgeory = config_category( default_label_lists );
