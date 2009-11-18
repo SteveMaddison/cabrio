@@ -261,10 +261,16 @@ int game_list_create( void ) {
 		struct game *g = game_start;
 		while( g ) {
 			struct game_image *gi = g->images;
+			struct game_category *gc = g->categories;
+
 			printf("Game: %s\n", g->name );
 			while( gi ) {
 				printf("  '%s' = '%s'\n", gi->type, gi->file_name );
 				gi = gi->next;
+			}
+			while( gc ) {
+				printf("  '%s' = '%s'\n", gc->name, gc->value );
+				gc = gc->next;
 			}
 			g = g->all_next;
 			if( g == game_start ) break;
