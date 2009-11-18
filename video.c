@@ -1,6 +1,10 @@
 #include <ffmpeg/avcodec.h>
 #include <ffmpeg/avformat.h>
+#include <ffmpeg/swscale.h>
 #include "video.h"
+#include "ogl.h"
+
+static const int VIDEO_SIZE = 256;
 
 AVFormatContext *format_context = NULL;
 AVCodecContext *codec_context = NULL;
@@ -10,7 +14,8 @@ AVFrame *conv_frame = NULL;
 AVPacket packet;
 uint8_t *buffer;
 int video_stream = -1;
-int got_frame = 0;
+struct SwsContext *scale_context;
+GLuint texture;
 
 
 int video_init( void ) {
@@ -24,6 +29,8 @@ int video_init( void ) {
 		return -1;
 	}
 
+	glGenTextures( 1, &texture );
+
 	return 0;
 }
 
@@ -35,6 +42,10 @@ void video_free( void ) {
 	
 	av_free( conv_frame );
 	conv_frame = NULL;
+	
+	if( texture )
+		glDeleteTextures( 1, &texture );
+	texture = 0;
 }
 
 void video_close( void ) {
@@ -110,4 +121,53 @@ int video_open( const char *filename ) {
 		codec_context->width, codec_context->height );
 	
 	return 0;
+}
+
+int video_get_frame( void ) {
+	int got_frame = 0;
+	
+	if( !format_context || !buffer )
+		return -1;
+		
+	while( av_read_frame( format_context, &packet ) >= 0 ) {
+		if( packet.stream_index == video_stream ) {
+			avcodec_decode_video( codec_context, raw_frame, &got_frame, packet.data, packet.size );
+		
+			if( got_frame ) {				
+				scale_context = sws_getContext( codec_context->width, codec_context->height, codec_context->pix_fmt,
+					VIDEO_SIZE, VIDEO_SIZE, PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL );
+				if( !scale_context ) {
+					fprintf( stderr, "Warning: Couldn't initialise video scaling context\n" );
+					return -1;
+				}
+					
+				if( sws_scale( scale_context, raw_frame->data, raw_frame->linesize, 0, codec_context->height,
+					conv_frame->data, conv_frame->linesize ) != 0 ) {
+					fprintf( stderr, "Warning: Couldn't scale video frame\n" );
+					return -1;
+				}
+				
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+				glBindTexture( GL_TEXTURE_2D, texture );
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+				glTexImage2D( GL_TEXTURE_2D, 0, 3, VIDEO_SIZE, VIDEO_SIZE, 0,
+					GL_RGB, GL_UNSIGNED_BYTE, conv_frame->data );
+				
+				glTranslatef( 0.0, 0.0, -5 );
+				ogl_load_alterego();
+				glBegin( GL_QUADS );
+					glTexCoord2f(0.0, 0.0); glVertex3f(-1,  1, 0.0);
+					glTexCoord2f(0.0, 1.0); glVertex3f(-1, -1, 0.0);
+					glTexCoord2f(1.0, 1.0); glVertex3f( 1, -1, 0.0);
+					glTexCoord2f(1.0, 0.0); glVertex3f( 1,  1, 0.0);
+				glEnd();
+			}
+			av_free_packet(&packet);
+		}
+		return 0;
+	}
+	return -1;
 }
