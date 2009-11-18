@@ -188,6 +188,8 @@ int location_get_match( const char *type, const char *filename, char *path ) {
 		pos = strrchr( search, '.' );
 		if( pos )
 			*(pos + 1) = '\0';
+		else
+			strcat( search, "." );
 
 		while( location ) {
 			if( (dir = opendir( location->directory )) ) {
