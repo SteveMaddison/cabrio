@@ -8,6 +8,7 @@
 #include "font.h"
 #include "image.h"
 #include "location.h"
+#include "lookup.h"
 
 struct game *game_start = NULL;
 struct game *game_filter_start = NULL;
@@ -179,7 +180,7 @@ int game_list_create( void ) {
 				if( config_game_category->category->id == 0 )
 					game_add_category( game, (char*)config_get()->iface.labels.label_lists, config_game_category->value->name );
 				else
-					game_add_category( game, config_game_category->category->name, config_game_category->value->name );
+					game_add_category( game, config_game_category->category->name, (char*)lookup_category( config_game_category->category, (const char*)config_game_category->value->name ) );
 				config_game_category = config_game_category->next;
 			}
 			

@@ -113,7 +113,6 @@ static const char *tag_games						=   "games";
 static const char *tag_game							=     "game";
 static const char *tag_game_rom_image				=       "rom-image";
 static const char *tag_game_categories				=       "categories";
-static const char *tag_game_category				=       "category";
 static const char *tag_game_images					=     "images";
 static const char *tag_game_images_image			=       "image";
 static const char *tag_iface						= "interface";
@@ -130,7 +129,10 @@ static const char *tag_iface_gfx_max_height			=     "max-image-height";
 static const char *tag_iface_theme					=     "theme";
 static const char *tag_iface_labels					=   "labels";
 static const char *tag_iface_labels_label			=     "label";
-static const char *tag_iface_prune_menus			=     "prune-menus";
+static const char *tag_iface_prune_menus			=   "prune-menus";
+static const char *tag_iface_lookups				=   "lookups";
+static const char *tag_iface_lookups_category		=     "category-lookup";
+static const char *tag_iface_lookups_lookup			=       "lookup";
 static const char *tag_themes						=   "themes";
 static const char *tag_themes_theme					=     "theme";
 static const char *tag_theme_menu					=   "menu";
@@ -197,6 +199,8 @@ static const char *tag_position_z		= "z-position";
 static const char *tag_order			= "order";
 static const char *tag_directory		= "directory";
 static const char *tag_color			= "color";
+static const char *tag_match			= "match";
+static const char *tag_category			= "category";
 
 /* Common values */
 static const char *config_empty			= "";
@@ -483,7 +487,7 @@ struct config_category *config_category( const char *name ) {
 			/* add new */
 			c = malloc( sizeof(struct config_category) );
 			if( c == NULL ) {
-				fprintf( stderr, warn_alloc, tag_game_category );
+				fprintf( stderr, warn_alloc, tag_category );
 			}
 			else {
 				memset( c, 0, sizeof(struct config_category) );
@@ -568,7 +572,7 @@ int config_read_game_category( xmlNode *node, struct config_game *game ) {
 							game->categories = gc;
 						}
 						else {
-							fprintf( stderr, warn_alloc, tag_game_category );
+							fprintf( stderr, warn_alloc, tag_category );
 							return -1;					
 						}
 					}
@@ -577,7 +581,7 @@ int config_read_game_category( xmlNode *node, struct config_game *game ) {
 					/* Already got it... */
 				}
 				else {
-					fprintf( stderr, warn_skip, tag_game_category, node->name );
+					fprintf( stderr, warn_skip, tag_category, node->name );
 				}
 			}
 			node = node->next;
@@ -600,7 +604,7 @@ int config_read_game_category( xmlNode *node, struct config_game *game ) {
 int config_read_game_categories( xmlNode *node, struct config_game *game ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, tag_game_category ) == 0 ) {
+			if( strcmp( (char*)node->name, tag_category ) == 0 ) {
 				config_read_game_category( node->children, game );
 			}
 			else {
@@ -1438,6 +1442,93 @@ int config_read_interface_labels( xmlNode *node ) {
 	return 0;
 }
 
+int config_read_lookup( xmlNode *node, struct config_lookup *lookup ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_match ) == 0 ) {
+				strncpy( lookup->match, (char*)xmlNodeGetContent(node), CONFIG_LABEL_LENGTH );
+			}
+			if( strcmp( (char*)node->name, tag_value ) == 0 ) {
+				strncpy( lookup->value, (char*)xmlNodeGetContent(node), CONFIG_LABEL_LENGTH );
+			}
+			else {
+				fprintf( stderr, warn_skip, tag_iface_lookups_lookup, node->name );
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+int config_read_category_lookup( xmlNode *node ) {
+	xmlNode *tmp = node;
+	struct config_category *category = NULL;
+
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_category ) == 0 ) {
+				category = config_category( (char*)xmlNodeGetContent(node) );
+			}
+			if( strcmp( (char*)node->name, tag_iface_lookups_lookup ) == 0 ) {
+				/* Ignore for now */
+			}
+			else {
+				fprintf( stderr, warn_skip, tag_iface_lookups_category, node->name );
+			}
+		}
+		node = node->next;
+	}
+
+	if( category ) {
+		node = tmp;
+		while( node ) {
+			if( node->type == XML_ELEMENT_NODE ) {
+				if( strcmp( (char*)node->name, tag_iface_lookups_lookup ) == 0 ) {
+					struct config_lookup *lookup = malloc( sizeof(struct config_lookup ) );
+					if( lookup ) {
+						memset( lookup, 0, sizeof(struct config_lookup ) );
+						config_read_lookup( node->children, lookup );
+						lookup->next = category->lookups;
+						category->lookups = lookup;
+					}
+					else {
+						fprintf( stderr, warn_alloc, tag_iface_lookups_lookup );
+						return -1;
+					}
+				}
+				else if( strcmp( (char*)node->name, tag_category ) == 0 ) {
+					/* Already got it */
+				}
+				else {
+					fprintf( stderr, warn_skip, tag_iface_lookups_category, node->name );
+				}
+			}
+			node = node->next;
+		}
+	}
+	else {
+		fprintf( stderr, "Warning: Couldn't determine category for lookup\n" );
+		return -1;
+	}
+	
+	return 0;
+}
+
+int config_read_interface_lookups( xmlNode *node ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_iface_lookups_category ) == 0 ) {
+				config_read_category_lookup( node->children );
+			}
+			else {
+				fprintf( stderr, warn_skip, tag_iface_lookups, node->name );
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
 int config_read_interface( xmlNode *node ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
@@ -1464,6 +1555,9 @@ int config_read_interface( xmlNode *node ) {
 			}
 			else if( strcmp( (char*)node->name, tag_iface_prune_menus ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.prune_menus );
+			}
+			else if( strcmp( (char*)node->name, tag_iface_lookups ) == 0 ) {
+				config_read_interface_lookups( node->children );
 			}
 			else if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				/* Ignore (for now) */
@@ -1592,6 +1686,9 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 				/* Ignore */
 			}
 			else if( strcmp( (char*)node->name, tag_iface_prune_menus ) == 0 ) {
+				/* Ignore */
+			}
+			else if( strcmp( (char*)node->name, tag_iface_lookups ) == 0 ) {
 				/* Ignore */
 			}
 			else {

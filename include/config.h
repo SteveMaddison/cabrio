@@ -53,6 +53,12 @@ struct config_platform {
 	char name[CONFIG_NAME_LENGTH];
 };
 
+struct config_lookup {
+	struct config_lookup *next;
+	char match[CONFIG_LABEL_LENGTH];
+	char value[CONFIG_LABEL_LENGTH];
+};
+
 struct config_category_value {
 	struct config_category_value *next;
 	char name[CONFIG_NAME_LENGTH];
@@ -63,6 +69,7 @@ struct config_category {
 	int id;
 	char name[CONFIG_NAME_LENGTH];
 	struct config_category_value *values;
+	struct config_lookup *lookups;
 };
 
 struct config_game_category {

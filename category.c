@@ -1,5 +1,6 @@
 #include "category.h"
 #include "config.h"
+#include "lookup.h"
 #include <stdlib.h>
 
 struct category *category_start;
@@ -58,11 +59,20 @@ int category_value_add_unknown( struct category *category ) {
 }
 
 int category_value_add( struct category *category, char *name ) {
+	struct category_value *search = category->values;
 	struct category_value *after = category->values;
 	struct category_value *category_value = malloc( sizeof(struct category_value) );
 
+	if( search ) {
+		do {
+			if( strcasecmp( search->name, name ) == 0 )
+				return 0;
+			search = search->next;
+		} while( search != category->values );
+	}
+
 	if( category_value ) {
-		memset( category_value, 0, sizeof(struct category_value) );
+		memset( category_value, 0, sizeof(struct category_value) );		
 		category_value->name = name;
 	
 		if( after ) {
@@ -129,7 +139,7 @@ int category_init( void ) {
 				struct config_category_value *value = c->values;
 				category->values = NULL;
 				while( value ) {
-					category_value_add( category, value->name );
+					category_value_add( category, (char*)lookup_category( c, value->name ) );
 					value = value->next;
 				}
 			}
