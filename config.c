@@ -108,13 +108,14 @@ static const char *tag_root							= "cabrio-config";
 static const char *tag_emulators					= "emulators";
 static const char *tag_emulator						= 	"emulator";
 static const char *tag_emulator_executable			= 		"executable";
-static const char *tag_games						= "game-list";
-static const char *tag_game							=   "game";
-static const char *tag_game_rom_image				=     "rom-image";
-static const char *tag_game_categories				=     "categories";
-static const char *tag_game_category				=     "category";
-static const char *tag_game_images					=   "images";
-static const char *tag_game_images_image			=     "image";
+static const char *tag_game_list					= "game-list";
+static const char *tag_games						=   "games";
+static const char *tag_game							=     "game";
+static const char *tag_game_rom_image				=       "rom-image";
+static const char *tag_game_categories				=       "categories";
+static const char *tag_game_category				=       "category";
+static const char *tag_game_images					=     "images";
+static const char *tag_game_images_image			=       "image";
 static const char *tag_iface						= "interface";
 static const char *tag_iface_full_screen			= 	"full-screen";
 static const char *tag_iface_screen					=   "screen";
@@ -533,29 +534,40 @@ struct config_category_value *config_category_value( struct config_category *cat
 	return NULL;
 }
 
-int config_read_game_category( xmlNode *node, struct config_game_category *gc ) {
+int config_read_game_category( xmlNode *node, struct config_game *game ) {
 	xmlNode *tmp = node;
+	char *name = NULL;
 	
 	/* Make sure we have the name first */
 	if( node ) {
 		while( node ) {
 			if( node->type == XML_ELEMENT_NODE ) {
 				if( strcmp( (char*)node->name, tag_name ) == 0 ) {
-					gc->category = config_category( (char*)xmlNodeGetContent(node) );
+					name = (char*)xmlNodeGetContent(node);
 				}
 			}
 			node = node->next;
 		}
 	}
-	/* Now check for (and add) values */
-	gc->value = NULL;
-	if( gc->category ) {
+	
+	if( name && name[0] ) {
 		node = tmp;
 		while( node ) {
 			if( node->type == XML_ELEMENT_NODE ) {
-				if( strcmp( (char*)node->name, tag_value ) == 0 ) {
-					if( xmlNodeGetContent(node)[0] ) { 
-						gc->value = config_category_value( gc->category, (char*)xmlNodeGetContent(node) );
+				if( strcmp( (char*)node->name, tag_value ) == 0 ) {			
+					if( xmlNodeGetContent(node)[0] ) {
+						struct config_game_category *gc = malloc( sizeof(struct config_game_category) );
+						if( gc ) {
+							memset( gc, 0, sizeof(struct config_game_category) );
+							gc->category = config_category( name );
+							gc->value = config_category_value( gc->category, (char*)xmlNodeGetContent(node) );
+							gc->next = game->categories;
+							game->categories = gc;
+						}
+						else {
+							fprintf( stderr, warn_alloc, tag_game_category );
+							return -1;					
+						}
 					}
 				}
 				else if( strcmp( (char*)node->name, tag_name ) == 0 ) {
@@ -566,10 +578,6 @@ int config_read_game_category( xmlNode *node, struct config_game_category *gc ) 
 				}
 			}
 			node = node->next;
-		}
-		if( gc->value == NULL ) {
-			fprintf( stderr, "Warning: Category '%s' specified without value(s)\n", gc->category->name );
-			return -1;		
 		}
 	}
 	else {
@@ -584,22 +592,7 @@ int config_read_game_categories( xmlNode *node, struct config_game *game ) {
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, tag_game_category ) == 0 ) {
-				struct config_game_category *gc = malloc( sizeof(struct config_game_category) );
-				if( gc ) {
-					memset( gc, 0, sizeof(struct config_game_category) );
-					if( config_read_game_category( node->children, gc ) == 0 ) {
-						gc->next = game->categories;
-						game->categories = gc;
-					}
-					else {
-						free( gc );
-						gc = NULL;
-					}
-				}
-				else {
-					fprintf( stderr, warn_alloc, tag_game_category );
-					return -1;					
-				}
+				config_read_game_category( node->children, game );
 			}
 			else {
 				fprintf( stderr, warn_skip, tag_params, node->name );	
@@ -747,7 +740,7 @@ int config_read_game( xmlNode *node, struct config_game *game, const char *game_
 		}
 	}
 	
-/*{
+{
 	struct config_game_category *gc = game->categories;
 	printf( "Game: %s\n", game->name );
 	while( gc ) {
@@ -762,12 +755,47 @@ int config_read_game( xmlNode *node, struct config_game *game, const char *game_
 		printf( "  '%s' = '%s'\n", gc->category->name, gc->value->name );
 		gc = gc->next;
 	}
-}*/
+}
 
 	return 0;
 }
 
-int config_read_games( xmlNode *node ) {
+
+int config_read_games( xmlNode *node, const char *game_list ) {
+	while( node ) {
+		if( node->type == XML_ELEMENT_NODE ) {
+			if( strcmp( (char*)node->name, tag_game ) == 0 ) {
+				struct config_game *game = malloc( sizeof(struct config_game ) );
+				if( game ) {
+					memset( game, 0, sizeof(struct config_game ) );
+					if( config_read_game( node->children, game, game_list ) == 0 ) {
+						game->next = config.games;
+						config.games = game;
+					}
+					else {
+						free( game );
+						game = NULL;
+						return -1;
+					}
+				}
+				else {
+					fprintf( stderr, warn_alloc, tag_game );
+					return -1;
+				}
+			}
+			else if( strcmp( (char*)node->name, tag_name ) == 0 ) {
+				/* Already got it */
+			}
+			else {
+				fprintf( stderr, warn_skip, tag_games, node->name );	
+			}
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+int config_read_game_list( xmlNode *node ) {
 	xmlNode *tmp = node;
 	char *name = NULL;
 
@@ -783,18 +811,8 @@ int config_read_games( xmlNode *node ) {
 	node = tmp;
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
-			if( strcmp( (char*)node->name, tag_game ) == 0 ) {
-				struct config_game *game = malloc( sizeof(struct config_game ) );
-				if( game ) {
-					memset( game, 0, sizeof(struct config_game ) );
-					config_read_game( node->children, game, name );
-					game->next = config.games;
-					config.games = game;
-				}
-				else {
-					fprintf( stderr, warn_alloc, tag_game );
-					return -1;
-				}
+			if( strcmp( (char*)node->name, tag_games ) == 0 ) {
+				config_read_games( node->children, name );
 			}
 			else if( strcmp( (char*)node->name, tag_name ) == 0 ) {
 				/* Already got it */
@@ -1692,8 +1710,8 @@ int config_read( xmlNode *root, const char *filename ) {
 				if( config_read_emulators( node->children ) != 0 )
 					return -1;
 			}
-			else if( strcmp( (char*)node->name, tag_games ) == 0 ) {
-				if( config_read_games( node->children ) != 0 )
+			else if( strcmp( (char*)node->name, tag_game_list ) == 0 ) {
+				if( config_read_game_list( node->children ) != 0 )
 					return -1;
 			}
 			else if( strcmp( (char*)node->name, tag_iface ) == 0 ) {
