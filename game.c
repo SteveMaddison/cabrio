@@ -55,8 +55,27 @@ void game_list_free( void ) {
 		game_free( game_start );
 }
 
+const char *game_media_get( struct game *game, int type, const char *subtype ) {
+	struct game_media *media = game->media;
+	
+	while( media ) {
+		if( media->type == type
+		&&
+			( 
+				((media->subtype == NULL) && (subtype == NULL))
+				||
+				strcasecmp( media->subtype, subtype ) == 0
+			)
+		)
+			return media->file_name;
+		media = media->next;
+	}
+	
+	return NULL;
+}
+
 int game_load_texture( struct game *game ) {	
-	const char *filename = game_image_get( game, game_image_type );
+	const char *filename = game_media_get( game, MEDIA_IMAGE, game_image_type );
 	
 	if( game->texture ) {
 		game_free_texture( game );
@@ -149,7 +168,7 @@ int game_list_create( void ) {
 	if( !config_game )
 		platform_add_unknown();
 	
-	game_image_type = (char*)media_type( MEDIA_LOGO );
+	game_image_type = (char*)image_type_name( IMAGE_LOGO );
 	
 	while( config_game ) {
 		game = malloc(sizeof(struct game));
@@ -184,33 +203,34 @@ int game_list_create( void ) {
 				config_game_category = config_game_category->next;
 			}
 			
-			game->images = NULL;
-			for( i = 0 ; i < NUM_MEDIA_TYPES ; i++ ) {
-				struct game_image *image = malloc( sizeof(struct game_image) );
+			game->media = NULL;
+			for( i = 0 ; i < NUM_IMAGE_TYPES ; i++ ) {
+				struct game_media *image = malloc( sizeof(struct game_media) );
 				if( image ) {
 					struct config_image *config_game_image = config_game->images;
 					
-					memset( image, 0, sizeof(struct game_image) );
+					memset( image, 0, sizeof(struct game_media) );
+					image->type = MEDIA_IMAGE;
 					
 					while( config_game_image ) {
-						if( strcasecmp( config_game_image->type->name, media_type(i) ) == 0 ) {
-							image->type = config_game_image->type->name;
-							location_get_path( image->type, config_game_image->file_name, image->file_name );						
+						if( strcasecmp( config_game_image->type->name, image_type_name(i) ) == 0 ) {
+							image->subtype = config_game_image->type->name;
+							location_get_path( image->subtype, config_game_image->file_name, image->file_name );						
 							break;
 						}
 						config_game_image = config_game_image->next;
 					}
 					if( image->file_name[0] == '\0' ) {
-						image->type = (char*)media_type(i);
-						location_get_match( image->type, game->rom_path, image->file_name );
+						image->subtype = (char*)image_type_name(i);
+						location_get_match( image->subtype, game->rom_path, image->file_name );
 					}
 					
 					if( image->file_name[0] == '\0' ) {
 						free( image );
 					}
 					else {
-						image->next = game->images;
-						game->images = image;
+						image->next = game->media;
+						game->media = image;
 					}
 				}
 				else {
@@ -257,16 +277,16 @@ int game_list_create( void ) {
 	}
 	game_list_unfilter();
 
-/*  if( game_start ) {
+  if( game_start ) {
 		struct game *g = game_start;
 		while( g ) {
-			struct game_image *gi = g->images;
+			struct game_media *gm = g->media;
 			struct game_category *gc = g->categories;
 
 			printf("Game: %s\n", g->name );
-			while( gi ) {
-				printf("  '%s' = '%s'\n", gi->type, gi->file_name );
-				gi = gi->next;
+			while( gm ) {
+				printf("  '%d/%s' = '%s'\n", gm->type, gm->subtype, gm->file_name );
+				gm = gm->next;
 			}
 			while( gc ) {
 				printf("  '%s' = '%s'\n", gc->name, gc->value );
@@ -275,7 +295,7 @@ int game_list_create( void ) {
 			g = g->all_next;
 			if( g == game_start ) break;
 		}
-	}*/
+	}
 
 	return 0;
 }
@@ -359,19 +379,5 @@ int game_list_unfilter( void ) {
 	game_filter_start = game_start;
 
 	return count;
-}
-
-const char *game_image_get( struct game *game, const char *type ) {
-	struct game_image *image = game->images;
-	
-	if( type ) {
-		while( image ) {
-			if( strcasecmp( image->type, type ) == 0 )
-				return image->file_name;
-			image = image->next;
-		}
-	}
-	
-	return NULL;
 }
 

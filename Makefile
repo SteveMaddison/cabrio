@@ -2,8 +2,8 @@ CC=gcc
 BIN_DIR=/usr/local/bin
 DATA_DIR=/usr/local/share/cabrio
 CFLAGS=-g -Wall -DDATA_DIR=\"$(DATA_DIR)\"
-LDFLAGS=-lSDL_image -lSDL_gfx -lglut -lSDL_ttf -lSDL_mixer -lxml2 
-	-lavutil -lavformat -lavcodec -lz -lavutil -lm
+LDFLAGS=-lSDL_image -lSDL_gfx -lglut -lSDL_ttf -lSDL_mixer -lxml2 \
+	-lavutil -lavformat -lavcodec -lz -lm
 INCLUDES=-I./include -I/usr/include/libxml2
 
 INSTALL=/usr/bin/install -c

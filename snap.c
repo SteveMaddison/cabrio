@@ -1,12 +1,14 @@
 #include "snap.h"
+#include "game.h"
 #include "config.h"
 #include "ogl.h"
 #include "sdl_ogl.h"
+#include "media.h"
 
 static const GLfloat DEPTH = -8;
 static const GLfloat max_size = 280;
 static const GLfloat scale_fator = 0.0144;
-static struct texture *current = NULL;
+static struct texture *texture = NULL;
 #define NUM_NOISE 3
 static struct texture *noise[NUM_NOISE];
 static int frame = 0;
@@ -18,6 +20,8 @@ static int hide_direction = 0;
 static int visible = 0;
 static GLfloat scale = 0.006;
 static GLfloat hidden_offset = -4.0;
+static int snap_media_type = -1;
+static char *snap_media_subtype = NULL;
 
 int snap_init( void ) {
 	const struct config *config = config_get();
@@ -49,6 +53,9 @@ int snap_init( void ) {
 	if( config->iface.theme.snap.offset1 > 0 )
 		hidden_offset = -hidden_offset;
 	
+	snap_media_type = MEDIA_IMAGE;
+	snap_media_subtype = image_type_name( IMAGE_SCREENSHOT );
+	
 	return 0;
 }
 
@@ -58,9 +65,9 @@ void snap_free( void ) {
 	for( i = 0 ; i < NUM_NOISE ; i++ )
 		ogl_free_texture( noise[i] );
 		
-	if( current )
-		ogl_free_texture( current );
-	current = NULL;
+	if( texture )
+		ogl_free_texture( texture );
+	texture = NULL;
 }
 
 void snap_pause( void ) {
@@ -71,48 +78,53 @@ int snap_resume( void ) {
 	return snap_init();
 }
 
-int snap_set( const char *filename ) {
+int snap_set( struct game *game ) {
 	const struct config_snap *config = &config_get()->iface.theme.snap;
+	const char *filename = game_media_get( game, snap_media_type, snap_media_subtype );
 
 	snap_clear();
-	if( filename && filename[0] ) {
-		current = sdl_create_texture( filename );
-		if( current ) {
+	
+	if( !filename || !filename[0] )
+		return -1;
+	
+	if( snap_media_type == MEDIA_IMAGE ) {	
+		texture = sdl_create_texture( filename );
+		if( texture ) {
 			if( config->fix_aspect_ratio ) {
-				if( current->width > current->height ) {
+				if( texture->width > texture->height ) {
 					/* Landscape */
-					current->width = max_size;
-					current->height = max_size / ogl_aspect_ratio();
+					texture->width = max_size;
+					texture->height = max_size / ogl_aspect_ratio();
 				}
 				else {
 					/* Portrait */
-					current->height = max_size;
-					current->width = max_size / ogl_aspect_ratio();
+					texture->height = max_size;
+					texture->width = max_size / ogl_aspect_ratio();
 				}				
 			}
 			else {
-				if( current->width > current->height ) {
+				if( texture->width > texture->height ) {
 					/* Landscape */
-					current->height = (int)(float)current->height/((float)current->width/max_size);
-					current->width = max_size;
+					texture->height = (int)(float)texture->height/((float)texture->width/max_size);
+					texture->width = max_size;
 				}
 				else {
 					/* Portrait */
-					current->width = (int)(float)current->width/((float)current->height/max_size);
-					current->height = max_size;
+					texture->width = (int)(float)texture->width/((float)texture->height/max_size);
+					texture->height = max_size;
 				}
 			}
 			return 0;
 		}
 	}
-	current = NULL;
+	texture = NULL;
 	return 0;
 }
 
 void snap_clear( void ) {
-	if( current )
-		ogl_free_texture( current );
-	current = NULL;
+	if( texture )
+		ogl_free_texture( texture );
+	texture = NULL;
 }
 
 void snap_show( void ) {
@@ -134,16 +146,16 @@ void snap_draw( void ) {
 	const struct config_snap *config = &config_get()->iface.theme.snap;
 	
 	if( visible ) {
+		struct texture *t = texture;
 		GLfloat xfactor = ogl_xfactor();
 		GLfloat yfactor = ogl_yfactor();
-		struct texture *texture = current;
 		GLfloat xsize, ysize, hide_offset;
 		
-		if( texture == NULL )
-			texture = noise[frame/noise_skip];
+		if( t == NULL )
+			t = noise[frame/noise_skip];
 	
-		xsize = (texture->width/2) * scale * xfactor;
-		ysize = (texture->height/2) * scale * xfactor;
+		xsize = (t->width/2) * scale * xfactor;
+		ysize = (t->height/2) * scale * xfactor;
 		
 		hide_offset = (((hidden_offset - config->offset1) / (GLfloat)steps) * (GLfloat)step);
 
@@ -162,7 +174,7 @@ void snap_draw( void ) {
 		glEnable(GL_TEXTURE_2D);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 	
-		glBindTexture( GL_TEXTURE_2D, texture->id );		
+		glBindTexture( GL_TEXTURE_2D, t->id );		
 		glBegin( GL_QUADS );
 			glTexCoord2f(0.0, 0.0); glVertex3f(-xsize,  ysize, 0.0);
 			glTexCoord2f(0.0, 1.0); glVertex3f(-xsize, -ysize, 0.0);

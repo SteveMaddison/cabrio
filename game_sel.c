@@ -149,7 +149,7 @@ void game_sel_pause( void ) {
 
 int game_sel_resume( void ) {
 	game_sel_load_textures();
-	snap_set( game_image_get( game_tile_current->game, media_type(MEDIA_SCREENSHOT) ) );
+	snap_set( game_tile_current->game );
 	return 0;
 }
 
@@ -496,8 +496,8 @@ void game_sel_draw( void ) {
 	if( idle_counter && !game_sel_busy() ) {
 		idle_counter--;
 		if( idle_counter == 0 && game_tile_current->game ) {
-			bg_set( game_image_get( game_tile_current->game, media_type(MEDIA_BACKGROUND) ) );
-			snap_set( game_image_get( game_tile_current->game, media_type(MEDIA_SCREENSHOT) ) );
+			bg_set( game_media_get( game_tile_current->game, MEDIA_IMAGE, image_type_name(IMAGE_BACKGROUND) ) );
+			snap_set( game_tile_current->game );
 		}
 	}
 	if( visible ) {

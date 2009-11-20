@@ -1,13 +1,28 @@
 #ifndef __MEDIA_H__
 #define __MEDIA_H__
 
-enum MEDIA_t {
-	MEDIA_LOGO,
-	MEDIA_SCREENSHOT,
-	MEDIA_BACKGROUND,
+enum media_t {
+	MEDIA_IMAGE,
+	MEDIA_VIDEO,
+	MEDIA_AUDIO,
 	NUM_MEDIA_TYPES
 };
 
-const char *media_type( int i );
+enum image_t {
+	IMAGE_LOGO,
+	IMAGE_SCREENSHOT,
+	IMAGE_BACKGROUND,
+	NUM_IMAGE_TYPES
+};
+
+struct media {
+	int type;
+	char *subtype;
+};
+
+char *image_type_name( int i );
+char *media_type_name( int m );
+
 
 #endif
+
