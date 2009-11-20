@@ -8,6 +8,10 @@ static char *names[] = { "back", "blip", "no", "select" };
 int sound_init( void ) {
 	int i;
 	
+	for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
+		sounds[i] = NULL;
+	}
+	
 	if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) {
 		fprintf( stderr, "Error: Unable to initialise sound: %s\n", SDL_GetError() );
 		return -1;

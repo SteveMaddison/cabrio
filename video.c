@@ -4,7 +4,9 @@
 #include "video.h"
 #include "ogl.h"
 
-static const int VIDEO_SIZE = 256;
+static const int VIDEO_SIZE = 512;
+static const int CONV_FORMAT = PIX_FMT_RGB24;
+static const int VIDEO_BPP = 3;
 
 AVFormatContext *format_context = NULL;
 AVCodecContext *codec_context = NULL;
@@ -19,6 +21,7 @@ GLuint texture;
 
 
 int video_init( void ) {
+	avcodec_register_all();
 	av_register_all();
 	
 	raw_frame = avcodec_alloc_frame();
@@ -107,8 +110,7 @@ int video_open( const char *filename ) {
 		return -1;
 	}
 	else {
-		int bytes = avpicture_get_size( PIX_FMT_RGB24,
-			codec_context->width, codec_context->height);
+		int bytes = avpicture_get_size( CONV_FORMAT, VIDEO_SIZE, VIDEO_SIZE );
 		buffer = (uint8_t*)av_malloc( bytes *sizeof(uint8_t) );
 	}
 	
@@ -116,15 +118,16 @@ int video_open( const char *filename ) {
 		fprintf( stderr, "Warning: Couldn't allocate buffer for video '%s'\n", filename );
 		return -1;
 	}
-	
-	avpicture_fill( (AVPicture*)conv_frame, buffer, PIX_FMT_RGB24,
-		codec_context->width, codec_context->height );
+
+	avpicture_fill( (AVPicture*)conv_frame, buffer, CONV_FORMAT, VIDEO_SIZE, VIDEO_SIZE );
 	
 	return 0;
 }
 
 int video_get_frame( void ) {
 	int got_frame = 0;
+	GLenum error = GL_NO_ERROR;
+	static int skip = 0;
 	
 	if( !format_context || !buffer )
 		return -1;
@@ -133,37 +136,43 @@ int video_get_frame( void ) {
 		if( packet.stream_index == video_stream ) {
 			avcodec_decode_video( codec_context, raw_frame, &got_frame, packet.data, packet.size );
 		
-			if( got_frame ) {				
-				scale_context = sws_getContext( codec_context->width, codec_context->height, codec_context->pix_fmt,
-					VIDEO_SIZE, VIDEO_SIZE, PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL );
-				if( !scale_context ) {
-					fprintf( stderr, "Warning: Couldn't initialise video scaling context\n" );
-					return -1;
-				}
-					
-				if( sws_scale( scale_context, raw_frame->data, raw_frame->linesize, 0, codec_context->height,
-					conv_frame->data, conv_frame->linesize ) != 0 ) {
-					fprintf( stderr, "Warning: Couldn't scale video frame\n" );
-					return -1;
+			if( got_frame ) {
+				if( ++skip == 5 ) {
+					skip = 0;
+					scale_context = sws_getCachedContext( scale_context, codec_context->width, codec_context->height, codec_context->pix_fmt,
+						VIDEO_SIZE, VIDEO_SIZE, CONV_FORMAT, SWS_BICUBIC, NULL, NULL, NULL );
+					if( !scale_context ) {
+						fprintf( stderr, "Warning: Couldn't initialise video conversion context\n" );
+						return -1;
+					}
+	
+					sws_scale( scale_context, raw_frame->data, raw_frame->linesize, 0,
+						VIDEO_SIZE, conv_frame->data, conv_frame->linesize );
+	
+					glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+					glBindTexture( GL_TEXTURE_2D, texture );
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+					glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+					glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+					glTexImage2D( GL_TEXTURE_2D, 0, VIDEO_BPP, VIDEO_SIZE, VIDEO_SIZE, 0,
+						GL_RGB, GL_UNSIGNED_BYTE, conv_frame->data[0] );
 				}
 				
-				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-				glBindTexture( GL_TEXTURE_2D, texture );
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-				glTexImage2D( GL_TEXTURE_2D, 0, 3, VIDEO_SIZE, VIDEO_SIZE, 0,
-					GL_RGB, GL_UNSIGNED_BYTE, conv_frame->data );
-				
-				glTranslatef( 0.0, 0.0, -5 );
 				ogl_load_alterego();
+				glTranslatef( 0.0, 0.0, -5 );
+				glEnable(GL_TEXTURE_2D);
 				glBegin( GL_QUADS );
-					glTexCoord2f(0.0, 0.0); glVertex3f(-1,  1, 0.0);
-					glTexCoord2f(0.0, 1.0); glVertex3f(-1, -1, 0.0);
-					glTexCoord2f(1.0, 1.0); glVertex3f( 1, -1, 0.0);
-					glTexCoord2f(1.0, 0.0); glVertex3f( 1,  1, 0.0);
+					glTexCoord2f(0.0, 0.0); glVertex3f(-2,  2, 0.0);
+					glTexCoord2f(0.0, 1.0); glVertex3f(-2, -2, 0.0);
+					glTexCoord2f(1.0, 1.0); glVertex3f( 2, -2, 0.0);
+					glTexCoord2f(1.0, 0.0); glVertex3f( 2,  2, 0.0);
 				glEnd();
+				
+				error = glGetError();
+				if( error != GL_NO_ERROR ) {
+					fprintf(stderr, "Warning: couldn't create texture: %s.\n", gluErrorString(error) );
+				}
 			}
 			av_free_packet(&packet);
 		}
