@@ -115,6 +115,7 @@ static const char *tag_game_rom_image				=       "rom-image";
 static const char *tag_game_categories				=       "categories";
 static const char *tag_game_images					=     "images";
 static const char *tag_game_images_image			=       "image";
+static const char *tag_game_video					=     "video";
 static const char *tag_iface						= "interface";
 static const char *tag_iface_full_screen			= 	"full-screen";
 static const char *tag_iface_screen					=   "screen";
@@ -733,6 +734,9 @@ int config_read_game( xmlNode *node, struct config_game *game, const char *game_
 			}
 			else if( strcmp( (char*)node->name, tag_params ) == 0 ) {
 				config_read_game_params( node->children, game );
+			}
+			else if( strcmp( (char*)node->name, tag_game_video ) == 0 ) {
+				strncpy( game->video, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
 			else {
 				fprintf( stderr, warn_skip, tag_game, node->name );	

@@ -129,7 +129,7 @@ int location_try_directory( const char *dir, const char *filename, char *path ) 
 int location_get_path( const char *type, const char *filename, char *path ) {
 	struct location *location = location_get_first( type );
 
-	if( type && filename ) {
+	if( type && filename && filename[0]) {
 		if( location_absolute( filename ) == 0 ) {
 			strncpy( path, filename, CONFIG_FILE_NAME_LENGTH );
 			return 0;

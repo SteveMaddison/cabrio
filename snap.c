@@ -4,6 +4,7 @@
 #include "ogl.h"
 #include "sdl_ogl.h"
 #include "media.h"
+#include "video.h"
 
 static const GLfloat DEPTH = -8;
 static const GLfloat max_size = 280;
@@ -20,8 +21,8 @@ static int hide_direction = 0;
 static int visible = 0;
 static GLfloat scale = 0.006;
 static GLfloat hidden_offset = -4.0;
-static int snap_media_type = -1;
-static char *snap_media_subtype = NULL;
+static int video = 0;
+
 
 int snap_init( void ) {
 	const struct config *config = config_get();
@@ -53,17 +54,16 @@ int snap_init( void ) {
 	if( config->iface.theme.snap.offset1 > 0 )
 		hidden_offset = -hidden_offset;
 	
-	snap_media_type = MEDIA_IMAGE;
-	snap_media_subtype = image_type_name( IMAGE_SCREENSHOT );
-	
 	return 0;
 }
 
 void snap_free( void ) {
 	int i;
 	
-	for( i = 0 ; i < NUM_NOISE ; i++ )
+	for( i = 0 ; i < NUM_NOISE ; i++ ) {
 		ogl_free_texture( noise[i] );
+		noise[i] = NULL;
+	}
 		
 	if( texture )
 		ogl_free_texture( texture );
@@ -80,49 +80,62 @@ int snap_resume( void ) {
 
 int snap_set( struct game *game ) {
 	const struct config_snap *config = &config_get()->iface.theme.snap;
-	const char *filename = game_media_get( game, snap_media_type, snap_media_subtype );
+	char *filename;
 
 	snap_clear();
 	
-	if( !filename || !filename[0] )
-		return -1;
-	
-	if( snap_media_type == MEDIA_IMAGE ) {	
-		texture = sdl_create_texture( filename );
-		if( texture ) {
-			if( config->fix_aspect_ratio ) {
-				if( texture->width > texture->height ) {
-					/* Landscape */
-					texture->width = max_size;
-					texture->height = max_size / ogl_aspect_ratio();
-				}
-				else {
-					/* Portrait */
-					texture->height = max_size;
-					texture->width = max_size / ogl_aspect_ratio();
-				}				
-			}
-			else {
-				if( texture->width > texture->height ) {
-					/* Landscape */
-					texture->height = (int)(float)texture->height/((float)texture->width/max_size);
-					texture->width = max_size;
-				}
-				else {
-					/* Portrait */
-					texture->width = (int)(float)texture->width/((float)texture->height/max_size);
-					texture->height = max_size;
-				}
-			}
-			return 0;
+	filename = game_media_get( game, MEDIA_VIDEO, NULL );
+
+	if( filename && filename[0] ) {
+		video = 1;
+		video_open( filename );
+		texture = video_texture();
+	}
+	else {
+		video = 0;
+		filename = game_media_get( game, MEDIA_IMAGE, image_type_name(IMAGE_SCREENSHOT) );
+		if( filename && filename[0] ) {
+			texture = sdl_create_texture( filename );
+		}
+		else {
+			return -1;
 		}
 	}
+
+	if( texture ) {
+		if( config->fix_aspect_ratio ) {
+			if( texture->width > texture->height ) {
+				/* Landscape */
+				texture->width = max_size;
+				texture->height = max_size / ogl_aspect_ratio();
+			}
+			else {
+				/* Portrait */
+				texture->height = max_size;
+				texture->width = max_size / ogl_aspect_ratio();
+			}				
+		}
+		else {
+			if( texture->width > texture->height ) {
+				/* Landscape */
+				texture->height = (int)(float)texture->height/((float)texture->width/max_size);
+				texture->width = max_size;
+			}
+			else {
+				/* Portrait */
+				texture->width = (int)(float)texture->width/((float)texture->height/max_size);
+				texture->height = max_size;
+			}
+		}
+		return 0;
+	}
+
 	texture = NULL;
-	return 0;
+	return -1;
 }
 
 void snap_clear( void ) {
-	if( texture )
+	if( (!video) && texture )
 		ogl_free_texture( texture );
 	texture = NULL;
 }
@@ -150,6 +163,9 @@ void snap_draw( void ) {
 		GLfloat xfactor = ogl_xfactor();
 		GLfloat yfactor = ogl_yfactor();
 		GLfloat xsize, ysize, hide_offset;
+		
+		if( video )
+			video_get_frame();
 		
 		if( t == NULL )
 			t = noise[frame/noise_skip];

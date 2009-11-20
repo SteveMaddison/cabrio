@@ -105,6 +105,15 @@ void ogl_load_alterego( void ) {
 	glScalef( xscale, yscale, 1.0 );
 }
 
+struct texture *ogl_create_empty_texture( void ) {
+	struct texture *t = malloc( sizeof(struct texture) );
+	if( t ) {
+		memset( t, 0, sizeof(struct texture) );
+		glGenTextures( 1, &t->id );
+	}
+	return t;
+}
+
 void ogl_free_texture( struct texture *t ) {
 	if( t ) {
 		if( t->id )

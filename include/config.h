@@ -93,6 +93,7 @@ struct config_game {
 	struct config_game *next;
 	char name[CONFIG_NAME_LENGTH];
 	char rom_image[CONFIG_FILE_NAME_LENGTH];
+	char video[CONFIG_FILE_NAME_LENGTH];
 	struct config_game_category *categories;
 	struct config_param *params;
 	struct config_platform *platform;

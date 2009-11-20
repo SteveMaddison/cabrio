@@ -43,7 +43,7 @@ int game_list_resume( void );
 void game_list_free( void );
 int game_load_texture( struct game *game );
 void game_free_texture( struct game *game );
-const char *game_media_get( struct game *game, int type, const char *subtype );
+char *game_media_get( struct game *game, int type, const char *subtype );
 
 #endif
 

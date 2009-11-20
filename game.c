@@ -55,18 +55,13 @@ void game_list_free( void ) {
 		game_free( game_start );
 }
 
-const char *game_media_get( struct game *game, int type, const char *subtype ) {
+char *game_media_get( struct game *game, int type, const char *subtype ) {
 	struct game_media *media = game->media;
 	
 	while( media ) {
 		if( media->type == type
-		&&
-			( 
-				((media->subtype == NULL) && (subtype == NULL))
-				||
-				strcasecmp( media->subtype, subtype ) == 0
-			)
-		)
+		&& ( (media->subtype == NULL && subtype == NULL)
+			 || strcasecmp( media->subtype, subtype ) == 0 ) )
 			return media->file_name;
 		media = media->next;
 	}
@@ -235,6 +230,30 @@ int game_list_create( void ) {
 				}
 				else {
 					fprintf( stderr, "Warning: Couldn't allocate game image object for '%s'\n", game->name );
+				}
+			}
+		
+			{
+				struct game_media *video = malloc( sizeof(struct game_media) );
+				if( video ) {
+					memset( video, 0, sizeof(struct game_media) );
+					video->type = MEDIA_VIDEO;
+					location_get_path( media_type_name(MEDIA_VIDEO), config_game->video, video->file_name );
+
+					if( video->file_name[0] == '\0' ) {
+						location_get_match( media_type_name(MEDIA_VIDEO), game->rom_path, video->file_name );
+					}
+
+					if( video->file_name[0] == '\0' ) {
+						free( video );
+					}
+					else {
+						video->next = game->media;
+						game->media = video;
+					}
+				}
+				else {
+					fprintf( stderr, "Warning: Couldn't allocate game video object for '%s'\n", game->name );
 				}
 			}
 
