@@ -6,7 +6,7 @@
 #include "ogl.h"
 #include "sdl_ogl.h"
 #include "font.h"
-#include "image.h"
+#include "media.h"
 #include "location.h"
 #include "lookup.h"
 
@@ -149,7 +149,7 @@ int game_list_create( void ) {
 	if( !config_game )
 		platform_add_unknown();
 	
-	game_image_type = (char*)image_type( IMAGE_LOGO );
+	game_image_type = (char*)media_type( MEDIA_LOGO );
 	
 	while( config_game ) {
 		game = malloc(sizeof(struct game));
@@ -185,7 +185,7 @@ int game_list_create( void ) {
 			}
 			
 			game->images = NULL;
-			for( i = 0 ; i < NUM_IMAGE_TYPES ; i++ ) {
+			for( i = 0 ; i < NUM_MEDIA_TYPES ; i++ ) {
 				struct game_image *image = malloc( sizeof(struct game_image) );
 				if( image ) {
 					struct config_image *config_game_image = config_game->images;
@@ -193,7 +193,7 @@ int game_list_create( void ) {
 					memset( image, 0, sizeof(struct game_image) );
 					
 					while( config_game_image ) {
-						if( strcasecmp( config_game_image->type->name, image_type(i) ) == 0 ) {
+						if( strcasecmp( config_game_image->type->name, media_type(i) ) == 0 ) {
 							image->type = config_game_image->type->name;
 							location_get_path( image->type, config_game_image->file_name, image->file_name );						
 							break;
@@ -201,7 +201,7 @@ int game_list_create( void ) {
 						config_game_image = config_game_image->next;
 					}
 					if( image->file_name[0] == '\0' ) {
-						image->type = (char*)image_type(i);
+						image->type = (char*)media_type(i);
 						location_get_match( image->type, game->rom_path, image->file_name );
 					}
 					

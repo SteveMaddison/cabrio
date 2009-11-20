@@ -1,7 +1,6 @@
 #include "bg.h"
 #include "config.h"
 #include "sdl_ogl.h"
-#include "image.h"
 #include "location.h"
 
 static const GLfloat BG_SIZE = 7.0;

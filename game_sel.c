@@ -11,7 +11,7 @@
 #include "menu.h"
 #include "submenu.h"
 #include "snap.h"
-#include "image.h"
+#include "media.h"
 
 static const GLfloat IMAGE_SCALE = 0.005;
 static const int MAX_STEPS = 25;
@@ -149,7 +149,7 @@ void game_sel_pause( void ) {
 
 int game_sel_resume( void ) {
 	game_sel_load_textures();
-	snap_set( game_image_get( game_tile_current->game, image_type(IMAGE_SCREENSHOT) ) );
+	snap_set( game_image_get( game_tile_current->game, media_type(MEDIA_SCREENSHOT) ) );
 	return 0;
 }
 
@@ -496,8 +496,8 @@ void game_sel_draw( void ) {
 	if( idle_counter && !game_sel_busy() ) {
 		idle_counter--;
 		if( idle_counter == 0 && game_tile_current->game ) {
-			bg_set( game_image_get( game_tile_current->game, image_type(IMAGE_BACKGROUND) ) );
-			snap_set( game_image_get( game_tile_current->game, image_type(IMAGE_SCREENSHOT) ) );
+			bg_set( game_image_get( game_tile_current->game, media_type(MEDIA_BACKGROUND) ) );
+			snap_set( game_image_get( game_tile_current->game, media_type(MEDIA_SCREENSHOT) ) );
 		}
 	}
 	if( visible ) {

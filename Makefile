@@ -3,15 +3,15 @@ BIN_DIR=/usr/local/bin
 DATA_DIR=/usr/local/share/cabrio
 CFLAGS=-g -Wall -DDATA_DIR=\"$(DATA_DIR)\"
 LDFLAGS=-lSDL_image -lSDL_gfx -lglut -lSDL_ttf -lSDL_mixer -lxml2 
-#	-lavutil -lavformat -lavcodec -lz -lavutil -lm
+	-lavutil -lavformat -lavcodec -lz -lavutil -lm
 INCLUDES=-I./include -I/usr/include/libxml2
 
 INSTALL=/usr/bin/install -c
 
 cabrio: main.o ogl.o sdl_wrapper.o config.o bg.o menu.o game_sel.o \
 	game.o font.o hint.o platform.o submenu.o \
-	sound.o event.o key.o control.o setup.o sdl_ogl.o \
-	category.o focus.o emulator.o snap.o image.o location.o lookup.o
+	sound.o event.o key.o control.o setup.o sdl_ogl.o video.o \
+	category.o focus.o emulator.o snap.o media.o location.o lookup.o
 	$(CC) -o $@ $(LDFLAGS) $^
 
 .c.o: %.c
