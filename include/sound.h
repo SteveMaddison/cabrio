@@ -1,6 +1,8 @@
 #ifndef _SOUND_H_
 #define _SOUND_H_ 1
 
+#include <SDL/SDL_mixer.h>
+
 enum sound_t {
 	SOUND_BACK,
 	SOUND_BLIP,
@@ -13,6 +15,7 @@ int sound_init( void );
 void sound_pause( void );
 int sound_resume( void );
 void sound_free( void );
+int sound_open( void );
 
 void sound_play( int s );
 

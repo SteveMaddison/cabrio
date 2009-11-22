@@ -3,6 +3,7 @@
 #include <ffmpeg/swscale.h>
 #include <SDL/SDL_audio.h>
 #include "video.h"
+#include "sound.h"
 #include "ogl.h"
 
 static const int VIDEO_SIZE = 256;
@@ -22,7 +23,6 @@ AVPacket packet;
 uint8_t *buffer;
 int video_stream = -1;
 int audio_stream = -1;
-SDL_AudioSpec audio_spec;
 struct packet_queue audio_queue;
 struct SwsContext *scale_context;
 struct texture *texture;
@@ -64,6 +64,8 @@ void video_free( void ) {
 }
 
 void video_close( void ) {
+	stop = 1;
+
 	if( video_codec_context )
 		avcodec_close( video_codec_context );
 	video_codec_context = NULL;
@@ -84,8 +86,10 @@ void video_close( void ) {
 		ogl_free_texture( texture );
 	texture = NULL;
 	
-	stop = 1;
+	Mix_HookMusic( NULL, NULL );
+	
 	video_stream = -1;
+	audio_stream = -1;
 	got_texture = 0;
 }
 
@@ -208,7 +212,7 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *audio_buffer, in
 		if( stop )
 			return -1;
 
-		if( video_packet_queue_get( &audio_queue, &packet, 1) < 0)
+		if( video_packet_queue_get( &audio_queue, &packet, 1) < 0 )
 			return -1;
 
 		audio_packet_data = packet.data;
@@ -222,6 +226,8 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 	static uint8_t audio_buffer[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2];
 	static unsigned int audio_buffer_size = 0;
 	static unsigned int audio_buffer_index = 0;
+
+	printf("CB\n");
 
 	while( length > 0 ) {
 		if( audio_buffer_index >= audio_buffer_size ) {
@@ -306,7 +312,7 @@ int video_open( const char *filename ) {
 
 	avpicture_fill( (AVPicture*)conv_frame, buffer, CONV_FORMAT, VIDEO_SIZE, VIDEO_SIZE );
 
-	if( audio_codec_context ) {
+	if( sound_open() && audio_codec_context ) {
 		audio_codec = avcodec_find_decoder( audio_codec_context->codec_id );
 		if( !audio_codec ) {
 			fprintf( stderr, "Warning: Audio codec in video '%s' not supported\n", filename );
@@ -318,25 +324,8 @@ int video_open( const char *filename ) {
 				audio_codec_context = NULL;
 			}
 			else {
-				/*
-				SDL_AudioSpec desired_spec;
-			
-				desired_spec.freq = audio_codec_context->sample_rate;
-				desired_spec.format = AUDIO_S16SYS;
-				desired_spec.channels = audio_codec_context->channels;
-				desired_spec.silence = 0;
-				desired_spec.samples = AUDIO_BUFFER_SIZE;
-				desired_spec.callback = video_audio_callback;
-				desired_spec.userdata = audio_codec_context;
-		
-				if( SDL_OpenAudio( &desired_spec, &audio_spec ) < 0 ) {
-					fprintf( stderr, "Warning: Couldn't set up audio for video: %s\n", SDL_GetError() );
-					audio_codec_context = NULL;
-				}
-				
 				video_packet_queue_init( &audio_queue );
-				SDL_PauseAudio( 0 );
-				*/
+				/*Mix_HookMusic( video_audio_callback, audio_codec_context );*/
 			}
 		}
 	}

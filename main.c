@@ -99,7 +99,7 @@ int main( int argc, char *arvg[] ) {
 	if( submenu_init() != 0 )
 		return -1;
 		
-	/*sound_init();*/
+	sound_init();
 
 	event_flush();
 	menu_show();

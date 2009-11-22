@@ -4,6 +4,7 @@
 
 static Mix_Chunk *sounds[NUM_SOUNDS];
 static char *names[] = { "back", "blip", "no", "select" };
+static int open = 0;
 
 int sound_init( void ) {
 	int i;
@@ -17,13 +18,15 @@ int sound_init( void ) {
 		return -1;
 	}
 
+	open = 1;
+/*
 	for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
 		sounds[i] = Mix_LoadWAV( config_get()->iface.theme.sounds[i] );
 		if( sounds[i] == NULL ) {
 			fprintf( stderr, "Warning: Unable to open sound: %s\n", config_get()->iface.theme.sounds[i] );
 		}
 	}
-
+*/
 	return 0;
 }
 
@@ -38,6 +41,11 @@ void sound_free( void ) {
 	}
 
 	Mix_CloseAudio();
+	open = 0;
+}
+
+int sound_open( void ) {
+	return open;
 }
 
 void sound_pause( void ) {
