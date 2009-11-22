@@ -9,7 +9,6 @@
 static const int VIDEO_SIZE = 256;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
-static const int AUDIO_BUFFER_SIZE = 1024;
 static const GLfloat VIDEO_SCALE = 0.005;
 
 AVFormatContext *format_context = NULL;
@@ -227,15 +226,13 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 	static unsigned int audio_buffer_size = 0;
 	static unsigned int audio_buffer_index = 0;
 
-	printf("CB\n");
-
 	while( length > 0 ) {
 		if( audio_buffer_index >= audio_buffer_size ) {
 			/* We have already sent all our data; get more */
 			audio_size = video_decode_audio_frame( context, audio_buffer, sizeof(audio_buffer) );
 			if( audio_size < 0 ) {
 				/* If error, output silence */
-				audio_buffer_size = AUDIO_BUFFER_SIZE;
+				audio_buffer_size = sound_chunk_size();
 				memset( audio_buffer, 0, audio_buffer_size );
 			}
 			else {

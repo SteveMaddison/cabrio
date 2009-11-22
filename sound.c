@@ -2,6 +2,7 @@
 #include "config.h"
 #include <SDL/SDL_mixer.h>
 
+static const int AUDIO_CHUNK_SIZE = 4096;
 static Mix_Chunk *sounds[NUM_SOUNDS];
 static char *names[] = { "back", "blip", "no", "select" };
 static int open = 0;
@@ -13,7 +14,7 @@ int sound_init( void ) {
 		sounds[i] = NULL;
 	}
 	
-	if( Mix_OpenAudio( 22050, AUDIO_S16SYS, 4, 4096 ) == -1 ) {
+	if( Mix_OpenAudio( 22050, AUDIO_S16SYS, 4, AUDIO_CHUNK_SIZE ) == -1 ) {
 		fprintf( stderr, "Error: Unable to initialise sound: %s\n", Mix_GetError() );
 		return -1;
 	}
@@ -46,6 +47,10 @@ void sound_free( void ) {
 
 int sound_open( void ) {
 	return open;
+}
+
+int sound_chunk_size( void ) {
+	return AUDIO_CHUNK_SIZE;
 }
 
 void sound_pause( void ) {

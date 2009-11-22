@@ -1,6 +1,7 @@
 #ifndef __VIDEO_H__
 #define __VIDEO_H__
 
+#include <ffmpeg/avcodec.h>
 #include <ffmpeg/avformat.h>
 #include <SDL/SDL_mutex.h>
 #include "ogl.h"

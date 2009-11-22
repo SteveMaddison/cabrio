@@ -16,6 +16,7 @@ void sound_pause( void );
 int sound_resume( void );
 void sound_free( void );
 int sound_open( void );
+int sound_chunk_size( void );
 
 void sound_play( int s );
 

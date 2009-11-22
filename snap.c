@@ -22,6 +22,7 @@ static int visible = 0;
 static GLfloat scale = 0.006;
 static GLfloat hidden_offset = -4.0;
 static int video = 0;
+static int width, height;
 
 
 int snap_init( void ) {
@@ -104,25 +105,25 @@ int snap_set( struct game *game ) {
 		if( config->fix_aspect_ratio ) {
 			if( texture->width > texture->height ) {
 				/* Landscape */
-				texture->width = max_size;
-				texture->height = max_size / ogl_aspect_ratio();
+				width = max_size;
+				height = max_size / ogl_aspect_ratio();
 			}
 			else {
 				/* Portrait */
-				texture->height = max_size;
-				texture->width = max_size / ogl_aspect_ratio();
+				height = max_size;
+				width = max_size / ogl_aspect_ratio();
 			}				
 		}
 		else {
 			if( texture->width > texture->height ) {
 				/* Landscape */
-				texture->height = (int)(float)texture->height/((float)texture->width/max_size);
-				texture->width = max_size;
+				height = (int)(float)texture->height/((float)texture->width/max_size);
+				width = max_size;
 			}
 			else {
 				/* Portrait */
-				texture->width = (int)(float)texture->width/((float)texture->height/max_size);
-				texture->height = max_size;
+				width = (int)(float)texture->width/((float)texture->height/max_size);
+				height = max_size;
 			}
 		}
 		return 0;
@@ -179,8 +180,8 @@ void snap_draw( void ) {
 		if( t == NULL )
 			t = noise[frame/noise_skip];
 	
-		xsize = (t->width/2) * scale * xfactor;
-		ysize = (t->height/2) * scale * xfactor;
+		xsize = (width/2) * scale * xfactor;
+		ysize = (height/2) * scale * xfactor;
 		
 		hide_offset = (((hidden_offset - config->offset1) / (GLfloat)steps) * (GLfloat)step);
 

@@ -276,6 +276,7 @@ void game_sel_do_skip( void ) {
 
 void game_sel_skip_forward( void ) {
 	if( visible && !game_sel_busy() ) {
+		snap_clear();
 		game_sel_hide( HIDE_TARGET_SELECTED );
 		skipping = 1;
 	}
@@ -283,6 +284,7 @@ void game_sel_skip_forward( void ) {
 
 void game_sel_skip_back( void ) {
 	if( visible && !game_sel_busy() ) {
+		snap_clear();
 		game_sel_hide( HIDE_TARGET_SELECTED );
 		skipping = -1;
 	}
@@ -290,6 +292,7 @@ void game_sel_skip_back( void ) {
 
 void game_sel_retreat( void ) {
 	if( visible && !game_sel_busy() ) {
+		snap_clear();
 		if( game_tile_current->prev )
 			game_tile_current = game_tile_current->prev;
 		scroll_direction = 1;
@@ -299,6 +302,7 @@ void game_sel_retreat( void ) {
 
 void game_sel_advance( void ) {
 	if( visible && !game_sel_busy() ) {
+		snap_clear();
 		game_sel_shuffle_back( 1 );
 		scroll_direction = -1;
 		step = steps-1;
