@@ -296,7 +296,7 @@ int game_list_create( void ) {
 	}
 	game_list_unfilter();
 
-  if( game_start ) {
+/*  if( game_start ) {
 		struct game *g = game_start;
 		while( g ) {
 			struct game_media *gm = g->media;
@@ -314,7 +314,7 @@ int game_list_create( void ) {
 			g = g->all_next;
 			if( g == game_start ) break;
 		}
-	}
+	}*/
 
 	return 0;
 }

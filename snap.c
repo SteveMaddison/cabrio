@@ -59,15 +59,13 @@ int snap_init( void ) {
 
 void snap_free( void ) {
 	int i;
+
+	snap_clear();
 	
 	for( i = 0 ; i < NUM_NOISE ; i++ ) {
 		ogl_free_texture( noise[i] );
 		noise[i] = NULL;
 	}
-		
-	if( texture )
-		ogl_free_texture( texture );
-	texture = NULL;
 }
 
 void snap_pause( void ) {
@@ -135,8 +133,15 @@ int snap_set( struct game *game ) {
 }
 
 void snap_clear( void ) {
-	if( (!video) && texture )
-		ogl_free_texture( texture );
+	if( video ) {
+		video_close();
+		video = 0;
+	}
+	else {
+		if( texture ) {
+			ogl_free_texture( texture );
+		}
+	}
 	texture = NULL;
 }
 
@@ -164,8 +169,12 @@ void snap_draw( void ) {
 		GLfloat yfactor = ogl_yfactor();
 		GLfloat xsize, ysize, hide_offset;
 		
-		if( video )
+		if( video ) {
 			video_get_frame();
+			if( !video_has_texture() ) {
+				t = NULL;
+			}
+		}
 		
 		if( t == NULL )
 			t = noise[frame/noise_skip];

@@ -9,5 +9,6 @@ int video_open( const char *filename );
 void video_close( void );
 int video_get_frame( void );
 struct texture *video_texture( void );
+int video_has_texture( void );
 
 #endif

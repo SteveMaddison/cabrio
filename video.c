@@ -19,6 +19,7 @@ uint8_t *buffer;
 int video_stream = -1;
 struct SwsContext *scale_context;
 struct texture *texture;
+static int got_texture = 0;
 GLfloat xsize, ysize;
 
 
@@ -67,6 +68,11 @@ void video_close( void ) {
 	texture = NULL;
 	
 	video_stream = -1;
+	got_texture = 0;
+}
+
+int video_has_texture( void ) {
+	return got_texture;
 }
 
 struct texture *video_texture( void ) {
@@ -131,9 +137,6 @@ int video_open( const char *filename ) {
 	
 	if( !texture )
 		return -1;
-
-	printf( "%d x %d, %d.%d\n", codec_context->width, codec_context->height,
-		codec_context->time_base.num, codec_context->time_base.den );
 		
 	xsize = ((GLfloat)codec_context->width) * VIDEO_SCALE / 2.0;
 	ysize = ((GLfloat)codec_context->height) * VIDEO_SCALE / 2.0;
@@ -180,8 +183,16 @@ int video_get_frame( void ) {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-				glTexImage2D( GL_TEXTURE_2D, 0, VIDEO_BPP, VIDEO_SIZE, VIDEO_SIZE, 0,
-					GL_RGB, GL_UNSIGNED_BYTE, conv_frame->data[0] );
+				
+				if( got_texture == 0 ) {
+					glTexImage2D( GL_TEXTURE_2D, 0, VIDEO_BPP, VIDEO_SIZE, VIDEO_SIZE, 0,
+						GL_RGB, GL_UNSIGNED_BYTE, conv_frame->data[0] );
+					got_texture = 1;
+				}
+				else {
+					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VIDEO_SIZE, VIDEO_SIZE,
+						GL_RGB, GL_UNSIGNED_BYTE, conv_frame->data[0] );
+				}
 
 				error = glGetError();
 				if( error != GL_NO_ERROR ) {
