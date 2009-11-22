@@ -1,7 +1,18 @@
 #ifndef __VIDEO_H__
 #define __VIDEO_H__
 
+#include <ffmpeg/avformat.h>
+#include <SDL/SDL_mutex.h>
 #include "ogl.h"
+
+struct packet_queue {
+	AVPacketList *first;
+	AVPacketList *last;
+	int packets;
+	int size;
+	SDL_mutex *mutex;
+	SDL_cond *cond;
+};
 
 int video_init( void );
 void video_free( void );

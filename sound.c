@@ -12,8 +12,8 @@ int sound_init( void ) {
 		sounds[i] = NULL;
 	}
 	
-	if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) {
-		fprintf( stderr, "Error: Unable to initialise sound: %s\n", SDL_GetError() );
+	if( Mix_OpenAudio( 22050, AUDIO_S16SYS, 4, 4096 ) == -1 ) {
+		fprintf( stderr, "Error: Unable to initialise sound: %s\n", Mix_GetError() );
 		return -1;
 	}
 
