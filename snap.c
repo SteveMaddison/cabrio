@@ -170,12 +170,8 @@ void snap_draw( void ) {
 		GLfloat yfactor = ogl_yfactor();
 		GLfloat xsize, ysize, hide_offset;
 		
-		if( video ) {
-			video_get_frame();
-			if( !video_has_texture() ) {
-				t = NULL;
-			}
-		}
+		if( video )
+			t = video_get_frame();
 		
 		if( t == NULL )
 			t = noise[frame/noise_skip];
