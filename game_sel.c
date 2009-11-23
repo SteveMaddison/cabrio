@@ -341,7 +341,7 @@ int game_sel_event( int event ) {
 				game_sel_skip_forward();
 			break;
 		case EVENT_SELECT:
-			/*game_sel_zoom();*/
+			snap_clear();
 			emulator_run( game_sel_current() );
 			break;
 		case EVENT_BACK:

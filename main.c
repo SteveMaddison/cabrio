@@ -130,6 +130,7 @@ int main( int argc, char *arvg[] ) {
 		sdl_frame_delay();
 	}
 
+	sound_free();
 	game_list_free();
 	submenu_free();
 	menu_free();
@@ -140,7 +141,6 @@ int main( int argc, char *arvg[] ) {
 	event_free();
 	snap_free();
 	video_free();
-	sound_free();
 	sdl_free();
 
 	return 0;

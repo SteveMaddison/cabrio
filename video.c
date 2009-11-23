@@ -37,9 +37,12 @@ static uint8_t *audio_packet_data = NULL;
 static int audio_packet_size = 0;
 
 SDL_AudioSpec audio_spec;
+static int audio_open = 0;
 
 static SDL_Thread *reader_thread;
 static int stop = 0;
+static int audio_running = 0;
+static int reader_running = 0;
 static int got_texture = 0;
 static struct texture *texture;
 
@@ -82,7 +85,13 @@ void video_free( void ) {
 
 void video_close( void ) {
 	stop = 1;
-	/*SDL_WaitThread( reader_thread, NULL );*/
+
+/*	while( reader_running || audio_running )
+		SDL_Delay( 10 ); */
+
+	if( audio_open )
+		SDL_CloseAudio();
+	audio_open = 0;
 
 	packet_queue_flush( &video_queue );
 	packet_queue_flush( &audio_queue );
@@ -110,8 +119,7 @@ void video_close( void ) {
 		ogl_free_texture( texture );
 	texture = NULL;
 	got_texture = 0;
-	
-	SDL_CloseAudio();
+		
 	sound_open_mixer();
 }
 
@@ -192,8 +200,10 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 		if( packet.data )
 			av_free_packet( &packet );
 
-		if( stop )
+		if( stop ) {
+			audio_running = 0;
 			return -1;
+		}
 
 		if( packet_queue_get(&audio_queue, &packet, 1 ) < 0 )
 			return -1;
@@ -232,20 +242,13 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 	}
 }
 
-void video_rewind( void ) {
-	if( !format_context ) {
-		return;
-	}
-	else {
-		av_seek_frame( format_context, 0, 0, 0 );
-	}
-}
-
 int video_reader_thread( void *data ) {
 	static AVPacket packet;
 
 	if( !format_context || !video_codec_context || !video_buffer )
 		return -1;
+
+	reader_running = 1;
 
 	while( !stop ) {
 		if( video_queue.packets > MAX_QUEUE_PACKETS || audio_queue.packets > MAX_QUEUE_PACKETS ) {
@@ -264,11 +267,14 @@ int video_reader_thread( void *data ) {
 				}
 			}
 			else {
-				video_rewind();	
+				av_seek_frame( format_context, audio_stream, 0, 0 );
+				packet_queue_flush( &video_queue );
+				packet_queue_flush( &audio_queue );
 			}
 		}
 	}
 
+	reader_running = 0;
 	return 0;
 }
 
@@ -366,6 +372,8 @@ int video_open( const char *filename ) {
 				}
 				else {
 					packet_queue_flush( &audio_queue );
+					audio_open = 1;
+					audio_running = 1;
 					SDL_PauseAudio( 0 );
 				}
 			}
