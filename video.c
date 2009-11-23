@@ -1,6 +1,7 @@
 #include <ffmpeg/avcodec.h>
 #include <ffmpeg/avformat.h>
 #include <ffmpeg/swscale.h>
+#include <SDL/SDL.h>
 #include <SDL/SDL_audio.h>
 #include "video.h"
 #include "sound.h"
@@ -11,6 +12,8 @@ static const int VIDEO_SIZE = 256;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
 static const GLfloat VIDEO_SCALE = 0.005;
+static const int MAX_QUEUE_SIZE = 10;
+static const int FULL_DELAY = 10;
 
 static AVFormatContext *format_context = NULL;
 static AVCodecContext *video_codec_context = NULL;
@@ -76,7 +79,7 @@ void video_free( void ) {
 
 void video_close( void ) {
 	stop = 1;
-	SDL_WaitThread( reader_thread, NULL );
+	/*SDL_WaitThread( reader_thread, NULL );*/
 
 	packet_queue_flush( &video_queue );
 	packet_queue_flush( &audio_queue );
@@ -239,20 +242,25 @@ int video_reader_thread( void *data ) {
 	if( !format_context || !video_codec_context || !video_buffer )
 		return -1;
 
-	while( !stop ) {		
-		if( av_read_frame( format_context, &packet ) >= 0 ) {
-			if( packet.stream_index == video_stream ) {
-				packet_queue_put( &video_queue, &packet );
-			}
-			else if( packet.stream_index == audio_stream ) {
-				packet_queue_put( &audio_queue, &packet );
+	while( !stop ) {
+		if( video_queue.size > MAX_QUEUE_SIZE || audio_queue.size > MAX_QUEUE_SIZE ) {
+			SDL_Delay( FULL_DELAY );	
+		}
+		else {	
+			if( av_read_frame( format_context, &packet ) >= 0 ) {
+				if( packet.stream_index == video_stream ) {
+					packet_queue_put( &video_queue, &packet );
+				}
+				else if( packet.stream_index == audio_stream ) {
+					packet_queue_put( &audio_queue, &packet );
+				}
+				else {
+					av_free_packet( &packet );
+				}
 			}
 			else {
-				av_free_packet( &packet );
+				video_rewind();	
 			}
-		}
-		else {
-			video_rewind();	
 		}
 	}
 	
