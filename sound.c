@@ -5,29 +5,41 @@
 static const int AUDIO_CHUNK_SIZE = 4096;
 static Mix_Chunk *sounds[NUM_SOUNDS];
 static char *names[] = { "back", "blip", "no", "select" };
-static int open = 0;
+static int mixer_open = 0;
+
+int sound_open_mixer( void ) {
+	if( !mixer_open ) {
+		if( Mix_OpenAudio( 22050, AUDIO_S16SYS, 4, AUDIO_CHUNK_SIZE ) == -1 ) {
+			fprintf( stderr, "Error: Unable to initialise sound: %s\n", Mix_GetError() );
+			return -1;
+		}
+	}
+	mixer_open = 1;
+	return 0;
+}
+
+void sound_close_mixer( void ) {
+	if( mixer_open )
+		Mix_CloseAudio();
+	mixer_open = 0;
+}
 
 int sound_init( void ) {
 	int i;
 	
-	for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
+	for( i = 0 ; i < NUM_SOUNDS ; i++ )
 		sounds[i] = NULL;
-	}
 	
-	if( Mix_OpenAudio( 22050, AUDIO_S16SYS, 4, AUDIO_CHUNK_SIZE ) == -1 ) {
-		fprintf( stderr, "Error: Unable to initialise sound: %s\n", Mix_GetError() );
+	if( sound_open_mixer() != 0 )
 		return -1;
-	}
 
-	open = 1;
-/*
 	for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
 		sounds[i] = Mix_LoadWAV( config_get()->iface.theme.sounds[i] );
 		if( sounds[i] == NULL ) {
 			fprintf( stderr, "Warning: Unable to open sound: %s\n", config_get()->iface.theme.sounds[i] );
 		}
 	}
-*/
+
 	return 0;
 }
 
@@ -41,16 +53,7 @@ void sound_free( void ) {
 		}
 	}
 
-	Mix_CloseAudio();
-	open = 0;
-}
-
-int sound_open( void ) {
-	return open;
-}
-
-int sound_chunk_size( void ) {
-	return AUDIO_CHUNK_SIZE;
+	sound_close_mixer();
 }
 
 void sound_pause( void ) {
@@ -62,7 +65,7 @@ int sound_resume( void ) {
 }
 
 void sound_play( int s ) {
-	if( s >= 0 && s < NUM_SOUNDS && sounds[s] )
+	if( mixer_open && s >= 0 && s < NUM_SOUNDS && sounds[s] )
 		Mix_PlayChannel( -1, sounds[s], 0 );
 }
 
@@ -85,3 +88,4 @@ const char *sound_name( int s ) {
 		return names[s];
 	return NULL;
 }
+

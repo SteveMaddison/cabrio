@@ -277,6 +277,7 @@ void game_sel_do_skip( void ) {
 void game_sel_skip_forward( void ) {
 	if( visible && !game_sel_busy() ) {
 		snap_clear();
+		sound_play( SOUND_BLIP );
 		game_sel_hide( HIDE_TARGET_SELECTED );
 		skipping = 1;
 	}
@@ -285,6 +286,7 @@ void game_sel_skip_forward( void ) {
 void game_sel_skip_back( void ) {
 	if( visible && !game_sel_busy() ) {
 		snap_clear();
+		sound_play( SOUND_BLIP );
 		game_sel_hide( HIDE_TARGET_SELECTED );
 		skipping = -1;
 	}
@@ -293,6 +295,7 @@ void game_sel_skip_back( void ) {
 void game_sel_retreat( void ) {
 	if( visible && !game_sel_busy() ) {
 		snap_clear();
+		sound_play( SOUND_BLIP );
 		if( game_tile_current->prev )
 			game_tile_current = game_tile_current->prev;
 		scroll_direction = 1;
@@ -303,6 +306,7 @@ void game_sel_retreat( void ) {
 void game_sel_advance( void ) {
 	if( visible && !game_sel_busy() ) {
 		snap_clear();
+		sound_play( SOUND_BLIP );
 		game_sel_shuffle_back( 1 );
 		scroll_direction = -1;
 		step = steps-1;
@@ -313,28 +317,24 @@ int game_sel_event( int event ) {
 	int o = config_get()->iface.theme.game_sel.orientation;
 	switch( event ) {
 		case EVENT_UP:
-			sound_play( SOUND_BLIP );
 			if( o == CONFIG_LANDSCAPE )
 				game_sel_skip_back();
 			else
 				game_sel_retreat();
 			break;
 		case EVENT_DOWN:
-			sound_play( SOUND_BLIP );
 			if( o == CONFIG_LANDSCAPE )
 				game_sel_skip_forward();
 			else
 				game_sel_advance();
 			break;
 		case EVENT_LEFT:
-			sound_play( SOUND_BLIP );
 			if( o == CONFIG_LANDSCAPE )
 				game_sel_retreat();
 			else
 				game_sel_skip_back();
 			break;
 		case EVENT_RIGHT:
-			sound_play( SOUND_BLIP );
 			if( o == CONFIG_LANDSCAPE )
 				game_sel_advance();
 			else
@@ -345,6 +345,7 @@ int game_sel_event( int event ) {
 			emulator_run( game_sel_current() );
 			break;
 		case EVENT_BACK:
+			snap_clear();
 			sound_play( SOUND_BACK );
 			focus_set( FOCUS_SUBMENU );
 			break;

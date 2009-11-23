@@ -8,11 +8,12 @@
 #include "packet.h"
 #include "ogl.h"
 
+#define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)
 static const int VIDEO_SIZE = 256;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
 static const GLfloat VIDEO_SCALE = 0.005;
-static const int MAX_QUEUE_SIZE = 10;
+static const int MAX_QUEUE_PACKETS = 10;
 static const int FULL_DELAY = 10;
 
 static AVFormatContext *format_context = NULL;
@@ -29,11 +30,13 @@ static AVCodecContext *audio_codec_context = NULL;
 static AVCodec *audio_codec = NULL;
 static int audio_stream = -1;
 static struct packet_queue audio_queue;
-static uint8_t audio_buffer[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2];
+static uint8_t audio_buffer[AUDIO_BUFFER_SIZE];
 static unsigned int audio_buffer_size = 0;
 static unsigned int audio_buffer_index = 0;
 static uint8_t *audio_packet_data = NULL;
 static int audio_packet_size = 0;
+
+SDL_AudioSpec audio_spec;
 
 static SDL_Thread *reader_thread;
 static int stop = 0;
@@ -99,8 +102,6 @@ void video_close( void ) {
 	if( video_buffer )
 		av_free( video_buffer );
 	video_buffer = NULL;
-		
-	/*Mix_HookMusic( NULL, NULL );*/
 	
 	video_stream = -1;
 	audio_stream = -1;
@@ -109,6 +110,9 @@ void video_close( void ) {
 		ogl_free_texture( texture );
 	texture = NULL;
 	got_texture = 0;
+	
+	SDL_CloseAudio();
+	sound_open_mixer();
 }
 
 int video_decode_video_frame( void ) {
@@ -161,40 +165,42 @@ int video_decode_video_frame( void ) {
 	return ret;
 }
 
-int video_decode_audio_frame( AVCodecContext *context ) {
+int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buffer_size ) {
 	static AVPacket packet;
 	int used, data_size;
 
-	while( audio_packet_size > 0 ) {
-		data_size = sizeof(audio_buffer);
-		used = avcodec_decode_audio2( context, (int16_t*)audio_buffer,
-			&data_size, audio_packet_data, audio_packet_size );
-		
-		if( used < 0 ) {
-			/* if error, skip frame */
-			audio_packet_size = 0;
-			break;
+	for(;;) {
+		while( audio_packet_size > 0 ) {
+			data_size = buffer_size;
+			used = avcodec_decode_audio2( context, (int16_t *)audio_buffer, &data_size, 
+					  audio_packet_data, audio_packet_size);
+			if( used < 0 ) {
+				/* if error, skip frame */
+				audio_packet_size = 0;
+				break;
+			}
+			audio_packet_data += used;
+			audio_packet_size -= used;
+			
+			if( data_size <= 0 ) {
+				/* No data yet, get more frames */
+				continue;
+			}
+			/* We have data, return it and come back for more later */
+			return data_size;
 		}
+		if( packet.data )
+			av_free_packet( &packet );
 
-		audio_packet_data += used;
-		audio_packet_size -= used;
-		if( data_size <= 0 ) {
-			/* No data yet, get more frames */
-			continue;
-		}
-		/* We have data, return it and come back for more later */
-		return data_size;
+		if( stop )
+			return -1;
+
+		if( packet_queue_get(&audio_queue, &packet, 1 ) < 0 )
+			return -1;
+
+		audio_packet_data = packet.data;
+		audio_packet_size = packet.size;
 	}
-
-	if( packet.data )
-		av_free_packet( &packet );
-
-	if( packet_queue_get( &audio_queue, &packet, 0 ) < 0 )
-		return -1;
-
-	audio_packet_data = packet.data;
-	audio_packet_size = packet.size;
-	return 0;
 }
 
 void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
@@ -202,15 +208,14 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 	int used, audio_size;
 
 	while( length > 0 ) {
-		if( audio_buffer_index >= audio_buffer_size ) {
+		if(audio_buffer_index >= audio_buffer_size) {
 			/* We have already sent all our data; get more */
-			audio_size = video_decode_audio_frame( context );
+			audio_size = video_decode_audio_frame( context, audio_buffer, AUDIO_BUFFER_SIZE );
 			if( audio_size < 0 ) {
 				/* If error, output silence */
-				audio_buffer_size = sound_chunk_size();
+				audio_buffer_size = 1024;
 				memset( audio_buffer, 0, audio_buffer_size );
-			}
-			else {
+			} else {
 				audio_buffer_size = audio_size;
 			}
 			audio_buffer_index = 0;
@@ -219,8 +224,8 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 		used = audio_buffer_size - audio_buffer_index;
 		if( used > length )
 			used = length;
-
-		memcpy( stream, (uint8_t*)audio_buffer + audio_buffer_index, used );
+			
+		memcpy( stream, (uint8_t *)audio_buffer + audio_buffer_index, used );
 		length -= used;
 		stream += used;
 		audio_buffer_index += used;
@@ -243,15 +248,15 @@ int video_reader_thread( void *data ) {
 		return -1;
 
 	while( !stop ) {
-		if( video_queue.size > MAX_QUEUE_SIZE || audio_queue.size > MAX_QUEUE_SIZE ) {
-			SDL_Delay( FULL_DELAY );	
+		if( video_queue.packets > MAX_QUEUE_PACKETS || audio_queue.packets > MAX_QUEUE_PACKETS ) {
+			SDL_Delay( FULL_DELAY );
 		}
-		else {	
+		else {
 			if( av_read_frame( format_context, &packet ) >= 0 ) {
 				if( packet.stream_index == video_stream ) {
 					packet_queue_put( &video_queue, &packet );
 				}
-				else if( packet.stream_index == audio_stream ) {
+				else if( packet.stream_index == audio_stream && audio_codec_context ) {
 					packet_queue_put( &audio_queue, &packet );
 				}
 				else {
@@ -263,7 +268,7 @@ int video_reader_thread( void *data ) {
 			}
 		}
 	}
-	
+
 	return 0;
 }
 
@@ -272,7 +277,14 @@ int video_open( const char *filename ) {
 	
 	format_context = NULL;
 	video_codec_context = NULL;
+	audio_codec_context = NULL;
 	video_stream = -1;
+	audio_stream = -1;
+	
+	audio_buffer_size = 0;
+	audio_buffer_index = 0;
+	audio_packet_size = 0;
+	audio_packet_data = NULL;
 	
 	if( !filename )
 		return -1;
@@ -324,7 +336,7 @@ int video_open( const char *filename ) {
 
 	avpicture_fill( (AVPicture*)conv_frame, video_buffer, CONV_FORMAT, VIDEO_SIZE, VIDEO_SIZE );
 
-	if( sound_open() && audio_codec_context ) {
+	if( audio_codec_context ) {
 		audio_codec = avcodec_find_decoder( audio_codec_context->codec_id );
 		if( !audio_codec ) {
 			fprintf( stderr, "Warning: Audio codec in video '%s' not supported\n", filename );
@@ -336,8 +348,26 @@ int video_open( const char *filename ) {
 				audio_codec_context = NULL;
 			}
 			else {
-				packet_queue_init( &audio_queue );
-				/*Mix_HookMusic( video_audio_callback, audio_codec_context );*/
+				SDL_AudioSpec desired;
+				
+				desired.freq = audio_codec_context->sample_rate;
+				desired.format = AUDIO_S16SYS;
+				desired.channels = audio_codec_context->channels;
+				desired.silence = 0;
+				desired.samples = 1024;
+				desired.callback = video_audio_callback;
+				desired.userdata = audio_codec_context;
+
+				sound_close_mixer();
+
+				if( SDL_OpenAudio( &desired, &audio_spec ) < 0 ) {
+					fprintf( stderr, "Warning: Couldn't open audio for video: %s\n", SDL_GetError() );
+					audio_codec_context = NULL;
+				}
+				else {
+					packet_queue_flush( &audio_queue );
+					SDL_PauseAudio( 0 );
+				}
 			}
 		}
 	}
@@ -370,3 +400,4 @@ struct texture *video_get_frame( void ) {
 	}
 	return NULL;
 }
+

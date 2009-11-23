@@ -87,9 +87,6 @@ int main( int argc, char *arvg[] ) {
 	if( snap_init() != 0 )
 		return -1;
 	
-	if( video_init() != 0 )
-		return -1;
-	
 	if( game_list_create() != 0 )
 		return -1;
 
@@ -98,9 +95,10 @@ int main( int argc, char *arvg[] ) {
 
 	if( submenu_init() != 0 )
 		return -1;
-		
-	sound_init();
 
+	sound_init();
+	video_init();
+	
 	event_flush();
 	menu_show();
 	focus_set( FOCUS_GAMESEL );
@@ -132,9 +130,6 @@ int main( int argc, char *arvg[] ) {
 		sdl_frame_delay();
 	}
 
-	sound_free();
-	snap_free();
-	video_free();
 	game_list_free();
 	submenu_free();
 	menu_free();
@@ -143,6 +138,9 @@ int main( int argc, char *arvg[] ) {
 	bg_free();
 	location_free();
 	event_free();
+	snap_free();
+	video_free();
+	sound_free();
 	sdl_free();
 
 	return 0;
