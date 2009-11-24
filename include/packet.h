@@ -4,7 +4,6 @@
 #include <ffmpeg/avcodec.h>
 #include <ffmpeg/avformat.h>
 #include <SDL/SDL_mutex.h>
-#include "ogl.h"
 
 struct packet_queue {
 	AVPacketList *first;

@@ -6,25 +6,25 @@
 #include "video.h"
 #include "sound.h"
 #include "packet.h"
+#include "frame.h"
 #include "ogl.h"
 
 #define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)
 static const int VIDEO_SIZE = 256;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
-static const GLfloat VIDEO_SCALE = 0.005;
-static const int MAX_QUEUE_PACKETS = 10;
-static const int FULL_DELAY = 10;
+static const int MAX_QUEUE_PACKETS = 20;
+static const int QUEUE_FULL_DELAY = 10;
+static const int MAX_QUEUE_FRAMES = 20;
 
 static AVFormatContext *format_context = NULL;
 static AVCodecContext *video_codec_context = NULL;
 static AVCodec *video_codec = NULL;
-static AVFrame *raw_frame = NULL;
 static AVFrame *conv_frame = NULL;
 static struct SwsContext *scale_context = NULL;
 static uint8_t *video_buffer = NULL;
 static int video_stream = -1;
-static struct packet_queue video_queue;
+static struct frame_queue video_queue;
 
 static AVCodecContext *audio_codec_context = NULL;
 static AVCodec *audio_codec = NULL;
@@ -39,7 +39,7 @@ static int audio_packet_size = 0;
 SDL_AudioSpec audio_spec;
 static int audio_open = 0;
 
-static SDL_Thread *reader_thread;
+static SDL_Thread *reader_thread = NULL;
 static int stop = 0;
 static int audio_running = 0;
 static int reader_running = 0;
@@ -55,16 +55,15 @@ int video_init( void ) {
 	avcodec_register_all();
 	av_register_all();
 	
-	raw_frame = avcodec_alloc_frame();
 	conv_frame = avcodec_alloc_frame();
 	
-	if( !raw_frame || !conv_frame ) {
-		fprintf( stderr, "Warning: Couldn't allocate video frame\n" );
+	if( !conv_frame ) {
+		fprintf( stderr, "Warning: Couldn't allocate video conversion frame\n" );
 		return -1;
 	}
 		
-	packet_queue_init( &video_queue );
 	packet_queue_init( &audio_queue );
+	frame_queue_init( &video_queue );
 
 	url_set_interrupt_cb( video_stopped );
 	
@@ -73,10 +72,6 @@ int video_init( void ) {
 
 void video_free( void ) {
 	video_close();
-
-	if( raw_frame )
-		av_free( raw_frame );
-	raw_frame = NULL;
 
 	if( conv_frame );	
 		av_free( conv_frame );
@@ -93,8 +88,8 @@ void video_close( void ) {
 		SDL_CloseAudio();
 	audio_open = 0;
 
-	packet_queue_flush( &video_queue );
 	packet_queue_flush( &audio_queue );
+	frame_queue_flush( &video_queue );
 
 	if( video_codec_context )
 		avcodec_close( video_codec_context );
@@ -123,54 +118,23 @@ void video_close( void ) {
 	sound_open_mixer();
 }
 
-int video_decode_video_frame( void ) {
-	static AVPacket packet;
+int video_decode_video_frame( AVPacket *packet ) {
 	int got_frame = 0;
-	int ret = -1;
-	GLenum error = GL_NO_ERROR;
 	
-	if( packet_queue_get( &video_queue, &packet, 0 ) < 0 )
-		return -1;
-	
-	avcodec_decode_video( video_codec_context, raw_frame, &got_frame, packet.data, packet.size );
-	if( got_frame ) {
-		scale_context = sws_getCachedContext( scale_context, video_codec_context->width, video_codec_context->height,
-			video_codec_context->pix_fmt, VIDEO_SIZE, VIDEO_SIZE, CONV_FORMAT, SWS_BICUBIC, NULL, NULL, NULL );
-		if( !scale_context ) {
-			fprintf( stderr, "Warning: Couldn't initialise video conversion context\n" );
+	if( packet ) {
+		AVFrame *frame = avcodec_alloc_frame();
+		if( !frame ) {
+			fprintf( stderr, "Warning: Couldn't allocate video frame\n" );
+			return -1;
 		}
-		else {
-			sws_scale( scale_context, raw_frame->data, raw_frame->linesize, 0,
-				VIDEO_SIZE, conv_frame->data, conv_frame->linesize );
-			
-			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-			glBindTexture( GL_TEXTURE_2D, texture->id );
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-			
-			if( got_texture == 0 ) {
-				glTexImage2D( GL_TEXTURE_2D, 0, VIDEO_BPP, VIDEO_SIZE, VIDEO_SIZE, 0,
-					GL_RGB, GL_UNSIGNED_BYTE, conv_frame->data[0] );
-			}
-			else {
-				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VIDEO_SIZE, VIDEO_SIZE,
-					GL_RGB, GL_UNSIGNED_BYTE, conv_frame->data[0] );
-			}
-	
-			error = glGetError();
-			if( error != GL_NO_ERROR ) {
-				fprintf(stderr, "Warning: couldn't create texture: %s.\n", gluErrorString(error) );
-			}
-			else {
-				got_texture = 1;
-				ret = 0;	
-			}
+		
+		avcodec_decode_video( video_codec_context, frame, &got_frame, packet->data, packet->size );
+		if( got_frame ) {
+			frame_queue_put( &video_queue, frame );
 		}
+		av_free_packet( packet );
 	}
-	av_free_packet(&packet);
-	return ret;
+	return 0;
 }
 
 int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buffer_size ) {
@@ -205,7 +169,7 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 			return -1;
 		}
 
-		if( packet_queue_get(&audio_queue, &packet, 1 ) < 0 )
+		if( packet_queue_get( &audio_queue, &packet, 1 ) < 0 )
 			return -1;
 
 		audio_packet_data = packet.data;
@@ -251,13 +215,13 @@ int video_reader_thread( void *data ) {
 	reader_running = 1;
 
 	while( !stop ) {
-		if( video_queue.packets > MAX_QUEUE_PACKETS || audio_queue.packets > MAX_QUEUE_PACKETS ) {
-			SDL_Delay( FULL_DELAY );
+		if( video_queue.frames >= MAX_QUEUE_FRAMES || audio_queue.packets >= MAX_QUEUE_PACKETS ) {
+			SDL_Delay( QUEUE_FULL_DELAY );
 		}
 		else {
 			if( av_read_frame( format_context, &packet ) >= 0 ) {
 				if( packet.stream_index == video_stream ) {
-					packet_queue_put( &video_queue, &packet );
+					video_decode_video_frame( &packet );
 				}
 				else if( packet.stream_index == audio_stream && audio_codec_context ) {
 					packet_queue_put( &audio_queue, &packet );
@@ -268,7 +232,6 @@ int video_reader_thread( void *data ) {
 			}
 			else {
 				av_seek_frame( format_context, audio_stream, 0, 0 );
-				packet_queue_flush( &video_queue );
 				packet_queue_flush( &audio_queue );
 			}
 		}
@@ -403,9 +366,49 @@ struct texture *video_texture( void ) {
 }
 
 struct texture *video_get_frame( void ) {
-	if( video_decode_video_frame() == 0 ) {
-		return texture;
+	int ret = -1;
+	GLenum error = GL_NO_ERROR;
+	AVFrame *frame = frame_queue_get( &video_queue, 0 );
+	
+	if( !frame )
+		return NULL;
+	
+	scale_context = sws_getCachedContext( scale_context, video_codec_context->width, video_codec_context->height,
+		video_codec_context->pix_fmt, VIDEO_SIZE, VIDEO_SIZE, CONV_FORMAT, SWS_BICUBIC, NULL, NULL, NULL );
+	if( !scale_context ) {
+		fprintf( stderr, "Warning: Couldn't initialise video conversion context\n" );
 	}
-	return NULL;
+	else {
+		sws_scale( scale_context, frame->data, frame->linesize, 0,
+			VIDEO_SIZE, conv_frame->data, conv_frame->linesize );
+		
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glBindTexture( GL_TEXTURE_2D, texture->id );
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		
+		if( got_texture == 0 ) {
+			glTexImage2D( GL_TEXTURE_2D, 0, VIDEO_BPP, VIDEO_SIZE, VIDEO_SIZE, 0,
+				GL_RGB, GL_UNSIGNED_BYTE, conv_frame->data[0] );
+		}
+		else {
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VIDEO_SIZE, VIDEO_SIZE,
+				GL_RGB, GL_UNSIGNED_BYTE, conv_frame->data[0] );
+		}
+		
+		error = glGetError();
+		if( error != GL_NO_ERROR ) {
+			fprintf(stderr, "Warning: couldn't create texture: %s.\n", gluErrorString(error) );
+		}
+		else {
+			got_texture = 1;
+			ret = 0;	
+		}
+	}
+	
+	av_free( frame );
+	
+	return texture;
 }
-
