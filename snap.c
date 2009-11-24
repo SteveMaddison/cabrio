@@ -82,16 +82,19 @@ int snap_set( struct game *game ) {
 	char *filename;
 
 	snap_clear();
+	texture = NULL;
+	video = 0;
 	
 	filename = game_media_get( game, MEDIA_VIDEO, NULL );
 
 	if( filename && filename[0] ) {
-		video = 1;
-		video_open( filename );
-		texture = video_texture();
+		if( video_open( filename ) == 0 ) {
+			video = 1;
+			texture = video_texture();
+		}
 	}
-	else {
-		video = 0;
+	
+	if( !texture ) {
 		filename = game_media_get( game, MEDIA_IMAGE, image_type_name(IMAGE_SCREENSHOT) );
 		if( filename && filename[0] ) {
 			texture = sdl_create_texture( filename );

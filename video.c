@@ -16,7 +16,7 @@ static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
 static const int MAX_QUEUE_PACKETS = 20;
 static const int QUEUE_FULL_DELAY = 10;
-static const int MAX_QUEUE_FRAMES = 20;
+static const int MAX_QUEUE_FRAMES = 30;
 static const float FUDGE_FACTOR = 0.02;
 
 static AVFormatContext *format_context = NULL;
@@ -38,6 +38,7 @@ static unsigned int audio_buffer_size = 0;
 static unsigned int audio_buffer_index = 0;
 static uint8_t *audio_packet_data = NULL;
 static int audio_packet_size = 0;
+static double audio_clock = 0;
 
 SDL_AudioSpec audio_spec;
 static int audio_open = 0;
@@ -182,6 +183,11 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 				/* No data yet, get more frames */
 				continue;
 			}
+			
+			audio_clock += (double)data_size /
+				(double)(format_context->streams[audio_stream]->codec->sample_rate *
+				(2 * format_context->streams[audio_stream]->codec->channels));
+			
 			/* We have data, return it and come back for more later */
 			return data_size;
 		}
@@ -198,6 +204,10 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 
 		audio_packet_data = packet.data;
 		audio_packet_size = packet.size;
+
+		if( packet.pts != AV_NOPTS_VALUE ) {
+			audio_clock = packet.pts * av_q2d( format_context->streams[audio_stream]->time_base );
+		}
 	}
 }
 
@@ -368,13 +378,13 @@ int video_open( const char *filename ) {
 	}
 
 	texture = ogl_create_empty_texture();
-	
 	if( !texture )
 		return -1;
 		
 	texture->width = video_codec_context->width;
 	texture->height = video_codec_context->height;
-
+	got_texture = 0;
+	
 	stop = 0;
 	reader_thread = SDL_CreateThread( video_reader_thread, NULL );
 	if( !reader_thread ) {
@@ -389,8 +399,20 @@ struct texture *video_texture( void ) {
 	return texture;
 }
 
+double video_master_clock( void ) {
+	if( audio_codec_context )
+		/* Sync video to audio, if we have it */
+		return audio_clock;
+	else
+		/* Otherwise, sync to the video clock (based on frame rate) */
+		return video_clock;
+}
+
 void video_clock_tick( void ) {
-	video_clock += 1.0 / config_get()->iface.frame_rate;	
+	if( config_get()->iface.frame_rate )
+		video_clock += 1.0 / config_get()->iface.frame_rate;
+	else
+		video_clock += 1.0;
 }
 
 struct texture *video_get_frame( void ) {
@@ -399,8 +421,8 @@ struct texture *video_get_frame( void ) {
 	GLenum error = GL_NO_ERROR;
 
 	if( frame && frame->opaque && *(double*)(frame->opaque) ) {
-		if( got_texture && *(double*)(frame->opaque) > video_clock + FUDGE_FACTOR ) {
-			printf( "SOON: PTS: %f %f\n", *(uint64_t*)(frame->opaque), video_clock );
+		if( got_texture && *(double*)(frame->opaque) > video_master_clock() + FUDGE_FACTOR ) {
+			/* Reuse current frame */
 			video_clock_tick();
 			return texture;
 		}
@@ -408,8 +430,8 @@ struct texture *video_get_frame( void ) {
 	
 	for(;;) {
 		frame = frame_queue_get( &video_queue, 0 );
-		if( frame && *(double*)(frame->opaque) < video_clock ) {
-			printf( "SKIP: PTS: %f %f\n", *(uint64_t*)(frame->opaque), video_clock );
+		if( frame && *(double*)(frame->opaque) < video_master_clock() ) {
+			/* Skip this frame */
 			av_free( frame );
 			frame = NULL;
 		}
@@ -421,7 +443,7 @@ struct texture *video_get_frame( void ) {
 	video_clock_tick();
 	
 	if( !frame )
-		return NULL;
+		return texture;
 		
 	scale_context = sws_getCachedContext( scale_context, video_codec_context->width, video_codec_context->height,
 		video_codec_context->pix_fmt, VIDEO_SIZE, VIDEO_SIZE, CONV_FORMAT, SWS_BICUBIC, NULL, NULL, NULL );
