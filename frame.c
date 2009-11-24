@@ -12,6 +12,7 @@ void frame_queue_init( struct frame_queue *q ) {
 
 int frame_queue_put( struct frame_queue *q, AVFrame *f ) {
 	struct frame_list *frame;
+	struct frame_list *after = NULL;
 	
 	frame = av_malloc( sizeof(struct frame_list) );
 	if( !frame ) {
@@ -20,16 +21,38 @@ int frame_queue_put( struct frame_queue *q, AVFrame *f ) {
 	}
 	
 	frame->frame = f;
-	frame->next = NULL;
+	
+	after = q->last;
+	while( after && after->frame->pts > frame->frame->pts ) {
+		after = after->prev;
+	}
+	frame->prev = after;
 
 	SDL_LockMutex( q->mutex );
-
-	if( q->last )
-		q->last->next = frame;
-	else		
-		q->first = frame;
 	
-	q->last = frame;
+	if( after ) {	
+		if( after->next ) {
+			/* insert */
+			frame->next = after->next;
+			if( after->next )
+				after->next->prev = frame;
+			after->next = frame;
+		}
+		else {
+			/* append */
+			frame->next = NULL;			
+			after->next = frame;
+			q->last = frame;
+		}
+	}
+	else {
+		/* add at start */
+		frame->next = q->first;
+		if( q->first )
+			q->first->prev = frame;
+		q->first = frame;
+	}
+	
 	q->frames++;
 	
 	SDL_CondSignal( q->cond );

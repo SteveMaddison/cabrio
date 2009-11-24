@@ -7,6 +7,7 @@
 #include "sound.h"
 #include "packet.h"
 #include "frame.h"
+#include "config.h"
 #include "ogl.h"
 
 #define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)
@@ -16,6 +17,7 @@ static const int VIDEO_BPP = 3;
 static const int MAX_QUEUE_PACKETS = 20;
 static const int QUEUE_FULL_DELAY = 10;
 static const int MAX_QUEUE_FRAMES = 20;
+static const float FUDGE_FACTOR = 0.02;
 
 static AVFormatContext *format_context = NULL;
 static AVCodecContext *video_codec_context = NULL;
@@ -25,6 +27,7 @@ static struct SwsContext *scale_context = NULL;
 static uint8_t *video_buffer = NULL;
 static int video_stream = -1;
 static struct frame_queue video_queue;
+static double video_clock = 0;
 
 static AVCodecContext *audio_codec_context = NULL;
 static AVCodec *audio_codec = NULL;
@@ -81,8 +84,8 @@ void video_free( void ) {
 void video_close( void ) {
 	stop = 1;
 
-/*	while( reader_running || audio_running )
-		SDL_Delay( 10 ); */
+	while( reader_running || audio_running )
+		SDL_Delay( 10 );
 
 	if( audio_open )
 		SDL_CloseAudio();
@@ -119,18 +122,39 @@ void video_close( void ) {
 }
 
 int video_decode_video_frame( AVPacket *packet ) {
+	static AVFrame *frame = NULL;
+	static uint64_t pts = 0;
 	int got_frame = 0;
 	
 	if( packet ) {
-		AVFrame *frame = avcodec_alloc_frame();
 		if( !frame ) {
-			fprintf( stderr, "Warning: Couldn't allocate video frame\n" );
+			frame = avcodec_alloc_frame();
+			if( !frame ) {
+				fprintf( stderr, "Warning: Couldn't allocate video frame\n" );
+				return -1;
+			}
+			pts = packet->pts;
+		}
+		
+		if( !frame ) {
+			fprintf( stderr, "Warning: Frame disappeared\n" );
 			return -1;
 		}
 		
-		avcodec_decode_video( video_codec_context, frame, &got_frame, packet->data, packet->size );
+		avcodec_decode_video( video_codec_context, frame, &got_frame, packet->data, packet->size );		
+		
 		if( got_frame ) {
-			frame_queue_put( &video_queue, frame );
+			double *frame_pts = av_malloc( sizeof(double) );
+			if( !frame_pts ) {
+				fprintf( stderr, "Warning: Couldn't allocate PTS for video frame\n" );
+			}
+			else {
+				*frame_pts = pts * av_q2d( format_context->streams[video_stream]->time_base );
+				frame->opaque = frame_pts;
+				frame_queue_put( &video_queue, frame );
+			}
+			frame = NULL;
+			pts = 0;
 		}
 		av_free_packet( packet );
 	}
@@ -231,8 +255,7 @@ int video_reader_thread( void *data ) {
 				}
 			}
 			else {
-				av_seek_frame( format_context, audio_stream, 0, 0 );
-				packet_queue_flush( &audio_queue );
+				av_seek_frame( format_context, -1, 0, AVSEEK_FLAG_BACKWARD|AVSEEK_FLAG_BYTE );
 			}
 		}
 	}
@@ -246,10 +269,11 @@ int video_open( const char *filename ) {
 	
 	format_context = NULL;
 	video_codec_context = NULL;
-	audio_codec_context = NULL;
 	video_stream = -1;
-	audio_stream = -1;
+	video_clock = 0;
 	
+	audio_codec_context = NULL;
+	audio_stream = -1;
 	audio_buffer_size = 0;
 	audio_buffer_index = 0;
 	audio_packet_size = 0;
@@ -365,14 +389,40 @@ struct texture *video_texture( void ) {
 	return texture;
 }
 
+void video_clock_tick( void ) {
+	video_clock += 1.0 / config_get()->iface.frame_rate;	
+}
+
 struct texture *video_get_frame( void ) {
+	static AVFrame *frame = NULL;
 	int ret = -1;
 	GLenum error = GL_NO_ERROR;
-	AVFrame *frame = frame_queue_get( &video_queue, 0 );
+
+	if( frame && frame->opaque && *(double*)(frame->opaque) ) {
+		if( got_texture && *(double*)(frame->opaque) > video_clock + FUDGE_FACTOR ) {
+			printf( "SOON: PTS: %f %f\n", *(uint64_t*)(frame->opaque), video_clock );
+			video_clock_tick();
+			return texture;
+		}
+	}
+	
+	for(;;) {
+		frame = frame_queue_get( &video_queue, 0 );
+		if( frame && *(double*)(frame->opaque) < video_clock ) {
+			printf( "SKIP: PTS: %f %f\n", *(uint64_t*)(frame->opaque), video_clock );
+			av_free( frame );
+			frame = NULL;
+		}
+		else {
+			break;
+		}
+	}
+	
+	video_clock_tick();
 	
 	if( !frame )
 		return NULL;
-	
+		
 	scale_context = sws_getCachedContext( scale_context, video_codec_context->width, video_codec_context->height,
 		video_codec_context->pix_fmt, VIDEO_SIZE, VIDEO_SIZE, CONV_FORMAT, SWS_BICUBIC, NULL, NULL, NULL );
 	if( !scale_context ) {
@@ -409,6 +459,7 @@ struct texture *video_get_frame( void ) {
 	}
 	
 	av_free( frame );
+	frame = NULL;
 	
 	return texture;
 }

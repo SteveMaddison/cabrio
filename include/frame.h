@@ -7,6 +7,7 @@
 
 struct frame_list {
 	struct frame_list *next;
+	struct frame_list *prev;
 	AVFrame *frame;
 };
 
