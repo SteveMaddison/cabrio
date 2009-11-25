@@ -17,6 +17,7 @@ static const int VIDEO_BPP = 3;
 static const int MAX_QUEUE_PACKETS = 20;
 static const int QUEUE_FULL_DELAY = 10;
 static const int MAX_QUEUE_FRAMES = 30;
+static const int SAMPLES = 1024;
 static const float FUDGE_FACTOR = 0.02;
 
 static AVFormatContext *format_context = NULL;
@@ -224,7 +225,7 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 			audio_size = video_decode_audio_frame( context, audio_buffer, AUDIO_BUFFER_SIZE );
 			if( audio_size < 0 ) {
 				/* If error, output silence */
-				audio_buffer_size = 1024;
+				audio_buffer_size = SAMPLES;
 				memset( audio_buffer, 0, audio_buffer_size );
 			} else {
 				audio_buffer_size = audio_size;
@@ -367,7 +368,7 @@ int video_open( const char *filename ) {
 				desired.format = AUDIO_S16SYS;
 				desired.channels = audio_codec_context->channels;
 				desired.silence = 0;
-				desired.samples = 1024;
+				desired.samples = SAMPLES;
 				desired.callback = video_audio_callback;
 				desired.userdata = audio_codec_context;
 
