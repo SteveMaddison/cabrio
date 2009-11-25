@@ -33,5 +33,5 @@ install: cabrio
 	$(INSTALL) -m 755 -t $(BIN_DIR) cabrio
 
 clean:
-	rm -f cabrio *.o core
+	rm -f cabrio *.o core core.*
 

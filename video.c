@@ -28,6 +28,7 @@ static uint8_t *video_buffer = NULL;
 static int video_stream = -1;
 static struct frame_queue video_queue;
 static double video_clock = 0;
+static uint64_t video_pts = 0;
 
 static AVCodecContext *audio_codec_context = NULL;
 static AVCodec *audio_codec = NULL;
@@ -124,17 +125,16 @@ void video_close( void ) {
 
 int video_decode_video_frame( AVPacket *packet ) {
 	static AVFrame *frame = NULL;
-	static uint64_t pts = 0;
 	int got_frame = 0;
+	static double pts = 0;
 	
-	if( packet ) {
+	if( packet ) {		
 		if( !frame ) {
 			frame = avcodec_alloc_frame();
 			if( !frame ) {
 				fprintf( stderr, "Warning: Couldn't allocate video frame\n" );
 				return -1;
 			}
-			pts = packet->pts;
 		}
 		
 		if( !frame ) {
@@ -142,20 +142,23 @@ int video_decode_video_frame( AVPacket *packet ) {
 			return -1;
 		}
 		
-		avcodec_decode_video( video_codec_context, frame, &got_frame, packet->data, packet->size );		
+		video_pts = packet->pts;
+		avcodec_decode_video( video_codec_context, frame, &got_frame, packet->data, packet->size );
+		
+		if( packet->dts == AV_NOPTS_VALUE && frame->opaque && *(uint64_t*)frame->opaque != AV_NOPTS_VALUE )
+			pts = *(uint64_t *)frame->opaque;
+		else if( packet->dts != AV_NOPTS_VALUE )
+			pts = packet->dts;
+		else
+			pts = 0;
+		pts *= av_q2d( format_context->streams[video_stream]->time_base );
 		
 		if( got_frame ) {
-			double *frame_pts = av_malloc( sizeof(double) );
-			if( !frame_pts ) {
-				fprintf( stderr, "Warning: Couldn't allocate PTS for video frame\n" );
-			}
-			else {
-				*frame_pts = pts * av_q2d( format_context->streams[video_stream]->time_base );
-				frame->opaque = frame_pts;
-				frame_queue_put( &video_queue, frame );
-			}
+			double *frame_pts = malloc( sizeof(double) );
+			*frame_pts = pts;
+			frame->opaque = frame_pts;
+			frame_queue_put( &video_queue, frame );
 			frame = NULL;
-			pts = 0;
 		}
 		av_free_packet( packet );
 	}
@@ -240,6 +243,12 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 	}
 }
 
+void video_release_buffer( struct AVCodecContext *c, AVFrame *f ) {
+	if( f )
+		av_freep( &f->opaque );
+	avcodec_default_release_buffer( c, f );
+}
+
 int video_reader_thread( void *data ) {
 	static AVPacket packet;
 
@@ -317,6 +326,7 @@ int video_open( const char *filename ) {
 		return -1;
 	}
 	
+    video_codec_context->release_buffer = video_release_buffer;
 	video_codec = avcodec_find_decoder( video_codec_context->codec_id );
 	if( !video_codec ) {
 		fprintf( stderr, "Warning: Video codec in video '%s' not supported\n", filename );
@@ -399,10 +409,28 @@ struct texture *video_texture( void ) {
 	return texture;
 }
 
+double get_audio_clock( void ) {
+	double pts;
+	int buffer_size, bytes_per_sec;
+
+	pts = audio_clock; /* maintained in the audio thread */
+	buffer_size = audio_buffer_size - audio_buffer_index;
+	bytes_per_sec = 0;
+	
+	if( audio_codec_context ) {
+		int n = audio_codec_context->channels * 2;
+		bytes_per_sec = audio_codec_context->sample_rate * n;
+	}
+	if( bytes_per_sec ) {
+		pts -= (double)buffer_size / bytes_per_sec;
+	}
+	return pts;
+}
+
 double video_master_clock( void ) {
 	if( audio_codec_context )
 		/* Sync video to audio, if we have it */
-		return audio_clock;
+		return get_audio_clock();
 	else
 		/* Otherwise, sync to the video clock (based on frame rate) */
 		return video_clock;
@@ -419,25 +447,20 @@ struct texture *video_get_frame( void ) {
 	static AVFrame *frame = NULL;
 	int ret = -1;
 	GLenum error = GL_NO_ERROR;
+	double clock = video_master_clock();
 
 	if( frame && frame->opaque && *(double*)(frame->opaque) ) {
-		if( got_texture && *(double*)(frame->opaque) > video_master_clock() + FUDGE_FACTOR ) {
+		if( got_texture && *(double*)(frame->opaque) > clock + FUDGE_FACTOR ) {
 			/* Reuse current frame */
 			video_clock_tick();
 			return texture;
 		}
 	}
-	
-	for(;;) {
+
+	frame = frame_queue_get( &video_queue, 0 );
+	while( frame && *(double*)(frame->opaque) < clock ) {
+		av_free( frame );
 		frame = frame_queue_get( &video_queue, 0 );
-		if( frame && *(double*)(frame->opaque) < video_master_clock() ) {
-			/* Skip this frame */
-			av_free( frame );
-			frame = NULL;
-		}
-		else {
-			break;
-		}
 	}
 	
 	video_clock_tick();
