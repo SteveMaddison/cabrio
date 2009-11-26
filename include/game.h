@@ -28,6 +28,7 @@ struct game {
 	struct texture *texture;
 	struct config_param *params;
 	struct game_media *media;
+	struct config_emulator *emulator;
 	char *name;
 	char *rom_path;
 };

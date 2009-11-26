@@ -7,6 +7,7 @@
 #include "sdl_ogl.h"
 #include "font.h"
 #include "media.h"
+#include "emulator.h"
 #include "location.h"
 #include "lookup.h"
 
@@ -186,6 +187,23 @@ int game_list_create( void ) {
 			else {
 				platform_add_unknown();
 				game->platform = platform_get( NULL );
+			}
+			
+			if( config_game->emulator && config_game->emulator[0] ) {
+				game->emulator = emulator_get_by_name( config_game->emulator );
+				if( !game->emulator )
+					fprintf( stderr, "Warning: Emulator '%s' defined for game '%s' not found\n", config_game->emulator, game->name );
+			}
+			if( !game->emulator && config_game->platform ) {
+				game->emulator = emulator_get_by_platform( config_game->platform->name );
+			}
+			if( !game->emulator ) {
+				game->emulator = emulator_get_default();
+			}
+			if( !game->emulator ) {
+				fprintf( stderr, "Warning: No emulator found for game '%s'\n", game->name );
+				free( game );
+				continue;
 			}
 			
 			/* Add game categories. */

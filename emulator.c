@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <sys/types.h>
+#include <errno.h>
 #ifdef __unix__
 #include <sys/wait.h>
 #endif
@@ -52,11 +53,11 @@ int resume_all( void ) {
 		return -7;
 	if( game_list_resume() != 0 )
 		return -8;
+	sound_resume();
 	if( snap_resume() != 0 )
 		return -9;
 	if( game_sel_resume() != 0 )
 		return -10;
-	sound_resume();
 	
 	return 0;
 }
@@ -66,7 +67,6 @@ int emulator_exec( struct game *game ) {
 	struct config_param *param = NULL;
 	int i = 0;
 	int count = 0;
-	const struct config *config = config_get();
 	char current_dir[CONFIG_FILE_NAME_LENGTH];
 #ifdef __WIN32__
 	PROCESS_INFORMATION pi;
@@ -74,8 +74,8 @@ int emulator_exec( struct game *game ) {
 	char cmdline[CONFIG_MAX_CMD_LENGTH];
 #endif
 
-	if( config->emulators && config->emulators->executable ) {
-		param = config->emulators->params;
+	if( game->emulator && game->emulator->executable ) {
+		param = game->emulator->params;
 		while( param ) {
 			if( param->name && *param->name && count < CONFIG_MAX_PARAMS - 2 )
 				params[count++] = param->name;
@@ -106,16 +106,16 @@ int emulator_exec( struct game *game ) {
 	}
 	
 	/* If emulator provided a directory, go to it. */
-	if( config->emulators->directory[0] ) {
+	if( game->emulator->directory[0] ) {
 		getcwd( current_dir, CONFIG_FILE_NAME_LENGTH-1 );
-		chdir( config->emulators->directory );
+		chdir( game->emulator->directory );
 	}
 	
 #ifdef __unix__
 	/* Terminate param list */
 	params[count] = NULL;
 
-	printf( "Executing: %s", config->emulators->executable );
+	printf( "Executing: %s", game->emulator->executable );
 	for( i = 0 ; i < count ; i++ ) {
 		printf( " %s", params[i] );
 	}
@@ -123,10 +123,13 @@ int emulator_exec( struct game *game ) {
 
 	pid_t pid = fork();
 	if (pid == 0) {
-		execvp( config->emulators->executable, params );
+		if( execvp( game->emulator->executable, params ) != 0 ) {
+			fprintf( stderr, "Error: Couldn't execute emulator '%s': %s\n", game->emulator->executable, strerror(errno) );
+			exit( 1 );
+		}	
 	}
 	else if (pid < 0) {
-		fprintf(stderr, "Warning: failed to fork\n");
+		fprintf(stderr, "Error: failed to fork\n");
 		return -1;
 	}
 	wait( NULL );
@@ -136,7 +139,7 @@ int emulator_exec( struct game *game ) {
 	memset( &si, 0, sizeof(STARTUPINFO));
 	si.cb = sizeof(si);
 
-	snprintf( cmdline, CONFIG_MAX_CMD_LENGTH, "\"%s\"", config->emulators->executable );
+	snprintf( cmdline, CONFIG_MAX_CMD_LENGTH, "\"%s\"", game->emulator->executable );
 	for( i = 0 ; i < count ; i++ ) {
 		if( strlen(cmdline) + strlen(params[i]) + 4 <= CONFIG_MAX_CMD_LENGTH ) {
 			strcat( cmdline, " \"" );
@@ -163,7 +166,7 @@ int emulator_exec( struct game *game ) {
 	}
 #endif
 
-	if( config->emulators->directory[0] )
+	if( game->emulator->directory[0] )
 		chdir( current_dir );
 
 	return 0;
@@ -187,3 +190,47 @@ int emulator_run( struct game *game ) {
 
 	return ret;
 }
+
+struct config_emulator *emulator_get_by_name( const char *name ) {
+	struct config_emulator *e = config_get()->emulators;
+	
+	if( name && name[0] ) {
+		while( e ) {
+			if( strcasecmp( e->name, name ) == 0 )
+				break;
+			e = e->next;
+		}
+	}
+	
+	return e;
+}
+
+struct config_emulator *emulator_get_by_platform( const char *platform ) {
+	struct config_emulator *e = config_get()->emulators;
+	
+	if( platform && platform[0] ) {
+		while( e ) {
+			if( e->platform && e->platform->name && strcasecmp( e->platform->name, platform ) == 0 )
+				break;
+			e = e->next;
+		}
+	}
+	
+	return e;
+}
+
+struct config_emulator *emulator_get_default( void ) {
+	struct config_emulator *e = config_get()->emulators;
+	
+	while( e ) {
+		if( e->is_default )
+			break;
+		e = e->next;
+	}
+	
+	if( !e )
+		e = config_get()->emulators;
+	
+	return e;
+}
+

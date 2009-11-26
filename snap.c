@@ -212,7 +212,7 @@ void snap_draw( void ) {
 			glTexCoord2f(1.0, 0.0); glVertex3f( xsize,  ysize, 0.0);	
 		glEnd();
 
-		if( platform_count() > 1 && platform_texture ) {
+		if( config->platform_icons && platform_count() > 1 && platform_texture ) {
 			GLfloat platform_xsize = platform_texture->width;
 			GLfloat platform_ysize = platform_texture->height; 
 

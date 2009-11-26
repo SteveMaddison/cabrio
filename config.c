@@ -106,7 +106,6 @@ static char config_filename[CONFIG_FILE_NAME_LENGTH] 	= "";
 /* Specific XML tags */
 static const char *tag_root							= "cabrio-config";
 static const char *tag_emulators					= "emulators";
-static const char *tag_emulator						= 	"emulator";
 static const char *tag_emulator_executable			= 		"executable";
 static const char *tag_game_list					= "game-list";
 static const char *tag_games						=   "games";
@@ -152,6 +151,7 @@ static const char *tag_theme_sounds_sound			=	  "sound";
 static const char *tag_theme_sounds_sound_file		=	  "sound-file";
 static const char *tag_theme_snap					=	"snap";
 static const char *tag_theme_snap_fix_ar			=	  "fix-aspect-ratio";
+static const char *tag_theme_snap_platform_icons	=	  "platform-icons";
 static const char *tag_theme_hints					=	"hints";
 static const char *tag_theme_hints_pulse			=     "pulse";
 static const char *tag_theme_hints_image_back		=     "back-image";
@@ -202,6 +202,8 @@ static const char *tag_directory		= "directory";
 static const char *tag_color			= "color";
 static const char *tag_match			= "match";
 static const char *tag_category			= "category";
+static const char *tag_emulator			= "emulator";
+static const char *tag_default			= "default";
 
 /* Common values */
 static const char *config_empty			= "";
@@ -438,8 +440,14 @@ int config_read_emulator( xmlNode *node, struct config_emulator *emulator ) {
 			else if( strcmp( (char*)node->name, tag_directory ) == 0 ) {
 				strncpy( emulator->directory, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
 			}
+			else if( strcmp( (char*)node->name, tag_platform ) == 0 ) {
+				emulator->platform = config_platform( (char*)xmlNodeGetContent(node) );
+			}
 			else if( strcmp( (char*)node->name, tag_params ) == 0 ) {
 				config_read_emulator_params( node->children, emulator );
+			}
+			else if( strcmp( (char*)node->name, tag_default ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &emulator->is_default );
 			}
 			else {
 				fprintf( stderr, warn_skip, tag_emulator, node->name );	
@@ -737,6 +745,9 @@ int config_read_game( xmlNode *node, struct config_game *game, const char *game_
 			}
 			else if( strcmp( (char*)node->name, tag_game_video ) == 0 ) {
 				strncpy( game->video, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, tag_emulator ) == 0 ) {
+				strncpy( game->emulator, (char*)xmlNodeGetContent(node), CONFIG_NAME_LENGTH );
 			}
 			else {
 				fprintf( stderr, warn_skip, tag_game, node->name );	
@@ -1082,6 +1093,9 @@ int config_read_snap( xmlNode *node, struct config_snap *snap ) {
 			}
 			else if( strcmp( (char*)node->name, tag_auto_hide ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &snap->auto_hide );
+			}
+			else if( strcmp( (char*)node->name, tag_theme_snap_platform_icons ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &snap->platform_icons );
 			}
 			else {
 				fprintf( stderr, warn_skip, tag_theme_snap, node->name );	
@@ -2220,6 +2234,7 @@ int config_new( void ) {
 		default_theme.snap.size = 1.0;
 		default_theme.snap.fix_aspect_ratio = 1;
 		default_theme.snap.auto_hide = 1;
+		default_theme.snap.platform_icons = 1;
 
 		default_theme.hints.offset1 = -2.0;
 		default_theme.hints.offset2 = -1.2;

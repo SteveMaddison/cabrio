@@ -38,6 +38,11 @@ struct config_param {
 	char value[CONFIG_PARAM_LENGTH];
 };
 
+struct config_platform {
+	struct config_platform *next;
+	char name[CONFIG_NAME_LENGTH];
+};
+
 struct config_emulator {
 	struct config_emulator *next;
 	int id;
@@ -45,12 +50,9 @@ struct config_emulator {
 	char display_name[CONFIG_NAME_LENGTH];
 	char executable[CONFIG_FILE_NAME_LENGTH];
 	char directory[CONFIG_FILE_NAME_LENGTH];
+	int is_default;
 	struct config_param *params;
-};
-
-struct config_platform {
-	struct config_platform *next;
-	char name[CONFIG_NAME_LENGTH];
+	struct config_platform *platform;
 };
 
 struct config_lookup {
@@ -94,6 +96,7 @@ struct config_game {
 	char name[CONFIG_NAME_LENGTH];
 	char rom_image[CONFIG_FILE_NAME_LENGTH];
 	char video[CONFIG_FILE_NAME_LENGTH];
+	char emulator[CONFIG_NAME_LENGTH];
 	struct config_game_category *categories;
 	struct config_param *params;
 	struct config_platform *platform;
@@ -160,6 +163,7 @@ struct config_snap {
 	float size;
 	int fix_aspect_ratio;
 	int auto_hide;
+	int platform_icons;
 };
 
 struct config_hints {
