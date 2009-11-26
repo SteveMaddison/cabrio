@@ -1,5 +1,8 @@
 #include "platform.h"
 #include "config.h"
+#include "location.h"
+#include "media.h"
+#include "sdl_ogl.h"
 #include <stdlib.h>
 
 struct platform *platform_start;
@@ -51,8 +54,13 @@ int platform_init( void ) {
 	while( c ) {
 		platform = malloc( sizeof(struct platform) );
 		if( platform ) {
+			memset( platform, 0, sizeof(struct platform) );
 			platform->name = c->name;
-		
+			
+			location_get_match( image_type_name(IMAGE_PLATFORM), platform->name, platform->image_file );
+			if( platform->image_file && platform->image_file[0] )
+				platform->texture = sdl_create_texture( platform->image_file );
+						
 			prev = platform_start;
 			if( platform_start ) {
 				prev = platform_start->prev;

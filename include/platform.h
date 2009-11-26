@@ -3,11 +3,15 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "config.h"
+#include "ogl.h"
 
 struct platform {
 	struct platform *next;
 	struct platform *prev;
 	char *name;
+	char image_file[CONFIG_FILE_NAME_LENGTH];
+	struct texture *texture;
 };
 
 int platform_init( void );

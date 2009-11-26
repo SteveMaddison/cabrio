@@ -6,7 +6,7 @@ static const char *media_types[] = {
 };
 
 static const char *image_types[] = {
-	"logo", "screenshot", "background"
+	"logo", "screenshot", "background", "platform"
 };
 
 char *media_type_name( int m ) {

@@ -132,7 +132,6 @@ int snap_set( struct game *game ) {
 		return 0;
 	}
 
-	texture = NULL;
 	return -1;
 }
 
@@ -175,10 +174,10 @@ void snap_draw( void ) {
 		
 		if( video )
 			t = video_get_frame();
-		
+				
 		if( t == NULL )
 			t = noise[frame/noise_skip];
-	
+		
 		xsize = (width/2) * scale * xfactor;
 		ysize = (height/2) * scale * xfactor;
 		

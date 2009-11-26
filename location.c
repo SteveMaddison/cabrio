@@ -198,7 +198,7 @@ int location_get_match( const char *type, const char *filename, char *path ) {
 					if( strncasecmp( dentry->d_name, search, strlen(search) ) == 0 ) {
 						snprintf( path, CONFIG_FILE_NAME_LENGTH, "%s\\%s", location->directory, dentry->d_name );
 #else
-					if( strncmp( dentry->d_name, search, strlen(search) ) == 0 ) {
+					if( strncasecmp( dentry->d_name, search, strlen(search) ) == 0 ) {
 						snprintf( path, CONFIG_FILE_NAME_LENGTH, "%s/%s", location->directory, dentry->d_name );
 #endif
 						return 0;
