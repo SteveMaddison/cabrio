@@ -7,8 +7,8 @@
 #include "video.h"
 
 static const GLfloat DEPTH = -8;
-static const GLfloat max_size = 280;
-static const GLfloat scale_fator = 0.012;
+static const GLfloat MAX_SIZE = 280;
+static const GLfloat SCALE_FACTOR = 0.012;
 static const GLfloat PLATFORM_SIZE = 0.8;
 static struct texture *texture = NULL;
 static struct texture *platform_texture = NULL;
@@ -22,6 +22,7 @@ static int step = 0;
 static int hide_direction = 0;
 static int visible = 0;
 static GLfloat scale = 0.006;
+static GLfloat platform_scale = 1;
 static GLfloat hidden_offset = -4.0;
 static int video = 0;
 static int width, height;
@@ -40,8 +41,8 @@ int snap_init( void ) {
 	}
 	
 	for( i = 0 ; i < NUM_NOISE ; i++ ) {
-		noise[i]->width = max_size;
-		noise[i]->height = max_size / ogl_aspect_ratio();
+		noise[i]->width = MAX_SIZE;
+		noise[i]->height = MAX_SIZE / ogl_aspect_ratio();
 	}
 	
 	if( config->iface.frame_rate ) {
@@ -52,7 +53,8 @@ int snap_init( void ) {
 		steps = MAX_STEPS;
 	}
 	
-	scale = config->iface.theme.snap.size * scale_fator;
+	scale = config->iface.theme.snap.size * SCALE_FACTOR;
+	platform_scale = config->iface.theme.snap.size * PLATFORM_SIZE;
 	
 	if( config->iface.theme.snap.offset1 > 0 )
 		hidden_offset = -hidden_offset;
@@ -111,25 +113,25 @@ int snap_set( struct game *game ) {
 		if( config->fix_aspect_ratio ) {
 			if( texture->width > texture->height ) {
 				/* Landscape */
-				width = max_size;
-				height = max_size / ogl_aspect_ratio();
+				width = MAX_SIZE;
+				height = MAX_SIZE / ogl_aspect_ratio();
 			}
 			else {
 				/* Portrait */
-				height = max_size;
-				width = max_size / ogl_aspect_ratio();
+				height = MAX_SIZE;
+				width = MAX_SIZE / ogl_aspect_ratio();
 			}				
 		}
 		else {
 			if( texture->width > texture->height ) {
 				/* Landscape */
-				height = (int)(float)texture->height/((float)texture->width/max_size);
-				width = max_size;
+				height = (int)(float)texture->height/((float)texture->width/MAX_SIZE);
+				width = MAX_SIZE;
 			}
 			else {
 				/* Portrait */
-				width = (int)(float)texture->width/((float)texture->height/max_size);
-				height = max_size;
+				width = (int)(float)texture->width/((float)texture->height/MAX_SIZE);
+				height = MAX_SIZE;
 			}
 		}
 		return 0;
@@ -215,12 +217,12 @@ void snap_draw( void ) {
 			GLfloat platform_ysize = platform_texture->height; 
 
 			if( platform_xsize > platform_ysize ) {
-				platform_ysize = PLATFORM_SIZE * platform_ysize/platform_xsize;
-				platform_xsize = PLATFORM_SIZE;
+				platform_ysize = platform_scale * platform_ysize/platform_xsize;
+				platform_xsize = platform_scale;
 			}
 			else {
-				platform_xsize = PLATFORM_SIZE * platform_xsize/platform_ysize;
-				platform_ysize = PLATFORM_SIZE;
+				platform_xsize = platform_scale * platform_xsize/platform_ysize;
+				platform_ysize = platform_scale;
 			}
 
 			glTranslatef( xsize * 0.8, -ysize * 0.9, 0.1 );
