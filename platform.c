@@ -31,8 +31,8 @@ void platform_add( struct platform *platform, struct platform *after ) {
 void platform_add_unknown( void ) {
 	if( has_unknown == 0 ) {
 		if( platform_start ) {
-			platform_unknown.next = platform_start->prev;
-			platform_unknown.prev = platform_start;
+			platform_unknown.next = platform_start;
+			platform_unknown.prev = platform_start->prev;
 			platform_start->prev->next = &platform_unknown;
 			platform_start->prev = &platform_unknown;
 		}
@@ -58,8 +58,10 @@ int platform_init( void ) {
 			platform->name = c->name;
 			
 			location_get_match( image_type_name(IMAGE_PLATFORM), platform->name, platform->image_file );
-			if( platform->image_file && platform->image_file[0] )
+			if( platform->image_file && platform->image_file[0] ) {
+				printf("P: %s\n", platform->image_file );
 				platform->texture = sdl_create_texture( platform->image_file );
+			}
 						
 			prev = platform_start;
 			if( platform_start ) {
