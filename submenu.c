@@ -13,6 +13,7 @@
 static const GLfloat ITEM_SCALE = 1.2;
 static const GLfloat FONT_SCALE = 0.0035;
 static const GLfloat PLATFORM_SIZE = 1.8;
+static const GLfloat SCROLL_HIDE_OFFSET = 6;
 static struct texture *texture = NULL;
 static int type = MENU_ALL;
 static int selected = 0;
@@ -34,6 +35,8 @@ static int steps = 0;
 static int step = 0;
 static int hide_direction = 0;
 static int visible = 0;
+static int scroll_direction = 0;
+static int scroll_step = 0;
 
 int submenu_init( void ) {
 	const struct config_submenu *config = &config_get()->iface.theme.submenu;
@@ -157,6 +160,9 @@ int submenu_create( struct menu_item *item ) {
 }
 
 void submenu_advance( void ) {
+	scroll_direction = 1;
+	scroll_step = steps;
+
 	if( message ) {
 		ogl_free_texture( message );
 	}
@@ -181,6 +187,9 @@ void submenu_advance( void ) {
 }
 
 void submenu_retreat( void ) {
+	scroll_direction = -1;
+	scroll_step = steps;
+
 	if( message ) {
 		ogl_free_texture( message );
 	}
@@ -273,6 +282,35 @@ int submenu_event( int event ) {
 	return 0;
 }
 
+void submenu_draw_platform( struct platform *p, GLfloat offset ) {
+	if( p && p->texture ) {
+		GLfloat width = p->texture->width;
+		GLfloat height = p->texture->height;
+	
+		if( width > height ) {
+			height = PLATFORM_SIZE * height/width;
+			width = PLATFORM_SIZE;
+		}
+		else {
+			width = PLATFORM_SIZE * width/height;
+			height = PLATFORM_SIZE;
+		}
+	
+		width *= ogl_xfactor();
+		height *= ogl_xfactor();
+
+		ogl_load_alterego();
+		glTranslatef( offset, 0, -7 );
+		glBindTexture( GL_TEXTURE_2D, p->texture->id );
+		glBegin( GL_QUADS );
+			glTexCoord2f(0.0, 0.0); glVertex3f(-width,  height, 0.0);
+			glTexCoord2f(0.0, 1.0); glVertex3f(-width, -height, 0.0);
+			glTexCoord2f(1.0, 1.0); glVertex3f( width, -height, 0.0);
+			glTexCoord2f(1.0, 0.0); glVertex3f( width,  height, 0.0);
+		glEnd();
+	}
+}
+
 void submenu_draw( void ) {
 	const struct config_submenu *config = &config_get()->iface.theme.submenu;
 	
@@ -283,6 +321,7 @@ void submenu_draw( void ) {
 		GLfloat height = (item_height/2)*xfactor;
 		GLfloat tx = (((GLfloat)message->width*font_scale)/2) * xfactor;
 		GLfloat ty = (((GLfloat)message->height*font_scale)/2) * xfactor;
+		GLfloat scroll_offset = 0;
 		
 		if( tx > ((item_width*0.9)/2)*xfactor  ) {
 			tx = ((item_width*0.9)/2)*xfactor;
@@ -312,36 +351,29 @@ void submenu_draw( void ) {
 				hide_direction = 0;
 			}
 		}
+		
+		if( scroll_direction ) {
+			scroll_offset = ((SCROLL_HIDE_OFFSET/steps)*scroll_step) * (-scroll_direction);
+			if( scroll_step-- == 1 ) {
+				scroll_direction = 0;
+			}
+		}
 
 		ogl_load_alterego();
 		glColor4f( 1.0, 1.0, 1.0, 1.0 );
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
 		
-		if( focus_has() == FOCUS_SUBMENU && type == MENU_PLATFORM && platform && platform->texture ) {
-			GLfloat platform_width = platform->texture->width;
-			GLfloat platform_height = platform->texture->height;
-			
-			if( platform_width > platform_height ) {
-				platform_height = PLATFORM_SIZE * platform_height/platform_width;
-				platform_width = PLATFORM_SIZE;
+		if( focus_has() == FOCUS_SUBMENU && type == MENU_PLATFORM && platform ) {
+			submenu_draw_platform( platform, scroll_offset );
+			if( scroll_direction && scroll_step ) {
+				if( scroll_direction > 0 ) {
+					submenu_draw_platform( platform->prev, SCROLL_HIDE_OFFSET + scroll_offset );
+				}
+				else {
+					submenu_draw_platform( platform->next, -SCROLL_HIDE_OFFSET + scroll_offset );
+				}
 			}
-			else {
-				platform_width = PLATFORM_SIZE * platform_width/platform_height;
-				platform_height = PLATFORM_SIZE;
-			}
-			
-			platform_width *= xfactor;
-			platform_height *= xfactor;
-
-			glTranslatef( 0, 0, -7 );
-			glBindTexture( GL_TEXTURE_2D, platform->texture->id );
-			glBegin( GL_QUADS );
-				glTexCoord2f(0.0, 0.0); glVertex3f(-platform_width,  platform_height, 0.0);
-				glTexCoord2f(0.0, 1.0); glVertex3f(-platform_width, -platform_height, 0.0);
-				glTexCoord2f(1.0, 1.0); glVertex3f( platform_width, -platform_height, 0.0);
-				glTexCoord2f(1.0, 0.0); glVertex3f( platform_width,  platform_height, 0.0);
-			glEnd();
 		}		
 		
 		ogl_load_alterego();

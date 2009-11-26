@@ -46,6 +46,35 @@ void platform_add_unknown( void ) {
 	}
 }
 
+void platform_free_textures( void ) {
+	struct platform *p = platform_start;
+	
+	if( p ) {
+		do {
+			if( p->texture ) {
+				ogl_free_texture( p->texture );
+				p->texture = NULL;
+			}
+			p = p->next;
+		} while( p != platform_start );
+	}
+}
+
+int platform_load_textures( void ) {
+	struct platform *p = platform_start;
+	
+	if( p ) {
+		do {
+			if( p->image_file && p->image_file[0] ) {
+				p->texture = sdl_create_texture( p->image_file );
+			}
+			p = p->next;
+		} while( p != platform_start );
+	}
+	
+	return 0;
+}
+
 int platform_init( void ) {
 	struct config_platform *c = config_get()->platforms;
 	struct platform *platform = NULL;
@@ -57,12 +86,7 @@ int platform_init( void ) {
 			memset( platform, 0, sizeof(struct platform) );
 			platform->name = c->name;
 			
-			location_get_match( image_type_name(IMAGE_PLATFORM), platform->name, platform->image_file );
-			if( platform->image_file && platform->image_file[0] ) {
-				printf("P: %s\n", platform->image_file );
-				platform->texture = sdl_create_texture( platform->image_file );
-			}
-						
+			location_get_match( image_type_name(IMAGE_PLATFORM), platform->name, platform->image_file );						
 			prev = platform_start;
 			if( platform_start ) {
 				prev = platform_start->prev;
@@ -83,7 +107,21 @@ int platform_init( void ) {
 		}
 		c = c->next;
 	}
+	
+	platform_load_textures();
 	return 0;
+}
+
+void platform_free( void ) {
+	platform_free_textures();
+}
+
+void platform_pause( void ) {
+	platform_free_textures();
+}
+
+int platform_resume( void ) {
+	return platform_load_textures();
 }
 
 struct platform *platform_first( void ) {

@@ -19,6 +19,7 @@
 #include "font.h"
 #include "event.h"
 #include "snap.h"
+#include "platform.h"
 
 
 void pause_all( void ) {
@@ -27,6 +28,7 @@ void pause_all( void ) {
 	game_list_pause();
 	snap_pause();
 	submenu_pause();
+	platform_pause();
 	menu_pause();
 	hint_pause();
 	font_pause();
@@ -44,14 +46,16 @@ int resume_all( void ) {
 		return -4;
 	if( menu_resume() != 0 )
 		return -5;
-	if( submenu_resume() != 0 )
+	if(	platform_resume() != 0 )
 		return -6;
-	if( game_list_resume() != 0 )
+	if( submenu_resume() != 0 )
 		return -7;
-	if( snap_resume() != 0 )
+	if( game_list_resume() != 0 )
 		return -8;
-	if( game_sel_resume() != 0 )
+	if( snap_resume() != 0 )
 		return -9;
+	if( game_sel_resume() != 0 )
+		return -10;
 	sound_resume();
 	
 	return 0;

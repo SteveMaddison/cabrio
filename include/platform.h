@@ -15,6 +15,9 @@ struct platform {
 };
 
 int platform_init( void );
+void platform_free( void );
+void platform_pause( void );
+int platform_resume( void );
 int platform_count( void );
 struct platform *platform_first( void );
 struct platform *platform_get( const char *name );
