@@ -8,8 +8,10 @@
 
 static const GLfloat DEPTH = -8;
 static const GLfloat max_size = 280;
-static const GLfloat scale_fator = 0.0144;
+static const GLfloat scale_fator = 0.012;
+static const GLfloat PLATFORM_SIZE = 0.8;
 static struct texture *texture = NULL;
+static struct texture *platform_texture = NULL;
 #define NUM_NOISE 3
 static struct texture *noise[NUM_NOISE];
 static int frame = 0;
@@ -85,8 +87,9 @@ int snap_set( struct game *game ) {
 	texture = NULL;
 	video = 0;
 	
+	platform_texture = game->platform->texture;
+	
 	filename = game_media_get( game, MEDIA_VIDEO, NULL );
-
 	if( filename && filename[0] ) {
 		if( video_open( filename ) == 0 ) {
 			video = 1;
@@ -146,6 +149,7 @@ void snap_clear( void ) {
 		}
 	}
 	texture = NULL;
+	platform_texture = NULL;
 }
 
 void snap_show( void ) {
@@ -205,6 +209,30 @@ void snap_draw( void ) {
 			glTexCoord2f(1.0, 1.0); glVertex3f( xsize, -ysize, 0.0);
 			glTexCoord2f(1.0, 0.0); glVertex3f( xsize,  ysize, 0.0);	
 		glEnd();
+
+		if( platform_count() > 1 && platform_texture ) {
+			GLfloat platform_xsize = platform_texture->width;
+			GLfloat platform_ysize = platform_texture->height; 
+
+			if( platform_xsize > platform_ysize ) {
+				platform_ysize = PLATFORM_SIZE * platform_ysize/platform_xsize;
+				platform_xsize = PLATFORM_SIZE;
+			}
+			else {
+				platform_xsize = PLATFORM_SIZE * platform_xsize/platform_ysize;
+				platform_ysize = PLATFORM_SIZE;
+			}
+
+			glTranslatef( xsize * 0.8, -ysize * 0.9, 0.1 );
+			glRotatef( -config->angle_z, 0.0, 0.0, 1.0 );
+			glBindTexture( GL_TEXTURE_2D, platform_texture->id );
+			glBegin( GL_QUADS );
+				glTexCoord2f(0.0, 0.0); glVertex3f(-platform_xsize,  platform_ysize, 0.0);
+				glTexCoord2f(0.0, 1.0); glVertex3f(-platform_xsize, -platform_ysize, 0.0);
+				glTexCoord2f(1.0, 1.0); glVertex3f( platform_xsize, -platform_ysize, 0.0);
+				glTexCoord2f(1.0, 0.0); glVertex3f( platform_xsize,  platform_ysize, 0.0);	
+			glEnd();
+		}
 		
 		if( ++frame >= NUM_NOISE * noise_skip )
 			frame = 0;

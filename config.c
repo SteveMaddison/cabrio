@@ -2212,7 +2212,7 @@ int config_new( void ) {
 		default_theme.font_rgb.green = 255;
 		default_theme.font_rgb.blue = 255;
 		
-		default_theme.snap.offset1 = -1.6;
+		default_theme.snap.offset1 = -1.8;
 		default_theme.snap.offset2 = 0;
 		default_theme.snap.angle_x = -10;
 		default_theme.snap.angle_y = 30;
