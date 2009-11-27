@@ -191,10 +191,16 @@ void snap_draw( void ) {
 
 		ogl_load_alterego();
 		if( hide_direction == -1 ) {
-			glTranslatef( (hidden_offset - hide_offset) * xfactor, config->offset2 * yfactor, DEPTH );
+			if( config_get()->iface.theme.game_sel.orientation == CONFIG_PORTRAIT )
+				glTranslatef( (hidden_offset - hide_offset) * xfactor, config->offset2 * yfactor, DEPTH );
+			else
+				glTranslatef( config->offset2 * xfactor, (hidden_offset - hide_offset) * yfactor, DEPTH );
 		}
 		else {
-			glTranslatef( (config->offset1 + hide_offset) * xfactor, config->offset2 * yfactor, DEPTH );
+			if( config_get()->iface.theme.game_sel.orientation == CONFIG_PORTRAIT )
+				glTranslatef( (config->offset1 + hide_offset) * xfactor, config->offset2 * yfactor, DEPTH );
+			else
+				glTranslatef( config->offset2 * xfactor, (config->offset1 + hide_offset) * yfactor, DEPTH );
 		}
 		glRotatef( config->angle_x, 1.0, 0.0, 0.0 );
 		glRotatef( config->angle_y, 0.0, 1.0, 0.0 );

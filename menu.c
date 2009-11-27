@@ -311,11 +311,11 @@ void menu_draw( void ) {
 				
 				/* Make sure the text fits inside the box */
 				tx = ((GLfloat)tile->item->message->width * (config->font_scale * FONT_SCALE)) * xfactor * item_zoom;
-				if( tx > mx )
-					tx = mx * 0.9;
+				if( tx > mx * (1.0 - ((GLfloat)config->border/100)) )
+					tx = mx * (1.0 - ((GLfloat)config->border/100));
 				ty = ((GLfloat)tile->item->message->height * (config->font_scale * FONT_SCALE)) * xfactor * item_zoom;
-				if( ty > my )
-					ty = my * 0.9;
+				if( ty > my * (1.0 - ((GLfloat)config->border/100)) )
+					ty = my * (1.0 - ((GLfloat)config->border/100));
 	
 				ogl_load_alterego();
 				glTranslatef( (tile->x + (((dest->x-tile->x)/steps) * step)) * xfactor,

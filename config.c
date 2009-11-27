@@ -140,6 +140,7 @@ static const char *tag_theme_menu_item_width		=     "item-width";
 static const char *tag_theme_menu_item_height		=     "item-height";
 static const char *tag_theme_menu_items_visible		=     "items-visible";
 static const char *tag_theme_menu_spacing			=     "spacing";
+static const char *tag_theme_menu_border			=     "border";
 static const char *tag_theme_submenu				=   "submenu";
 static const char *tag_theme_submenu_item_width		=     "item-width";
 static const char *tag_theme_submenu_item_height	=     "item-height";
@@ -1027,6 +1028,9 @@ int config_read_menu( xmlNode *node, struct config_menu *menu ) {
 			}
 			else if( strcmp( (char*)node->name, tag_auto_hide ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->auto_hide );
+			}
+			else if( strcmp( (char*)node->name, tag_theme_menu_border ) == 0 ) {
+				config_read_percentage( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->border );
 			}
 			else {
 				fprintf( stderr, warn_skip, tag_theme_menu, node->name );	
@@ -2208,6 +2212,7 @@ int config_new( void ) {
 		default_theme.menu.spacing = -1;
 		default_theme.menu.orientation = CONFIG_LANDSCAPE;
 		default_theme.menu.auto_hide = 0;
+		default_theme.menu.border = 10;
 
 		snprintf( default_theme.submenu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_submenu_texture );
 		default_theme.submenu.item_width = 1;

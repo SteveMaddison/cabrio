@@ -122,7 +122,10 @@ int main( int argc, char *arvg[] ) {
 	video_init();
 	
 	event_flush();
-	menu_show();
+
+	if( !config_get()->iface.theme.menu.auto_hide )
+		menu_show();
+		
 	focus_set( FOCUS_GAMESEL );
 
 	while( !quit ) {

@@ -124,6 +124,7 @@ struct config_menu {
 	float spacing;
 	int orientation;
 	int auto_hide;
+	int border;
 };
 
 struct config_submenu {
