@@ -139,7 +139,6 @@ static const char *tag_theme_menu					=   "menu";
 static const char *tag_theme_menu_item_width		=     "item-width";
 static const char *tag_theme_menu_item_height		=     "item-height";
 static const char *tag_theme_menu_items_visible		=     "items-visible";
-static const char *tag_theme_menu_spacing			=     "spacing";
 static const char *tag_theme_menu_border			=     "border";
 static const char *tag_theme_submenu				=   "submenu";
 static const char *tag_theme_submenu_item_width		=     "item-width";
@@ -205,6 +204,7 @@ static const char *tag_match			= "match";
 static const char *tag_category			= "category";
 static const char *tag_emulator			= "emulator";
 static const char *tag_default			= "default";
+static const char *tag_spacing			= "spacing";
 
 /* Common values */
 static const char *config_empty			= "";
@@ -1017,7 +1017,7 @@ int config_read_menu( xmlNode *node, struct config_menu *menu ) {
 			else if( strcmp( (char*)node->name, tag_theme_menu_items_visible ) == 0 ) {
 				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &menu->max_visible );
 			}
-			else if( strcmp( (char*)node->name, tag_theme_menu_spacing ) == 0 ) {
+			else if( strcmp( (char*)node->name, tag_spacing ) == 0 ) {
 				if( strcasecmp( (char*)xmlNodeGetContent(node), config_auto ) == 0 )
 					menu->spacing = -1;
 				else
@@ -1133,6 +1133,9 @@ int config_read_hints( xmlNode *node, struct config_hints *hints ) {
 			}
 			else if( strcmp( (char*)node->name, tag_theme_hints_image_arrow ) == 0 ) {
 				strncpy( hints->image_arrow, (char*)xmlNodeGetContent(node), CONFIG_FILE_NAME_LENGTH );
+			}
+			else if( strcmp( (char*)node->name, tag_spacing ) == 0 ) {
+				config_read_float( (char*)node->name, (char*)xmlNodeGetContent(node), &hints->spacing );
 			}
 			else {
 				fprintf( stderr, warn_skip, tag_theme_hints, node->name );	
@@ -2245,6 +2248,7 @@ int config_new( void ) {
 		default_theme.hints.offset2 = -1.2;
 		default_theme.hints.size = 1;
 		default_theme.hints.pulse = 1;
+		default_theme.hints.spacing = 0;
 		snprintf( default_theme.hints.image_back, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_back_texture );
 		snprintf( default_theme.hints.image_select, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_select_texture );
 		snprintf( default_theme.hints.image_arrow, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_arrow_texture );

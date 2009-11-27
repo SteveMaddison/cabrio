@@ -142,6 +142,8 @@ void hint_draw_arrow( struct arrow *arrow ) {
 }
 
 int hint_draw( void ) {
+	GLfloat spacing = config_get()->iface.theme.hints.spacing;
+
 	if( config_get()->iface.theme.hints.pulse ) {
 		if( alpha >= 1.0  ) {
 			alpha_step = -ALPHA_STEP_SIZE;
@@ -164,10 +166,10 @@ int hint_draw( void ) {
 			hint_draw_caption( text_back_message, -BUTTON_SIZE/2 - ((text_back_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
 			break;
 		case FOCUS_GAMESEL:
-			hint_draw_button( back_texture, -BUTTON_SIZE/2 );
-			hint_draw_caption( text_select_message, BUTTON_SIZE/2 + ((text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
-			hint_draw_button( select_texture, BUTTON_SIZE/2 );		
-			hint_draw_caption( text_back_message, -BUTTON_SIZE/2 - ((text_back_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
+			hint_draw_button( back_texture, -(spacing/2) - (BUTTON_SIZE/2) );
+			hint_draw_caption( text_back_message, -(spacing/2) - BUTTON_SIZE/2 - ((text_select_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
+			hint_draw_button( select_texture, BUTTON_SIZE/2 + (spacing/2) );		
+			hint_draw_caption( text_select_message, BUTTON_SIZE/2 + (spacing/2) + ((text_back_message->width*FONT_SCALE)/2 + (BUTTON_SIZE/2)) );
 			break;
 		default:
 			break;

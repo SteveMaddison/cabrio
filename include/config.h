@@ -171,6 +171,7 @@ struct config_hints {
 	float offset1;
 	float offset2;
 	float size;
+	float spacing;
 	int pulse;
 	char image_back[CONFIG_FILE_NAME_LENGTH];
 	char image_select[CONFIG_FILE_NAME_LENGTH];

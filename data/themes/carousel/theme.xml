@@ -11,7 +11,6 @@
         <items-visible>5</items-visible>
         <primary-offset>0</primary-offset>
         <secondary-offset>2</secondary-offset>
-        <!--auto-hide>true</auto-hide-->
         <font-scale>0.8</font-scale>
         <border>20%</border>
       </menu>
@@ -22,6 +21,7 @@
         <primary-offset>-2.2</primary-offset>
         <secondary-offset>0</secondary-offset>
         <size>0.8</size>
+        <spacing>4.6</spacing>
       </hints>
       <snap>
         <primary-offset>-0.8</primary-offset>
