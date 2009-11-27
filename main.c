@@ -24,6 +24,28 @@ void supress( void ) {
 	supress_wait = config_get()->iface.frame_rate / 5;
 }
 
+void clean_up( void ) {
+	sound_free();
+	game_list_free();
+	submenu_free();
+	platform_free();
+	menu_free();
+	hint_free();
+	font_free();
+	bg_free();
+	location_free();
+	event_free();
+	snap_free();
+	video_free();
+	sdl_free();
+}
+
+void bail( void ) {
+	/* Exit "gracefully" */
+	clean_up();
+	exit( -1 );
+}
+
 int main( int argc, char *arvg[] ) {
 	int quit = 0;
 	int config_status = 0;
@@ -34,10 +56,10 @@ int main( int argc, char *arvg[] ) {
 		return -1;
 
 	if( sdl_init() != 0 )
-		return -1;
+		bail();
 
 	if( ogl_init() != 0 )
-		return -1;
+		bail();
 	
 	/* Clear the screen as soon as we can. This avoids graphics
 	 * glitches which can occur with some SDL implementations. */
@@ -45,10 +67,10 @@ int main( int argc, char *arvg[] ) {
 	sdl_swap();
 
 	if( event_init() != 0 )
-		return -1;
+		bail();
 
 	if( font_init() != 0 )
-		return -1;	
+		bail();
 
 	if( config_status == 1 ) {
 		/* Config file didn't exist, so run the setup utility */
@@ -73,28 +95,28 @@ int main( int argc, char *arvg[] ) {
 	sdl_swap();
 
 	if( platform_init() != 0 )
-		return -1;
+		bail();
 
 	if( category_init() != 0 )
-		return -1;
+		bail();
 
 	if( game_sel_init() != 0 )
-		return -1;
+		bail();
 
 	if( hint_init() != 0 )
-		return -1;
+		bail();
 
 	if( snap_init() != 0 )
-		return -1;
+		bail();
 	
 	if( game_list_create() != 0 )
-		return -1;
+		bail();
 
 	if( menu_init() != 0 )
-		return -1;
+		bail();
 
 	if( submenu_init() != 0 )
-		return -1;
+		bail();
 
 	sound_init();
 	video_init();
@@ -130,20 +152,7 @@ int main( int argc, char *arvg[] ) {
 		sdl_frame_delay();
 	}
 
-	sound_free();
-	game_list_free();
-	submenu_free();
-	platform_free();
-	menu_free();
-	hint_free();
-	font_free();
-	bg_free();
-	location_free();
-	event_free();
-	snap_free();
-	video_free();
-	sdl_free();
-
+	clean_up();
 	return 0;
 }
 
