@@ -11,6 +11,7 @@
 #include <SDL/SDL_opengl.h>
 
 static SDL_Surface *screen = NULL;
+static SDL_VideoInfo saved_video;
 
 static const int SDL_SCREEN_BPP = 32;
 static const int MAX_FRAME_RATE = 100;
@@ -27,6 +28,7 @@ int sdl_init( void ) {
 		return 1;
 	}
 	SDL_ShowCursor(SDL_DISABLE);
+	memcpy( &saved_video, SDL_GetVideoInfo(), sizeof(SDL_VideoInfo) );
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 	if( config->iface.full_screen )
 		mode |= SDL_FULLSCREEN;
@@ -55,6 +57,8 @@ int sdl_init( void ) {
 }
 
 void sdl_free( void ) {
+	if( config_get()->iface.full_screen )
+		SDL_SetVideoMode( saved_video.current_w, saved_video.current_h, saved_video.vfmt->BitsPerPixel, SDL_FULLSCREEN );
 	SDL_Quit();
 }
 
