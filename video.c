@@ -1,3 +1,9 @@
+/*
+ * Adapted from the ffmpeg tutorial at http://www.dranger.com/ffmpeg/,
+ * in turn based on FFplay, Copyright (c) 2003 Fabrice Bellard,
+ * and a tutorial by Martin Bohme (boehme@inb.uni-luebeckREMOVETHIS.de)
+ */
+
 #include <ffmpeg/avcodec.h>
 #include <ffmpeg/avformat.h>
 #include <ffmpeg/swscale.h>
