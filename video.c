@@ -85,17 +85,18 @@ void video_free( void ) {
 }
 
 void video_close( void ) {
+	int timeout = 10;
 	stop = 1;
 
-	while( reader_running || audio_running )
+	packet_queue_flush( &audio_queue );
+	frame_queue_flush( &video_queue );
+
+	while( (reader_running || audio_running) && timeout-- )
 		SDL_Delay( 10 );
 
 	if( audio_open )
 		SDL_CloseAudio();
 	audio_open = 0;
-
-	packet_queue_flush( &audio_queue );
-	frame_queue_flush( &video_queue );
 
 	if( video_codec_context )
 		avcodec_close( video_codec_context );

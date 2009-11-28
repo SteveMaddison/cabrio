@@ -88,5 +88,6 @@ void packet_queue_flush( struct packet_queue *q ) {
 	q->packets = 0;
 	q->size = 0;
 	
+	SDL_CondSignal( q->cond );
 	SDL_UnlockMutex(q->mutex);
 }
