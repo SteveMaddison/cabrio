@@ -22,10 +22,12 @@ Compile the program by running 'make' in this directory. Install by running
 'make install' (this will usually have to be done as root, but the location
 can be edited in the Makefile).
 
+See http://www.cabrio-fe.org/support/compile.html for more information.
+
 
 Configuration
 -------------
-Please see http://www.cabrio-fe.org/support/config.html
+Please see http://www.cabrio-fe.org/support/quickstart.html
 
 
 License
