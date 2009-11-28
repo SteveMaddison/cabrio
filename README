@@ -16,6 +16,7 @@ You will need the following libraries and their headers/development packages:
   * SDL_ttf
   * glut
   * libxml2
+  * ffmpeg
 
 Compile the program by running 'make' in this directory. Install by running
 'make install' (this will usually have to be done as root, but the location
