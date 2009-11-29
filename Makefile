@@ -1,9 +1,9 @@
 CC=gcc
-BIN_DIR=/usr/local/bin
-DATA_DIR=/usr/local/share/cabrio
+BIN_DIR=/usr/bin
+DATA_DIR=/usr/share/cabrio
 CFLAGS=-g -Wall -DDATA_DIR=\"$(DATA_DIR)\"
-LDFLAGS=-lSDL_image -lSDL_gfx -lglut -lSDL_ttf -lSDL_mixer -lxml2 \
-	-lavutil -lavformat -lavcodec -lswscale -lz -lm
+LDFLAGS=-lSDL_image -lSDL_gfx -lSDL_ttf -lSDL_mixer -lGLU -lxml2 \
+	-lavutil -lavformat -lavcodec -lswscale
 INCLUDES=-I./include -I/usr/include/libxml2
 
 INSTALL=/usr/bin/install -c
@@ -33,6 +33,9 @@ install: cabrio
 	$(INSTALL) -m 644 -t $(DATA_DIR)/themes/wood data/themes/wood/*
 	$(INSTALL) -m 755 -d $(BIN_DIR)
 	$(INSTALL) -m 755 -t $(BIN_DIR) cabrio
+
+deb:
+	debuild -i -us -uc -b
 
 clean:
 	rm -f cabrio *.o core core.*

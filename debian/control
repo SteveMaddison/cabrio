@@ -1,0 +1,14 @@
+Source: cabrio
+Section: unknown
+Priority: extra
+Maintainer: Steve Maddison <steve@cabrio-fe.org>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.7.3
+
+Package: cabrio
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A front end for video game emulators
+ Cabrio is a graphical front end for video game emulators
+ originall designed for use on arcade cabinets, but also
+ usable on your regular computer.
