@@ -5,7 +5,7 @@ LDFLAGS=SDL.dll libSDL_gfx-13.dll SDL_image.dll SDL_mixer.dll SDL_ttf.dll \
 	libfreetype-6.dll glut.dll iconv.dll libxml2.dll libpng12-0.dll jpeg.dll \
 	libvorbis-0.dll libvorbisfile-3.dll mikmod.dll smpeg.dll \
 	avcodec-52.dll avdevice-52.dll avformat-52.dll avutil-49.dll swscale-0.dll \
-	-lglu32 -lopengl32
+	-lglu32 -lopengl32 -mwindows
 
 INCLUDES=-I./include -I/usr/include/libxml2
 

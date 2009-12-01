@@ -51,6 +51,11 @@ int main( int argc, char *arvg[] ) {
 	int config_status = 0;
 	int event;
 
+#ifdef __WIN32__
+	freopen( "cabrio.out", "w", stdout );
+	freopen( "cabrio.err", "w", stderr );
+#endif
+
 	config_status = config_open( NULL );
 	if( config_status == -1 )
 		return -1;
