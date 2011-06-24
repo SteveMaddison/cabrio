@@ -104,6 +104,7 @@ int location_absolute( const char *filename ) {
 
 int location_try_directory( const char *dir, const char *filename, char *path ) {
 	char test[CONFIG_FILE_NAME_LENGTH];
+	struct stat stmp;
 
 	if( dir && filename ) {
 #ifdef __WIN32__
@@ -111,9 +112,9 @@ int location_try_directory( const char *dir, const char *filename, char *path ) 
 #else
 		snprintf( test, CONFIG_FILE_NAME_LENGTH, "%s/%s", dir, filename );
 #endif
-		if( open( test, O_RDONLY ) == -1 ) {
+		if( stat( test, &stmp ) == -1 ) {
 			if( errno != ENOENT ) {
-				fprintf( stderr, "Warning: Couldn't read file '%s': %s\n", test, strerror( errno ) );
+				fprintf( stderr, "Warning: Couldn't stat file '%s': %s\n", test, strerror( errno ) );
 				return -1;
 			}
 		}
@@ -173,6 +174,7 @@ int location_get_match( const char *type, const char *filename, char *path ) {
 	char *pos = NULL;
 	DIR *dir = NULL;
 	struct dirent *dentry;
+	int found = 0;
 
 	if( type && filename ) {
 #ifdef __WIN32__
@@ -191,7 +193,7 @@ int location_get_match( const char *type, const char *filename, char *path ) {
 		else
 			strcat( search, "." );
 
-		while( location ) {
+		while( location && !found ) {
 			if( (dir = opendir( location->directory )) ) {
 				while( (dentry = readdir( dir )) ) {
 #ifdef __WIN32__
@@ -201,7 +203,7 @@ int location_get_match( const char *type, const char *filename, char *path ) {
 					if( strncasecmp( dentry->d_name, search, strlen(search) ) == 0 ) {
 						snprintf( path, CONFIG_FILE_NAME_LENGTH, "%s/%s", location->directory, dentry->d_name );
 #endif
-						return 0;
+						found = 1;
 					}
 				}
 				closedir( dir );
@@ -209,6 +211,9 @@ int location_get_match( const char *type, const char *filename, char *path ) {
 			location = location->next;
 		}
 	}
+
+	if( found )
+		return 0;
 	
 	strcpy( path, "" );
 	return -1;

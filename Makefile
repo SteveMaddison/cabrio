@@ -37,6 +37,9 @@ install: cabrio
 deb:
 	debuild -i -us -uc -b
 
+debclean:
+	debuild clean
+
 clean:
 	rm -f cabrio *.o core core.*
 
