@@ -1,9 +1,9 @@
 #ifndef __VIDEO_H__
 #define __VIDEO_H__
 
-#include <ffmpeg/avcodec.h>
-#include <ffmpeg/avformat.h>
-#include <ffmpeg/swscale.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
 
 int video_init( void );
 void video_free( void );

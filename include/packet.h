@@ -1,9 +1,8 @@
 #ifndef _PACKET_H_
 #define _PACKET_H_ 1
 
-#include <ffmpeg/avcodec.h>
-#include <ffmpeg/avformat.h>
 #include <SDL/SDL_mutex.h>
+#include "video.h"
 
 struct packet_queue {
 	AVPacketList *first;

@@ -1,5 +1,3 @@
-#include <ffmpeg/avcodec.h>
-#include <ffmpeg/avformat.h>
 #include <SDL/SDL_mutex.h>
 #include "packet.h"
 

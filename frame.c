@@ -1,7 +1,6 @@
-#include <ffmpeg/avcodec.h>
-#include <ffmpeg/avformat.h>
 #include <SDL/SDL_mutex.h>
 #include "frame.h"
+#include "video.h"
 
 
 void frame_queue_init( struct frame_queue *q ) {
