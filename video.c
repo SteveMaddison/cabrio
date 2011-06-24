@@ -479,7 +479,7 @@ struct texture *video_get_frame( void ) {
 		fprintf( stderr, "Warning: Couldn't initialise video conversion context\n" );
 	}
 	else {
-		sws_scale( scale_context, frame->data, frame->linesize, 0,
+		sws_scale( scale_context, (const uint8_t **)frame->data, frame->linesize, 0,
 			VIDEO_SIZE, conv_frame->data, conv_frame->linesize );
 		
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
