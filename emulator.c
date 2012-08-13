@@ -74,6 +74,12 @@ int emulator_exec( struct game *game ) {
 	char cmdline[CONFIG_MAX_CMD_LENGTH];
 #endif
 
+#ifdef __unix__
+	// ensuring that argv[0] from the callee's perspective is the executable name,
+	// so that the first param doesn't get swallowed
+	params[count++] = game->emulator->executable;
+#endif
+
 	if( game->emulator && game->emulator->executable ) {
 		param = game->emulator->params;
 		while( param ) {
