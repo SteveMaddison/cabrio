@@ -41,8 +41,7 @@ static struct packet_queue audio_queue;
 static uint8_t audio_buffer[AUDIO_BUFFER_SIZE];
 static unsigned int audio_buffer_size = 0;
 static unsigned int audio_buffer_index = 0;
-static uint8_t *audio_packet_data = NULL;
-static int audio_packet_size = 0;
+static AVPacket audio_packet; 
 static double audio_clock = 0;
 
 SDL_AudioSpec audio_spec;
@@ -148,7 +147,7 @@ int video_decode_video_frame( AVPacket *packet ) {
 		}
 		
 		video_pts = packet->pts;
-		avcodec_decode_video( video_codec_context, frame, &got_frame, packet->data, packet->size );
+		avcodec_decode_video2( video_codec_context, frame, &got_frame, packet );
 		
 		if( packet->dts == AV_NOPTS_VALUE && frame->opaque && *(uint64_t*)frame->opaque != AV_NOPTS_VALUE )
 			pts = *(uint64_t *)frame->opaque;
@@ -175,17 +174,17 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 	int used, data_size;
 
 	for(;;) {
-		while( audio_packet_size > 0 ) {
+		while( audio_packet.size > 0 ) {
 			data_size = buffer_size;
-			used = avcodec_decode_audio2( context, (int16_t *)audio_buffer, &data_size, 
-					  audio_packet_data, audio_packet_size);
+			used = avcodec_decode_audio3( context, (int16_t *)audio_buffer, &data_size, 
+					  &audio_packet);
 			if( used < 0 ) {
 				/* if error, skip frame */
-				audio_packet_size = 0;
+				audio_packet.size = 0;
 				break;
 			}
-			audio_packet_data += used;
-			audio_packet_size -= used;
+			audio_packet.data += used;
+			audio_packet.size -= used;
 			
 			if( data_size <= 0 ) {
 				/* No data yet, get more frames */
@@ -210,8 +209,8 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 		if( packet_queue_get( &audio_queue, &packet, 1 ) < 0 )
 			return -1;
 
-		audio_packet_data = packet.data;
-		audio_packet_size = packet.size;
+		audio_packet.data = packet.data;
+		audio_packet.size = packet.size;
 
 		if( packet.pts != AV_NOPTS_VALUE ) {
 			audio_clock = packet.pts * av_q2d( format_context->streams[audio_stream]->time_base );
@@ -300,8 +299,8 @@ int video_open( const char *filename ) {
 	audio_stream = -1;
 	audio_buffer_size = 0;
 	audio_buffer_index = 0;
-	audio_packet_size = 0;
-	audio_packet_data = NULL;
+
+    av_init_packet(&audio_packet);
 	
 	if( !filename )
 		return -1;
@@ -317,11 +316,11 @@ int video_open( const char *filename ) {
 	}
 	
 	for( i = 0 ; i < format_context->nb_streams ; i++ ) {
-		if( format_context->streams[i]->codec->codec_type == CODEC_TYPE_VIDEO ) {
+		if( format_context->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO ) {
 			video_stream = i;
 			video_codec_context = format_context->streams[video_stream]->codec;
 		}
-		else if( format_context->streams[i]->codec->codec_type == CODEC_TYPE_AUDIO ) {
+		else if( format_context->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO ) {
 			audio_stream = i;
 			audio_codec_context = format_context->streams[audio_stream]->codec;
 		}
