@@ -203,7 +203,7 @@ int location_get_match( const char *type, const char *filename, char *path ) {
 					if( strncasecmp( dentry->d_name, search, strlen(search) ) == 0 ) {
 						snprintf( path, CONFIG_FILE_NAME_LENGTH, "%s/%s", location->directory, dentry->d_name );
 #endif
-						found = 1;
+						found++;
 					}
 				}
 				closedir( dir );
@@ -212,8 +212,12 @@ int location_get_match( const char *type, const char *filename, char *path ) {
 		}
 	}
 
-	if( found )
+	if( found ) {
+		if ( found > 1 )
+			printf( "Warning: multiple %s assets match \"%s\", picked \"%s\"\n", type, filename, path ); 
+			
 		return 0;
+	}
 	
 	strcpy( path, "" );
 	return -1;
