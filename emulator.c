@@ -75,8 +75,8 @@ int emulator_exec( struct game *game ) {
 #endif
 
 #ifdef __unix__
-	// ensuring that argv[0] from the callee's perspective is the executable name,
-	// so that the first param doesn't get swallowed
+	/* ensuring that argv[0] from the callee's perspective is the executable name,
+	 * so that the first param doesn't get swallowed */
 	params[count++] = game->emulator->executable;
 #endif
 
