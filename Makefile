@@ -2,7 +2,7 @@ CC=gcc
 BIN_DIR=/usr/bin
 DATA_DIR=/usr/share/cabrio
 CFLAGS=-g -Wall -DDATA_DIR=\"$(DATA_DIR)\"
-LDFLAGS=-lSDL_image -lSDL_gfx -lSDL_ttf -lSDL_mixer -lGLU -lxml2 \
+LDFLAGS=-lGL -lSDL -lSDL_image -lSDL_gfx -lSDL_ttf -lSDL_mixer -lGLU -lxml2 \
 	-lavutil -lavformat -lavcodec -lswscale
 INCLUDES=-I./include -I/usr/include/libxml2
 
@@ -12,7 +12,7 @@ cabrio: main.o ogl.o sdl_wrapper.o config.o bg.o menu.o game_sel.o \
 	game.o font.o hint.o platform.o submenu.o \
 	sound.o event.o key.o control.o setup.o sdl_ogl.o video.o packet.o frame.o \
 	category.o focus.o emulator.o snap.o media.o location.o lookup.o
-	$(CC) -o $@ $(LDFLAGS) $^
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 .c.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
