@@ -129,8 +129,8 @@ int event_poll( void ) {
 				else if ( sdl_event.type == SDL_JOYHATMOTION
 				&&  sdl_event.jhat.which == events[i].device_id
 				&&  events[i].control_type == CTRL_HAT
-				&&  sdl_hat_dir_value( sdl_event.jhat.hat ) == events[i].control_id
-				&&  sdl_event.jhat.value == events[i].value ) {
+				&&  sdl_event.jhat.hat == events[i].control_id
+				&&  sdl_hat_dir_value( sdl_event.jhat.value ) == events[i].value ) {
 					event = i;
 				}
 				else if ( sdl_event.type == SDL_JOYBALLMOTION
