@@ -402,6 +402,7 @@ int config_read_param( xmlNode *node, struct config_param *param ) {
 }
 
 int config_read_emulator_params( xmlNode *node, struct config_emulator *emulator ) {
+	struct config_param *previous = NULL;
 	while( node ) {
 		if( node->type == XML_ELEMENT_NODE ) {
 			if( strcmp( (char*)node->name, tag_param ) == 0 ) {
@@ -409,8 +410,13 @@ int config_read_emulator_params( xmlNode *node, struct config_emulator *emulator
 				if( param ) {
 					memset( param, 0, sizeof(struct config_param ) );
 					config_read_param( node->children, param );
-					param->next = emulator->params;
-					emulator->params = param;
+					if( previous != NULL ) {
+						previous->next = param;
+					}
+					if( emulator->params == NULL ) {
+						emulator->params = param;
+					}
+					previous = param;
 				}
 				else {
 					fprintf( stderr, warn_alloc, tag_param );
