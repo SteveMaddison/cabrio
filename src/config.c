@@ -2135,7 +2135,7 @@ int config_new( void ) {
 	else {
 		int i;
 		struct config_param *prev_param = NULL;
-		struct config_category *platform_catgeory;
+		struct config_category *platform_category;
 		const int num_params = 4;
 		const char *params[] = { "-nowindow", "-skip_gameinfo", "-switchres", "-joystick" };
 		const char *keys[] = {
@@ -2192,7 +2192,7 @@ int config_new( void ) {
 		config.iface.prune_menus = 1;
 		
 		/* Ensure the game list category has id 0 - we need to track it later */
-		platform_catgeory = config_category( default_label_lists );
+		platform_category = config_category( default_label_lists );
 		strncpy( config.iface.labels.label_all, default_label_all, CONFIG_LABEL_LENGTH );
 		strncpy( config.iface.labels.label_platform, default_label_platform, CONFIG_LABEL_LENGTH );		
 		strncpy( config.iface.labels.label_back, default_label_back, CONFIG_LABEL_LENGTH );

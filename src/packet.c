@@ -44,7 +44,7 @@ int packet_queue_put( struct packet_queue *q, AVPacket *p ) {
 
 int packet_queue_get( struct packet_queue *q, AVPacket *p, int block ) {
 	AVPacketList *packet;
-	int ret;
+	int ret=1;
 
 	SDL_LockMutex( q->mutex );
 
