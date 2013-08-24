@@ -6,7 +6,7 @@ test -n "${srcdir}" || srcdir=.
 if [ ! "${NO_CHANGELOG}" ] ; then
 (
 	cd "${srcdir}"
-	svn log > ChangeLog
+	git log > ChangeLog
 )
 fi
 
