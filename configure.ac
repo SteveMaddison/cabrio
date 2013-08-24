@@ -39,7 +39,23 @@ AC_PROG_CPP
 AC_PROG_CC
 
 # Checks for libraries.
+
 PKG_CHECK_MODULES(libxml2, libxml-2.0)
+# SDL
+PKG_CHECK_MODULES(SDL, sdl)
+PKG_CHECK_MODULES(SDL_ttf, SDL_ttf)
+PKG_CHECK_MODULES(SDL_gfx, SDL_gfx)
+PKG_CHECK_MODULES(SDL_image, SDL_image)
+PKG_CHECK_MODULES(SDL_mixer, SDL_mixer)
+# ffmpeg
+PKG_CHECK_MODULES(libavformat, libavformat)
+PKG_CHECK_MODULES(libavutil, libavutil)
+PKG_CHECK_MODULES(libavcodec, libavcodec)
+PKG_CHECK_MODULES(libswscale, libswscale)
+PKG_CHECK_MODULES(libavdevice, libavdevice)
+# openGL
+PKG_CHECK_MODULES(GL, gl)
+PKG_CHECK_MODULES(GLU, glu)
 
 # Checks for header files.
 AC_CHECK_HEADERS([unistd.h])
