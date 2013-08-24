@@ -1,0 +1,4 @@
+# Build with default arguments for the configure
+# this args are generate by autotools
+configure	--prefix=/usr --exec-prefix=/usr --sysconfdir=/etc/cabrio --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/libexec --sharedstatedir=/usr/com --localstatedir=/var --libdir=/usr/lib --includedir=/usr/include --oldincludedir=/usr/include --datarootdir=/usr/share --datadir=/usr/share --infodir=/usr/share/info --localedir=/usr/share/locale --mandir=/usr/share/man --docdir=/usr/share/doc/cabrio --htmldir=/usr/share/doc/cabrio --dvidir=/usr/share/doc/cabrio --pdfdir=/usr/share/doc/cabrio --psdir=/usr/share/doc/cabrio
+

@@ -1,0 +1,10 @@
+Source: @PACKAGE_NAME@
+Section: Server
+Priority: optional
+Maintainer: @PACKAGE_AUTHOR@ <@PACKAGE_AUTHOR_EMAIL@>
+Version: @PACKAGE_VERSION_API@
+Package: @PACKAGE_NAME@
+Architecture: any
+Depends: @PACKAGE_REQUIRED_RUNTIME@
+Description: @PACKAGE_DESCRIPTION_SHORT@
+@PACKAGE_DESCRIPTION_LONG@

@@ -1,0 +1,43 @@
+%{?_with_noconfigure:%define exec_configure 0}
+%{!?_with_noconfigure:%define exec_configure 1}
+
+Summary: @PACKAGE_DESCRIPTION_SHORT@
+Name: @PACKAGE_NAME@
+Provides: @PACKAGE_NAME@
+Version: @PACKAGE_VERSION_API@
+Release: @PACKAGE_VERSION_MINOR_FIX@
+License: GPL
+Group: Server
+Source0: %{name}-%{version}.tar.bz2
+URL: @PACKAGE_URL@
+Vendor: @PACKAGE_AUTHOR@ <@PACKAGE_AUTHOR_EMAIL@>
+Packager:  @PACKAGE_AUTHOR@ <@PACKAGE_AUTHOR_EMAIL@>
+#BuildArch: i386
+BuildRoot: %{_builddir}/%{name}-root
+Requires: @PACKAGE_REQUIRED_RUNTIME@
+BuildRequires: @PACKAGE_REQUIRED_BUILD@
+
+%description
+@PACKAGE_DESCRIPTION_LONG@
+
+%prep
+%setup -D -T -n %{name}-root
+
+%build
+%if %{exec_configure}
+./configure --prefix=/usr
+%endif
+make
+
+%install
+make DESTDIR=%{buildroot} install
+
+#%clean
+#rm -rf %{buildroot}
+
+%files
+/
+%defattr(-,root,root,-)
+%doc
+%changelog
+

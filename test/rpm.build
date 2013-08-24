@@ -1,0 +1,3 @@
+# Test creation of rpm package with make
+configure	--enable-debug
+make	pkg-rpm

@@ -1,0 +1,73 @@
+#!/bin/sh -e
+
+export abs_top_srcdir="${1}"
+export abs_top_builddir="${2}"
+
+shift
+shift
+
+get_option() {
+	while read OPT_NAME OPT_ARG ; do
+		if [ "x${OPT_NAME}" = "x${1}" ] ; then
+			echo "${OPT_ARG}"
+			return 0;
+		fi
+	done <"$2"
+}
+
+MAKE_OPTIONS="` get_option make "$1" `"
+CONFIGURE_OPTIONS="` get_option configure "$1" `"
+INSTALL_OPTIONS="` get_option install "$1" `"
+
+echo "[BUILD] Testing build for $1 ..."
+TEMP_DIR=` if [ "${abs_top_builddir}" != "${abs_top_srcdir}" ] ; then
+	mktemp -d -p \`pwd\`
+else
+	mktemp -d
+fi
+`
+(
+	cp -rf "${abs_top_srcdir}"/* "${TEMP_DIR}"/
+	cd "${TEMP_DIR}"/
+	make clean
+	make distclean
+	rm -rf "${TEMP_DIR}"/config.status
+)
+
+(
+	cd "${TEMP_DIR}"
+
+	echo "[BUILD] Testing build for $1 : ./configure ${CONFIGURE_OPTIONS}"
+	./configure ${CONFIGURE_OPTIONS} || exit 1
+	echo "[BUILD] Testing build for $1 : make ${MAKE_OPTIONS}"
+	make ${MAKE_OPTIONS} || exit 1
+
+	rm -rf "${TEMP_DIR}" config.status
+)
+
+echo "[BUILD] Testing shadow build for $1 ..."
+TEMP_DIR2=` if [ "${abs_top_builddir}" != "${abs_top_srcdir}" ] ; then
+	mktemp -d -p \`pwd\`
+else
+	mktemp -d
+fi
+`
+(
+	cp -rf "${abs_top_srcdir}"/ "${TEMP_DIR}"/
+	cd "${TEMP_DIR}"/
+	make clean
+	make distclean
+	rm -rf "${TEMP_DIR}"/config.status
+)
+
+(
+	cd "${TEMP_DIR2}"
+
+	echo "[BUILD] Testing shadow build for $1 : ${TEMP_DIR}/configure ${CONFIGURE_OPTIONS}"
+	"${TEMP_DIR}/configure" ${CONFIGURE_OPTIONS} || exit 1
+	echo "[BUILD] Testing shadow build for $1 : make ${MAKE_OPTIONS}"
+	make ${MAKE_OPTIONS} || exit 1
+
+	rm -rf "${TEMP_DIR}" "${TEMP_DIR2}"
+)
+
