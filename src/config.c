@@ -15,6 +15,7 @@
 #include "event.h"
 #include "control.h"
 #include "sound.h"
+#include "envs.h"
 
 #include <libxml2/libxml/parser.h>
 #include <libxml2/libxml/tree.h>
@@ -2203,7 +2204,7 @@ int config_new( void ) {
 		strncpy( default_theme.directory, "", CONFIG_FILE_NAME_LENGTH );
 		strncpy( default_theme.name, default_theme_name, CONFIG_NAME_LENGTH );
 		
-		snprintf( default_theme.menu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_menu_texture );
+		snprintf( default_theme.menu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", PACKAGE_DATA_DIR, default_menu_texture );
 		default_theme.menu.item_width = 1;
 		default_theme.menu.item_height = 0.6;
 		default_theme.menu.font_scale = 1;
@@ -2217,18 +2218,18 @@ int config_new( void ) {
 		default_theme.menu.auto_hide = 0;
 		default_theme.menu.border = 10;
 
-		snprintf( default_theme.submenu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_submenu_texture );
+		snprintf( default_theme.submenu.texture, CONFIG_FILE_NAME_LENGTH, "%s%s", PACKAGE_DATA_DIR, default_submenu_texture );
 		default_theme.submenu.item_width = 1;
 		default_theme.submenu.item_height = 0.25;
 		default_theme.submenu.font_scale = 1;
 		default_theme.submenu.offset1 = -0.3;
 		default_theme.submenu.offset2 = 0.0;
 
-		snprintf( default_theme.background_image, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_background );
+		snprintf( default_theme.background_image, CONFIG_FILE_NAME_LENGTH, "%s%s", PACKAGE_DATA_DIR, default_background );
 		default_theme.background_rotation = 20;
 		default_theme.background_transparency = 30;
 		
-		snprintf( default_theme.font_file, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_font );
+		snprintf( default_theme.font_file, CONFIG_FILE_NAME_LENGTH, "%s%s", PACKAGE_DATA_DIR, default_font );
 		default_theme.font_size = 50;
 		default_theme.font_rgb.red = 255;
 		default_theme.font_rgb.green = 255;
@@ -2249,9 +2250,9 @@ int config_new( void ) {
 		default_theme.hints.size = 1;
 		default_theme.hints.pulse = 1;
 		default_theme.hints.spacing = 0;
-		snprintf( default_theme.hints.image_back, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_back_texture );
-		snprintf( default_theme.hints.image_select, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_select_texture );
-		snprintf( default_theme.hints.image_arrow, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, default_arrow_texture );
+		snprintf( default_theme.hints.image_back, CONFIG_FILE_NAME_LENGTH, "%s%s", PACKAGE_DATA_DIR, default_back_texture );
+		snprintf( default_theme.hints.image_select, CONFIG_FILE_NAME_LENGTH, "%s%s", PACKAGE_DATA_DIR, default_select_texture );
+		snprintf( default_theme.hints.image_arrow, CONFIG_FILE_NAME_LENGTH, "%s%s", PACKAGE_DATA_DIR, default_arrow_texture );
 		
 		default_theme.game_sel.orientation = CONFIG_PORTRAIT;
 		default_theme.game_sel.offset1 = 0.9;
@@ -2287,7 +2288,7 @@ int config_new( void ) {
 		}
 		
 		for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
-			snprintf( default_theme.sounds[i], CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, (char*)default_sounds[i] );
+			snprintf( default_theme.sounds[i], CONFIG_FILE_NAME_LENGTH, "%s%s", PACKAGE_DATA_DIR, (char*)default_sounds[i] );
 		}
 		
 		config.themes = &default_theme;
@@ -2473,7 +2474,7 @@ int config_open( const char *filename ) {
 	}
 
 	config_load_themes( config_directory );
-	config_load_themes( DATA_DIR );
+	config_load_themes( PACKAGE_DATA_DIR );
 
 	/* We now have our entire configuration, so the theming may begin... */
 	config_set_theme();

@@ -10,7 +10,7 @@ if [ ! "${NO_CHANGELOG}" ] ; then
 )
 fi
 
-libtoolize --ltdl
+#libtoolize --ltdl
 autoreconf --force --install --verbose "$srcdir"
 test -n "${NOCONFIGURE}" || "${srcdir}/configure" "$@"
 #test -n "${NOCONFIGURE}" || "${srcdir}/configure" --enable-silent-rules --disable-dependency-tracking "$@"

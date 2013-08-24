@@ -5,8 +5,14 @@ ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
 
 AUTOMAKE_OPTIONS=subdir-objects -Wall -Werror
 
+
 # The name of program appended the version string.
 bin_PROGRAMS = cabrio-@PACKAGE_VERSION_API@
+
+
+
+cabrio_@PACKAGE_VERSION_API@_CFLAGS = $(libxml2_CFLAGS)
+cabrio_@PACKAGE_VERSION_API@_LDADD = $(libxml2_LIBS)
 
 ## Define the source file list for the "@PACKAGE_NAME@-@PACKAGE_VERSION_API@"
 ## target.  Note that @PACKAGE_VERSION_API@ is not interpreted by Automake and
@@ -19,4 +25,5 @@ cabrio_@PACKAGE_VERSION_API@_SOURCES = bg.c config.c emulator.c focus.c \
 	snap.c submenu.c category.c control.c event.c font.c game.c hint.c \
 	location.c menu.c packet.c sdl_ogl.c setup.c sound.c video.c main.c
 
+dist_data_DATA = data/fonts/ data/pixmaps/ data/sounds/ data/themes/
 

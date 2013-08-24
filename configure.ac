@@ -1,25 +1,12 @@
 
 # Process this file with autoconf to produce a configure script.
-AC_PREREQ([2.80])
+#AC_PREREQ([2.80])
 AC_INIT(cabrio, 01.00, https://groups.google.com/group/cabrio-fe-dev/)
 
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 AC_CONFIG_AUX_DIR([build-aux])
 
-LT_INIT([dlopen])
-
-# find the libltdl sources in the libltdl sub-directory
-LT_CONFIG_LTDL_DIR([build-aux/libltdl])
-
-LTDL_INIT([recursive])
-
-# Include DOLT, libtool faster compiler for something plataforms.
-m4_include([build-aux/m4/dolt.m4])
-
-# Inicialize DOLT
-DOLT
-
-AM_INIT_AUTOMAKE([1.11 subdir-objects parallel-tests color-tests silent-rules -Wall -Werror])
+AM_INIT_AUTOMAKE([foreign subdir-objects parallel-tests color-tests silent-rules -Wall -Werror])
 
 # Silent Build, sample:
 #   CXX    ../cabrio/main.o
@@ -52,18 +39,10 @@ AC_PROG_CPP
 AC_PROG_CC
 
 # Checks for libraries.
+PKG_CHECK_MODULES(libxml2, libxml-2.0)
 
 # Checks for header files.
 AC_CHECK_HEADERS([unistd.h])
-
-AC_CHECK_HEADER([ltdl.h],
-		[AC_CHECK_LIB([ltdl],[lt_dladvise_init],
-			[LIBLTDL=-lltdl],
-			[LIBLTDL=])
-		],[
-			LIBLTDL=
-		])
-
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -149,6 +128,8 @@ fi
 AC_DEFINE_UNQUOTED([PREFIX], "$(eval echo ${prefix})", [Install prefix directory.])
 AC_DEFINE_UNQUOTED([EXEC_PREFIX], ["$(eval echo $exec_prefix)"], [Exec-prefix directory.])
 AC_DEFINE_UNQUOTED([LIBDIR], ["$(eval eval echo $libdir)"], [Library directory.] )
+AC_DEFINE_UNQUOTED([DATADIR], ["$(eval eval echo $datadir)"], [Data directory.] )
+AC_DEFINE_UNQUOTED([PACKAGE_DATA_DIR], ["$(eval eval echo ${datadir}/${PACKAGE_NAME})"], [Data directory.] )
 AC_SUBST( libdir, ["$(eval eval echo $libdir)"])
 AC_SUBST( includedir, ["$(eval eval echo $includedir)"])
 AS_IF([ test "x$pkgsrvdir" = "x" -o "x$pkgsrvdir" = "xNONE" -o "x$pkgsrvdir" = "xnone" ],[
@@ -171,12 +152,12 @@ CFLAGS="$CFLAGS -I${abs_top_builddir}/src"
 # is no need to rename the template file when the API version changes.
 AC_CONFIG_FILES([
 	Makefile src/Makefile test/Makefile
-	src/config.hpp
 	packages/debian/control
 	cabrio.spec
 	])
+#	src/config.hpp
 
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS([src/envs.h])
 
 AC_OUTPUT
 
