@@ -6,6 +6,11 @@
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_audio.h>
+
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+
 #include "video.h"
 #include "sound.h"
 #include "packet.h"
@@ -73,7 +78,10 @@ int video_init( void ) {
 	packet_queue_init( &audio_queue );
 	frame_queue_init( &video_queue );
 
-	url_set_interrupt_cb( video_stopped );
+//	avio_set_interrupt_cb( video_stopped );
+//	url_set_interrupt_cb( video_stopped );
+//	const AVIOInterruptCB int_cb = { decode_interrupt_cb, NULL };
+//	avio_set_interrupt_cb( video_stopped );
 	
 	return 0;
 }
@@ -300,12 +308,16 @@ int video_open( const char *filename ) {
 	audio_buffer_size = 0;
 	audio_buffer_index = 0;
 
-    av_init_packet(&audio_packet);
+	av_init_packet(&audio_packet);
 	
 	if( !filename )
 		return -1;
-		
-	if( av_open_input_file( &format_context, filename, NULL, 0, NULL ) != 0 ) {
+
+	const AVIOInterruptCB int_cb = { video_stopped, NULL };
+	format_context->interrupt_callback=int_cb;
+
+	if( avio_open2( &format_context->pb, filename, NULL, &format_context->interrupt_callback, NULL) != 0 ){
+//	if( av_open_input_file( &format_context, filename, NULL, 0, NULL ) != 0 ) {
 		fprintf( stderr, "Warning: Error opening video file '%s'\n", filename );
 		return -1;
 	}

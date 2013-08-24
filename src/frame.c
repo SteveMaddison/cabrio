@@ -2,7 +2,6 @@
 #include "frame.h"
 #include "video.h"
 
-
 void frame_queue_init( struct frame_queue *q ) {
 	memset( q, 0, sizeof(struct frame_queue) );
 	q->mutex = SDL_CreateMutex();

@@ -4,6 +4,8 @@
 #include <SDL/SDL_mutex.h>
 #include "video.h"
 
+#include <libavformat/avformat.h>
+
 struct packet_queue {
 	AVPacketList *first;
 	AVPacketList *last;

@@ -1,3 +1,4 @@
+#include "envs.h"
 #include "snap.h"
 #include "game.h"
 #include "config.h"
@@ -31,9 +32,9 @@ static int width, height;
 int snap_init( void ) {
 	const struct config *config = config_get();
 	int i;
-	noise[0] = sdl_create_texture( DATA_DIR "/pixmaps/noise1.png" );
-	noise[1] = sdl_create_texture( DATA_DIR "/pixmaps/noise2.png" );
-	noise[2] = sdl_create_texture( DATA_DIR "/pixmaps/noise3.png" );
+	noise[0] = sdl_create_texture( PACKAGE_DATA_DIR "/pixmaps/noise1.png" );
+	noise[1] = sdl_create_texture( PACKAGE_DATA_DIR "/pixmaps/noise2.png" );
+	noise[2] = sdl_create_texture( PACKAGE_DATA_DIR "/pixmaps/noise3.png" );
 	
 	if( noise[0] == NULL || noise[1] == NULL || noise[2] == NULL ) {
 		fprintf( stderr, "Warning: Couldn't create texture for snap noise\n" );

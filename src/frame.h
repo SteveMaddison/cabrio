@@ -4,6 +4,8 @@
 #include <SDL/SDL_mutex.h>
 #include "video.h"
 
+#include <libavcodec/avcodec.h>
+
 struct frame_list {
 	struct frame_list *next;
 	struct frame_list *prev;
