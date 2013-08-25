@@ -1,6 +1,6 @@
 #include "hint.h"
 #include "font.h"
-#include "config.h"
+#include "load_config.h"
 #include "sdl_ogl.h"
 #include "focus.h"
 #include "location.h"

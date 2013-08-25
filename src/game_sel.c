@@ -4,7 +4,7 @@
 #include <limits.h>
 #include "game_sel.h"
 #include "bg.h"
-#include "config.h"
+#include "load_config.h"
 #include "focus.h"
 #include "sound.h"
 #include "emulator.h"

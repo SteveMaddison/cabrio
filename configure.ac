@@ -173,7 +173,7 @@ AC_CONFIG_FILES([
 	])
 #	src/config.hpp
 
-AC_CONFIG_HEADERS([src/envs.h])
+AC_CONFIG_HEADERS([src/config.h])
 
 AC_OUTPUT
 

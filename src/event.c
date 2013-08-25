@@ -1,5 +1,5 @@
 #include "control.h"
-#include "config.h"
+#include "load_config.h"
 #include "event.h"
 #include "menu.h"
 #include "submenu.h"

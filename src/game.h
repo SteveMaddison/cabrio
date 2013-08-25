@@ -3,7 +3,7 @@
 
 #include "ogl.h"
 #include "platform.h"
-#include "config.h"
+#include "load_config.h"
 
 struct game_category {
 	struct game_category *next;

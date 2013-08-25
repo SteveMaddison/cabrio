@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "game.h"
-#include "config.h"
+#include "load_config.h"
 #include "category.h"
 #include "platform.h"
 #include "ogl.h"

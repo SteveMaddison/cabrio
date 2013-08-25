@@ -29,7 +29,7 @@ cabrio_@PACKAGE_VERSION_API@_LDADD = $(libxml2_LIBS) $(SDL_LIBS) \
 ## and the variable name derived from that.
 ## Note that it is not necessary to list header files
 ## which are already listed elsewhere in a _HEADERS variable assignment.
-cabrio_@PACKAGE_VERSION_API@_SOURCES = bg.c config.c emulator.c focus.c \
+cabrio_@PACKAGE_VERSION_API@_SOURCES = bg.c load_config.c emulator.c focus.c \
 	frame.c game_sel.c key.c lookup.c media.c ogl.c platform.c sdl_wrapper.c \
 	snap.c submenu.c category.c control.c event.c font.c game.c hint.c \
 	location.c menu.c packet.c sdl_ogl.c setup.c sound.c video.c main.c

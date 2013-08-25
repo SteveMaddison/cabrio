@@ -2,7 +2,7 @@
 #include <SDL/SDL_rotozoom.h>
 #include <SDL/SDL_image.h>
 #include "sdl_ogl.h"
-#include "config.h"
+#include "load_config.h"
 
 unsigned int next_power_of_two( unsigned int x ) {
         int i = 0;

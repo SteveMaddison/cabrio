@@ -1,6 +1,6 @@
 #include <SDL/SDL_ttf.h>
 #include <stdio.h>
-#include "config.h"
+#include "load_config.h"
 #include "font.h"
 #include "sdl_ogl.h"
 

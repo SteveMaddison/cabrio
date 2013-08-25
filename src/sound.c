@@ -1,5 +1,5 @@
 #include "sound.h"
-#include "config.h"
+#include "load_config.h"
 #include <SDL/SDL_mixer.h>
 
 static const int AUDIO_CHUNK_SIZE = 4096;

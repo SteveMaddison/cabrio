@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include "location.h"
-#include "config.h"
+#include "load_config.h"
 
 struct location_type *type_start = NULL;
 

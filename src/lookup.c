@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "category.h"
 #include "lookup.h"
-#include "config.h"
+#include "load_config.h"
 
 int lookup_match( const char *pattern, const char *value ) {
 	if( !(pattern && value) )

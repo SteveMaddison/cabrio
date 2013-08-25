@@ -1,5 +1,5 @@
 #include "bg.h"
-#include "config.h"
+#include "load_config.h"
 #include "sdl_ogl.h"
 #include "location.h"
 

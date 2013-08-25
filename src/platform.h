@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "config.h"
+#include "load_config.h"
 #include "ogl.h"
 
 struct platform {

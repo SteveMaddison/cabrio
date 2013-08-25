@@ -2,7 +2,7 @@
 #include "sdl_wrapper.h"
 #include "ogl.h"
 #include "font.h"
-#include "config.h"
+#include "load_config.h"
 #include "category.h"
 #include "platform.h"
 #include "bg.h"

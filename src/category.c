@@ -1,5 +1,5 @@
 #include "category.h"
-#include "config.h"
+#include "load_config.h"
 #include "lookup.h"
 #include <stdlib.h>
 

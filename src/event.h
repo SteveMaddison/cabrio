@@ -1,7 +1,7 @@
 #ifndef _EVENT_H_
 #define _EVENT_H_ 1
 
-#include "config.h"
+#include "load_config.h"
 
 enum event_t {
 	EVENT_NONE,

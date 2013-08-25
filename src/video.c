@@ -15,7 +15,7 @@
 #include "sound.h"
 #include "packet.h"
 #include "frame.h"
-#include "config.h"
+#include "load_config.h"
 #include "ogl.h"
 
 #define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)

@@ -1,5 +1,5 @@
 #include "platform.h"
-#include "config.h"
+#include "load_config.h"
 #include "location.h"
 #include "media.h"
 #include "sdl_ogl.h"

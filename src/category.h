@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "config.h"
+#include "load_config.h"
 
 struct category_value {
 	struct category_value *next;

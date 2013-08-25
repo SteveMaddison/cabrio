@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "setup.h"
-#include "config.h"
+#include "load_config.h"
 #include "event.h"
 #include "font.h"
 #include "sdl_ogl.h"

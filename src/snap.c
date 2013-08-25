@@ -1,7 +1,7 @@
 #include "envs.h"
 #include "snap.h"
 #include "game.h"
-#include "config.h"
+#include "load_config.h"
 #include "ogl.h"
 #include "sdl_ogl.h"
 #include "media.h"

@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include "config.h"
+#include "load_config.h"
 #include "key.h"
 #include "event.h"
 #include "control.h"

@@ -2,7 +2,7 @@
 #define _EMULATOR_H_ 1
 
 #include "game.h"
-#include "config.h"
+#include "load_config.h"
 
 int emulator_run( struct game *game );
 struct config_emulator *emulator_get_by_name( const char *name );

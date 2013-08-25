@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "config.h"
+#include "load_config.h"
 #include "sdl_wrapper.h"
 
 #include <SDL/SDL.h>

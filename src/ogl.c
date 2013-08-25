@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "ogl.h"
-#include "config.h"
+#include "load_config.h"
 
 static int width = 0;
 static int height = 0;
