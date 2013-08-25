@@ -10,7 +10,7 @@ AUTOMAKE_OPTIONS = subdir-objects parallel-tests -Wall -Werror
 TESTS = debug.build default_flags_to_configure.build rpm.build simple.build \
 	deb.build
 
-XFAIL_TESTS = deb.build
+XFAIL_TESTS = deb.build rpm.build
 
 TEST_EXTENSIONS = .build
 BUILD_LOG_COMPILER = $(SHELL) $(abs_top_srcdir)/test/build_script $(abs_top_srcdir) $(abs_top_builddir)

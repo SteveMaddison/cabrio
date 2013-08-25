@@ -46,15 +46,15 @@ pkg-rpm: all
 	mkdir -p $(TEMP_PKG_RPM_DIR)/BUILD
 	mkdir -p $(TEMP_PKG_RPM_DIR)/SOURCES
 	mkdir -p $(TEMP_PKG_RPM_DIR)/tmp
-	@- rm -r $(TEMP_PKG_RPM_DIR)/BUILD/$(PACKAGE_NAME)-root
+	@- rm -rf $(TEMP_PKG_RPM_DIR)/BUILD/$(PACKAGE_NAME)-root
 	@- ln -s $(abs_top_builddir) $(TEMP_PKG_RPM_DIR)/BUILD/$(PACKAGE_NAME)-root
-	@- rm -r $(TEMP_PKG_RPM_DIR)/RPMS/$(PACKAGE_NAME)-*
-	@- rm -r $(TEMP_PKG_RPM_DIR)/SRPMS/$(PACKAGE_NAME)-*
-	@- rm -r $(TEMP_PKG_RPM_DIR)/SOURCES/$(PACKAGE_NAME)-*
+	@- rm -rf $(TEMP_PKG_RPM_DIR)/RPMS/$(PACKAGE_NAME)-*
+	@- rm -rf $(TEMP_PKG_RPM_DIR)/SRPMS/$(PACKAGE_NAME)-*
+	@- rm -rf $(TEMP_PKG_RPM_DIR)/SOURCES/$(PACKAGE_NAME)-*
 
 #	Find binary deps for binary in $(abs_top_builddir) to write in rpm
 #	deps in cabrio.spec
-	sed -i s/"^Requires: .*/Requires: ` ( find $(abs_top_builddir) -not -type d \
+	sed -i s/"^Requires: /Requires: ` ( find $(abs_top_builddir) -not -type d \
 	| xargs -n1 objdump -p | grep 'NEEDED ' \
 	| tr -s ' ' |cut -f 3 -d ' ' | sort -u \
 	| xargs -n 1 printf -- " -e %s" \

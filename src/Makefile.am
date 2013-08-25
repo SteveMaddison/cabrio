@@ -34,5 +34,10 @@ cabrio_@PACKAGE_VERSION_API@_SOURCES = bg.c config.c emulator.c focus.c \
 	snap.c submenu.c category.c control.c event.c font.c game.c hint.c \
 	location.c menu.c packet.c sdl_ogl.c setup.c sound.c video.c main.c
 
-dist_data_DATA = data/fonts/ data/pixmaps/ data/sounds/ data/themes/
+install-data-local:
+	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/
+	@for f in ${abs_top_srcdir}/src/data/* ; do \
+		cp -rf $$f $(DESTDIR)$(pkgdatadir)/ ; \
+	done
+#fonts/ data/pixmaps/ data/sounds/ data/themes/
 
