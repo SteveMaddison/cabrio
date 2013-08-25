@@ -5,10 +5,10 @@ Cabrio is an emulator front-end primarily designed for use with arcade
 cabinets. It features a simple graphical interface which is easy to use
 with limited controls (e.g. a joystick).
 
-
 Installation
 ------------
 You will need the following libraries and their headers/development packages:
+
   * SDL
   * SDL_image
   * SDL_gfx
@@ -18,12 +18,30 @@ You will need the following libraries and their headers/development packages:
   * libxml2
   * ffmpeg
 
-Compile the program by running 'make' in this directory. Install by running
-'make install' (this will usually have to be done as root, but the location
-can be edited in the Makefile).
+To configure, compile and install the program run:
+```ShellScript
+./configure --prefix=/usr
+make -j 3
+make install
+```
+
+To make a **.rpm** package:
+
+```ShellScript
+./configure --prefix=/usr
+make -j 3
+make pkg-rpm
+```
+
+To make a **.deb** package:
+
+```ShellScript
+./configure --prefix=/usr
+make -j 3
+make pkg-deb
+```
 
 See http://www.cabrio-fe.org/support/compile.html for more information.
-
 
 Configuration
 -------------
@@ -46,3 +64,4 @@ Astronomy, Heidelberg). http://hubblesite.org/
 
 Default font "FreeSans.ttf" courtesy of the GNU FreeFont project:
 http://www.gnu.org/software/freefont/
+
