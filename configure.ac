@@ -50,7 +50,6 @@ PKG_CHECK_MODULES(libavformat, libavformat)
 PKG_CHECK_MODULES(libavutil, libavutil)
 PKG_CHECK_MODULES(libavcodec, libavcodec)
 PKG_CHECK_MODULES(libswscale, libswscale)
-PKG_CHECK_MODULES(libavdevice, libavdevice)
 # openGL
 PKG_CHECK_MODULES(GL, gl)
 PKG_CHECK_MODULES(GLU, glu)

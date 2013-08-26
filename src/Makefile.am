@@ -9,19 +9,16 @@ AUTOMAKE_OPTIONS=subdir-objects -Wall -Werror
 # The name of program appended the version string.
 bin_PROGRAMS = cabrio-@PACKAGE_VERSION_API@
 
-
-
 cabrio_@PACKAGE_VERSION_API@_CFLAGS = $(libxml2_CFLAGS) $(SDL_CFLAGS) \
 	$(SDL_ttf_CFLAGS) $(SDL_gfx_CFLAGS) $(SDL_image_CFLAGS) \
-	$(SDL_mixer_CFLAGS) $(libavdevice_CFLAGS) $(libavformat_CFLAGS) \
+	$(SDL_mixer_CFLAGS) $(libavformat_CFLAGS) \
 	$(libavutil_CFLAGS) $(libavcodec_CFLAGS) $(GL_CFLAGS) $(GLU_CFLAGS) \
 	$(libswscale_CFLAGS)
 
 cabrio_@PACKAGE_VERSION_API@_LDADD = $(libxml2_LIBS) $(SDL_LIBS) \
-	$(libavdevice_LIBS) $(SDL_ttf_LIBS) $(SDL_gfx_LIBS) $(SDL_image_LIBS) \
+	$(SDL_ttf_LIBS) $(SDL_gfx_LIBS) $(SDL_image_LIBS) \
 	$(SDL_mixer_LIBS) $(libavformat_LIBS) $(libavutil_LIBS) \
 	$(libavcodec_LIBS) $(libswscale_LIBS) $(GL_LIBS) $(GLU_LIBS)
-
 
 ## Define the source file list for the "@PACKAGE_NAME@-@PACKAGE_VERSION_API@"
 ## target.  Note that @PACKAGE_VERSION_API@ is not interpreted by Automake and
