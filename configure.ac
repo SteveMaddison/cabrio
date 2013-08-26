@@ -1,7 +1,7 @@
 
 # Process this file with autoconf to produce a configure script.
 #AC_PREREQ([2.80])
-AC_INIT(cabrio, 01.00, https://groups.google.com/group/cabrio-fe-dev/)
+AC_INIT(cabrio, 0.8.1, https://groups.google.com/group/cabrio-fe-dev/)
 
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -26,12 +26,8 @@ AC_SUBST([PACKAGE_REQUIRED_BUILD], ["libavcodec-dev libavutil-dev libavformat-de
 AC_SUBST([PACKAGE_REQUIRED_RUNTIME], ["libavcodec libavutil libavformat libglut3 libsdl1.2 libsdl-image1.2 libsdl-gfx1.2 libsdl-mixer1.2 libsdl-ttf2.0 libswscale libxml2 zlib1g"] )
 
 AC_SUBST([PACKAGE_VERSION_MAJOR], [0])
-AC_SUBST([PACKAGE_VERSION_MINOR], [1])
-AC_SUBST([PACKAGE_VERSION_MINOR_FIX], [0])
-
-AC_SUBST([PACKAGE_VERSION_SO], [${PACKAGE_VERSION_MAJOR}:${PACKAGE_VERSION_MINOR}:${PACKAGE_VERSION_MINOR_FIX}])
-AC_SUBST([PACKAGE_VERSION_API], [${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}])
-
+AC_SUBST([PACKAGE_VERSION_MINOR], [8])
+AC_SUBST([PACKAGE_VERSION_MINOR_FIX], [1])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -151,8 +147,6 @@ AC_SUBST( includedir, ["$(eval eval echo $includedir)"])
 AS_IF([ test "x$pkgsrvdir" = "x" -o "x$pkgsrvdir" = "xNONE" -o "x$pkgsrvdir" = "xnone" ],[
 	AC_SUBST( pkgsrvdir, ["$(eval eval echo $localstatedir)/${PACKAGE_NAME}-${PACKAGE_VERSION_MAJOR}"])
 ])
-
-
 
 # Add required deps for linker
 # Add required deps for compiler
