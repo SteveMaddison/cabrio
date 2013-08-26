@@ -166,8 +166,7 @@ AC_CONFIG_FILES([
 	Makefile src/Makefile test/Makefile
 	packages/debian/control
 	cabrio.spec
-	])
-#	src/config.hpp
+])
 
 AC_CONFIG_HEADERS([src/config.h])
 

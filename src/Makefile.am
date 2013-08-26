@@ -34,6 +34,11 @@ cabrio_@PACKAGE_VERSION_API@_SOURCES = bg.c load_config.c emulator.c focus.c \
 	snap.c submenu.c category.c control.c event.c font.c game.c hint.c \
 	location.c menu.c packet.c sdl_ogl.c setup.c sound.c video.c main.c
 
+noinst_HEADERS = bg.h load_config.h emulator.h focus.h \
+	frame.h game_sel.h key.h lookup.h media.h ogl.h platform.h sdl_wrapper.h \
+	snap.h submenu.h category.h control.h event.h font.h game.h hint.h \
+	location.h menu.h packet.h sdl_ogl.h setup.h sound.h video.h
+
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/
 	@for f in ${abs_top_srcdir}/src/data/* ; do \
