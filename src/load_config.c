@@ -15,7 +15,7 @@
 #include "event.h"
 #include "control.h"
 #include "sound.h"
-#include "envs.h"
+#include "config.h"
 
 #include <libxml2/libxml/parser.h>
 #include <libxml2/libxml/tree.h>

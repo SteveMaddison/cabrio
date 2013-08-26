@@ -1,10 +1,9 @@
 
 # Process this file with autoconf to produce a configure script.
-#AC_PREREQ([2.80])
 AC_INIT(cabrio, 0.8.1, https://groups.google.com/group/cabrio-fe-dev/)
 
-AC_CONFIG_MACRO_DIR([build-aux/m4])
 AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_MACRO_DIR([build-aux/m4])
 
 AM_INIT_AUTOMAKE([foreign subdir-objects parallel-tests color-tests silent-rules -Wall -Werror])
 
@@ -20,7 +19,7 @@ AC_SUBST([PACKAGE_DESCRIPTION_LONG], ["Cabrio is a graphical front end for emula
 AC_SUBST([PACKAGE_URL], ["http://www.cabrio-fe.org/"] )
 
 AC_SUBST([PACKAGE_AUTHOR], ["Steve Maddison"] )
-AC_SUBST([PACKAGE_AUTHOR_EMAIL], ["..."] )
+AC_SUBST([PACKAGE_AUTHOR_EMAIL], ["steve@cosam.org"] )
 
 AC_SUBST([PACKAGE_REQUIRED_BUILD], ["libavcodec-dev libavutil-dev libavformat-dev libglut3-dev libsdl1.2-dev libsdl-image1.2-dev libsdl-gfx1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev libswscale-dev libxml2-dev zlib1g-dev"] )
 AC_SUBST([PACKAGE_REQUIRED_RUNTIME], ["libavcodec libavutil libavformat libglut3 libsdl1.2 libsdl-image1.2 libsdl-gfx1.2 libsdl-mixer1.2 libsdl-ttf2.0 libswscale libxml2 zlib1g"] )
@@ -28,6 +27,9 @@ AC_SUBST([PACKAGE_REQUIRED_RUNTIME], ["libavcodec libavutil libavformat libglut3
 AC_SUBST([PACKAGE_VERSION_MAJOR], [0])
 AC_SUBST([PACKAGE_VERSION_MINOR], [8])
 AC_SUBST([PACKAGE_VERSION_MINOR_FIX], [1])
+
+AC_SUBST([PACKAGE_VERSION_API], [${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}])
+
 
 # Checks for programs.
 AC_PROG_CXX
