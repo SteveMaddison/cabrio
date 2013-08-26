@@ -31,10 +31,10 @@ pkg-deb:
 
 	make DESTDIR=$(TEMP_PKG_DEB_DIR) install
 	cp packages/debian/control $(TEMP_PKG_DEB_DIR)/DEBIAN/control
-#	echo -n 'Depends: ' >> $(TEMP_PKG_DEB_DIR)/DEBIAN/control
+	echo -n 'Depends: ' >> $(TEMP_PKG_DEB_DIR)/DEBIAN/control
 	find $(TEMP_PKG_DEB_DIR) -not -type d | xargs -n1 objdump -p 2>/dev/null \
 		| grep 'NEEDED ' |tr -s ' ' |cut -f 3 -d ' ' | \
-		xargs -n1 dpkg -S |cut -f1 -d: | sed 's|^\$|d' | sort -u | xargs echo 'Depends:' | tr ' ' ','  >> $(TEMP_PKG_DEB_DIR)/DEBIAN/control
+		xargs -n1 dpkg -S |cut -f1 -d: | sort -u | sed '/^$$/d' | sed '/^ /d' | xargs echo | tr ' ' ','  >> $(TEMP_PKG_DEB_DIR)/DEBIAN/control
 	echo >> $(TEMP_PKG_DEB_DIR)/DEBIAN/control
 	dpkg --build $(TEMP_PKG_DEB_DIR) $(TEMP_PKG_DEB_DIR)/../$(PACKAGE_NAME)-$(PACKAGE_VERSION_API).deb
 	- rm -r $(TEMP_PKG_DEB_DIR)
