@@ -74,6 +74,8 @@ void sdl_swap( void ) {
 
 int sdl_hat_dir_value( int direction ) {
 	switch( direction ) {
+		case SDL_HAT_CENTERED:
+			break;
 		case SDL_HAT_UP:
 			return DIR_UP;
 			break;
