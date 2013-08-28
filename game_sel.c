@@ -195,7 +195,8 @@ void game_sel_shuffle_forward( int manage_textures ) {
 			while( t && t->game != game_tile_end->game ) {
 				t = t->next;
 			}
-			if( t == NULL || t == game_tile_end ) {
+			if( (t == NULL || t == game_tile_end)
+			&& game_tile_end->game->next != game_tile_start->game ) {
 				game_free_texture( game_tile_end->game->next );
 			}
 		}
@@ -221,7 +222,8 @@ void game_sel_shuffle_back( int manage_textures ) {
 			while( t && t->game != game_tile_start->game ) {
 				t = t->prev;
 			}
-			if( t == NULL || t == game_tile_start ) {
+			if( (t == NULL || t == game_tile_start)
+			&& game_tile_start->game->prev != game_tile_end->game ) {
 				game_free_texture( game_tile_start->game->prev );
 			}
 		}
