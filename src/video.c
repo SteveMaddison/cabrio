@@ -18,7 +18,8 @@
 #include "load_config.h"
 #include "ogl.h"
 
-#define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)
+#define MAX_AUDIO_FRAME_SIZE 192000
+#define AUDIO_BUFFER_SIZE ((MAX_AUDIO_FRAME_SIZE * 3) / 2)
 static const int VIDEO_SIZE = 256;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
@@ -349,7 +350,7 @@ int video_open( const char *filename ) {
 		return -1;
 	}
 	
-	if( avcodec_open( video_codec_context, video_codec ) != 0 ) {
+	if( avcodec_open2( video_codec_context, video_codec, NULL ) != 0 ) {
 		fprintf( stderr, "Warning: Couldn't open video codec '%s' for '%s'\n", video_codec->name, filename );
 		return -1;
 	}
@@ -372,7 +373,7 @@ int video_open( const char *filename ) {
 			audio_codec_context = NULL;
 		}
 		else {
-			if( avcodec_open( audio_codec_context, audio_codec ) != 0 ) {
+			if( avcodec_open2( audio_codec_context, audio_codec, NULL ) != 0 ) {
 				fprintf( stderr, "Warning: Couldn't open audio codec '%s' for '%s'\n", audio_codec->name, filename );
 				audio_codec_context = NULL;
 			}
