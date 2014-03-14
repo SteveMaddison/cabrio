@@ -13,12 +13,20 @@
 #include "config.h"
 #include "ogl.h"
 
-#define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)
-static const int VIDEO_SIZE = 256;
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+
+#define MAX_AUDIO_FRAME_SIZE 192000
+
+#define AUDIO_BUFFER_SIZE ((MAX_AUDIO_FRAME_SIZE * 3) / 2)
+
+static const int VIDEO_SIZE = 512;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
 static const int MAX_QUEUE_PACKETS = 20;
 static const int QUEUE_FULL_DELAY = 10;
+static const GLfloat VIDEO_SCALE = 0.005;
 static const int MAX_QUEUE_FRAMES = 30;
 static const int SAMPLES = 1024;
 static const float FUDGE_FACTOR = 0.02;
@@ -72,9 +80,6 @@ int video_init( void ) {
 		
 	packet_queue_init( &audio_queue );
 	frame_queue_init( &video_queue );
-
-	url_set_interrupt_cb( video_stopped );
-	
 	return 0;
 }
 
@@ -109,7 +114,7 @@ void video_close( void ) {
 	audio_codec_context = NULL;
 	
 	if( format_context )
-		av_close_input_file( format_context );
+		avformat_close_input( &format_context );
 	format_context = NULL;
 
 	if( video_buffer )
@@ -300,17 +305,23 @@ int video_open( const char *filename ) {
 	audio_buffer_size = 0;
 	audio_buffer_index = 0;
 
-    av_init_packet(&audio_packet);
+    	av_init_packet(&audio_packet);
+
 	
 	if( !filename )
 		return -1;
-		
-	if( av_open_input_file( &format_context, filename, NULL, 0, NULL ) != 0 ) {
+
+//	const AVIOInterruptCB int_cb = { video_stopped, NULL };
+
+//	format_context->interrupt_callback=int_cb;
+	if( avformat_open_input( &format_context, filename, NULL, 0 ) != 0 ) {	
+//	if( av_open_input_file( &format_context, filename, NULL, 0, NULL ) != 0 ) {
+//	if( avio_open( &format_context->pb, filename, NULL ) != 0 ){
 		fprintf( stderr, "Warning: Error opening video file '%s'\n", filename );
 		return -1;
 	}
-
-	if( av_find_stream_info( format_context ) < 0 ) {
+	
+	if( avformat_find_stream_info( format_context, NULL ) < 0 ) {
 		fprintf( stderr, "Warning: Error reading stream info from '%s'\n", filename );
 		return -1;
 	}
@@ -330,14 +341,14 @@ int video_open( const char *filename ) {
 		return -1;
 	}
 	
-    video_codec_context->release_buffer = video_release_buffer;
+     	video_codec_context->release_buffer = video_release_buffer;
 	video_codec = avcodec_find_decoder( video_codec_context->codec_id );
 	if( !video_codec ) {
 		fprintf( stderr, "Warning: Video codec in video '%s' not supported\n", filename );
 		return -1;
 	}
-	
-	if( avcodec_open( video_codec_context, video_codec ) != 0 ) {
+	if( avcodec_open2( video_codec_context, video_codec, NULL ) != 0 ) {
+//	if( avcodec_open( video_codec_context, video_codec ) != 0 ) {
 		fprintf( stderr, "Warning: Couldn't open video codec '%s' for '%s'\n", video_codec->name, filename );
 		return -1;
 	}
@@ -360,7 +371,8 @@ int video_open( const char *filename ) {
 			audio_codec_context = NULL;
 		}
 		else {
-			if( avcodec_open( audio_codec_context, audio_codec ) != 0 ) {
+//			if( avcodec_open( audio_codec_context, audio_codec ) != 0 ) {
+			if( avcodec_open2( audio_codec_context, audio_codec, NULL ) != 0 ) {
 				fprintf( stderr, "Warning: Couldn't open audio codec '%s' for '%s'\n", audio_codec->name, filename );
 				audio_codec_context = NULL;
 			}
@@ -405,7 +417,7 @@ int video_open( const char *filename ) {
 		fprintf( stderr, "Warning: Couldn't start video reader thread\n" );
 		return -1;
 	}
-		
+	
 	return 0;
 }
 
@@ -449,7 +461,6 @@ void video_clock_tick( void ) {
 
 struct texture *video_get_frame( void ) {
 	static AVFrame *frame = NULL;
-	int ret = -1;
 	GLenum error = GL_NO_ERROR;
 	double clock = video_master_clock();
 
@@ -503,7 +514,6 @@ struct texture *video_get_frame( void ) {
 		}
 		else {
 			got_texture = 1;
-			ret = 0;	
 		}
 	}
 	
