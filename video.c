@@ -213,13 +213,12 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 			return data_size;
 		}
 
-	        if (got_frame) {
-        	    /* if a frame has been decoded, output it */
+/*	        if (got_frame) {
            	     int data_size = av_samples_get_buffer_size(NULL, c->channels,
                     				       decoded_frame->nb_samples,
                                                        c->sample_fmt, 1);
         	}	
-
+*/
 
 		if( packet.data )
 			av_free_packet( &packet );
