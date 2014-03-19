@@ -17,7 +17,6 @@
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 
-//  Should be small to have precise A/V sync
 #define AUDIO_BUFFER_SIZE 1024 
 
 static const int VIDEO_SIZE = 768;
@@ -178,9 +177,9 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 	int used, data_size;
 	AVFrame *decoded_frame = NULL;
 	int got_frame = 0;
+	data_size = buffer_size;
 	for(;;) {
 		while( audio_packet.size > 0 ) {
-			data_size = buffer_size;
 			if (!decoded_frame) {
 		            if (!(decoded_frame = avcodec_alloc_frame())) {
 		                fprintf(stderr, "out of memory\n");
@@ -215,6 +214,8 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
                                                        context->sample_fmt, 1);
         		}	
 		}
+		fprintf(stderr, "fred2 size %d\n", data_size  );
+
 		if( packet.data )
 			av_free_packet( &packet );
 
@@ -232,6 +233,7 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 		if( packet.pts != AV_NOPTS_VALUE ) {
 			audio_clock = packet.pts * av_q2d( format_context->streams[audio_stream]->time_base );
 		}
+	fprintf(stderr, "fred3 size %d\n", data_size  );
 	}
 }
 
@@ -243,6 +245,7 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 		if(audio_buffer_index >= audio_buffer_size) {
 			/* We have already sent all our data; get more */
 			audio_size = video_decode_audio_frame( context, audio_buffer, AUDIO_BUFFER_SIZE );
+			fprintf(stderr, "fred4 size %d\n", audio_size);
 			if( audio_size < 0 ) {
 				/* If error, output silence */
 				audio_buffer_size = SAMPLES;
@@ -255,7 +258,8 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 		used = audio_buffer_size - audio_buffer_index;
 		if( used > length )
 			used = length;
-			
+				
+		fprintf(stderr, "fred5 size %d\n", length);
 		memcpy( stream, (uint8_t *)audio_buffer + audio_buffer_index, used );
 		length -= used;
 		stream += used;
@@ -394,9 +398,14 @@ int video_open( const char *filename ) {
 				desired.silence = 0;
 				desired.samples = SAMPLES;
 				// Fred this call is the problem
+				fprintf(stderr, "fred6 size \n");
+				sleep(5);
 				desired.callback = video_audio_callback;
+				fprintf(stderr, "fred7 size \n" );
+				sleep(5);
 				desired.userdata = audio_codec_context;
-
+				fprintf(stderr, "fred8 size \n" );
+				sleep(5);
 				sound_close_mixer();
 
 				if( SDL_OpenAudio( &desired, &audio_spec ) < 0 ) {
