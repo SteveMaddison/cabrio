@@ -17,11 +17,10 @@
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 
-#define MAX_AUDIO_FRAME_SIZE 48000 
+//  Should be small to have precise A/V sync
+#define AUDIO_BUFFER_SIZE 1024 
 
-#define AUDIO_BUFFER_SIZE ((MAX_AUDIO_FRAME_SIZE * 3) / 2)
-
-static const int VIDEO_SIZE = 1024;
+static const int VIDEO_SIZE = 768;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
 static const int MAX_QUEUE_PACKETS = 20;
