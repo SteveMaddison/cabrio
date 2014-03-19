@@ -17,11 +17,11 @@
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 
-#define MAX_AUDIO_FRAME_SIZE 192000
+#define MAX_AUDIO_FRAME_SIZE 48000 
 
 #define AUDIO_BUFFER_SIZE ((MAX_AUDIO_FRAME_SIZE * 3) / 2)
 
-static const int VIDEO_SIZE = 512;
+static const int VIDEO_SIZE = 1024;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
 static const int MAX_QUEUE_PACKETS = 20;
@@ -178,11 +178,10 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 	static AVPacket packet;
 	int used, data_size;
 	AVFrame *decoded_frame = NULL;
-
+	int got_frame = 0;
 	for(;;) {
 		while( audio_packet.size > 0 ) {
 			data_size = buffer_size;
-			int got_frame = 0;
 			if (!decoded_frame) {
 		            if (!(decoded_frame = avcodec_alloc_frame())) {
 		                fprintf(stderr, "out of memory\n");
@@ -192,7 +191,6 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
            			 avcodec_get_frame_defaults(decoded_frame);
 
 			used = avcodec_decode_audio4(context, decoded_frame , &got_frame , &audio_packet);
-//			used = avcodec_decode_audio3( context, (int16_t *)audio_buffer, &data_size, &audio_packet);
 			if( used < 0 ) {
 				/* if error, skip frame */
 				audio_packet.size = 0;
@@ -209,17 +207,15 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 				(double)(format_context->streams[audio_stream]->codec->sample_rate *
 				(2 * format_context->streams[audio_stream]->codec->channels));
 			/* We have data, return it and come back for more later */
-		        fprintf(stderr, "size %d\n", data_size  );
+		        fprintf(stderr, "fred size %d\n", data_size  );
 			return data_size;
-		}
 
-/*	        if (got_frame) {
-           	     int data_size = av_samples_get_buffer_size(NULL, c->channels,
+		        if (got_frame) {
+        	   	     data_size = av_samples_get_buffer_size(NULL, context->channels,
                     				       decoded_frame->nb_samples,
-                                                       c->sample_fmt, 1);
-        	}	
-*/
-
+                                                       context->sample_fmt, 1);
+        		}	
+		}
 		if( packet.data )
 			av_free_packet( &packet );
 
@@ -364,7 +360,6 @@ int video_open( const char *filename ) {
 		return -1;
 	}
 	if( avcodec_open2( video_codec_context, video_codec, NULL ) != 0 ) {
-//	if( avcodec_open( video_codec_context, video_codec ) != 0 ) {
 		fprintf( stderr, "Warning: Couldn't open video codec '%s' for '%s'\n", video_codec->name, filename );
 		return -1;
 	}
@@ -377,7 +372,7 @@ int video_open( const char *filename ) {
 		fprintf( stderr, "Warning: Couldn't allocate buffer for video '%s'\n", filename );
 		return -1;
 	}
-
+	fprintf( stderr, "warning :video_buffer  '%s'\n", video_buffer  );
 	avpicture_fill( (AVPicture*)conv_frame, video_buffer, CONV_FORMAT, VIDEO_SIZE, VIDEO_SIZE );
 
 	if( audio_codec_context ) {
@@ -387,7 +382,6 @@ int video_open( const char *filename ) {
 			audio_codec_context = NULL;
 		}
 		else {
-//			if( avcodec_open( audio_codec_context, audio_codec ) != 0 ) {
 			if( avcodec_open2( audio_codec_context, audio_codec, NULL ) != 0 ) {
 				fprintf( stderr, "Warning: Couldn't open audio codec '%s' for '%s'\n", audio_codec->name, filename );
 				audio_codec_context = NULL;
@@ -400,6 +394,7 @@ int video_open( const char *filename ) {
 				desired.channels = audio_codec_context->channels;
 				desired.silence = 0;
 				desired.samples = SAMPLES;
+				// Fred this call is the problem
 				desired.callback = video_audio_callback;
 				desired.userdata = audio_codec_context;
 
