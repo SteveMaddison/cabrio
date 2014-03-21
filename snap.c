@@ -90,15 +90,14 @@ int snap_set( struct game *game ) {
 	video = 0;
 	
 	platform_texture = game->platform->texture;
-	
 	filename = game_media_get( game, MEDIA_VIDEO, NULL );
 	if( filename && filename[0] ) {
 		if( video_open( filename ) == 0 ) {
-			video = 1;
+			video = 1; 
 			texture = video_texture();
 		}
 	}
-	
+	// no video ? ok screenshot //
 	if( !texture ) {
 		filename = game_media_get( game, MEDIA_IMAGE, image_type_name(IMAGE_SCREENSHOT) );
 		if( filename && filename[0] ) {
@@ -171,19 +170,17 @@ void snap_hide( void ) {
 
 void snap_draw( void ) {
 	const struct config_snap *config = &config_get()->iface.theme.snap;
-	
 	if( visible ) {
 		struct texture *t = texture;
 		GLfloat xfactor = ogl_xfactor();
 		GLfloat yfactor = ogl_yfactor();
 		GLfloat xsize, ysize, hide_offset;
 		
-		if( video )
+		if( video ){
 			t = video_get_frame();
-				
-		if( t == NULL )
+		}		
+		if( t == NULL ) 
 			t = noise[frame/noise_skip];
-		
 		xsize = (width/2) * scale * xfactor;
 		ysize = (height/2) * scale * xfactor;
 		

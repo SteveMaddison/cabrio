@@ -28,7 +28,7 @@ void clean_up( void ) {
 	sound_free();
 	game_list_free();
 	submenu_free();
-	platform_free();
+	platform_free(); 
 	menu_free();
 	hint_free();
 	font_free();
@@ -159,7 +159,6 @@ int main( int argc, char *arvg[] ) {
 		
 		sdl_frame_delay();
 	}
-
 	clean_up();
 	return 0;
 }
