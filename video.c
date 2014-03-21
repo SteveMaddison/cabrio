@@ -17,7 +17,6 @@
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 
-
 #define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)
 
 static const int VIDEO_SIZE = 256;
