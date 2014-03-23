@@ -17,10 +17,12 @@
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 
-#define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)
+#define MAX_AUDIO_FRAME_SIZE 192000
+
+#define AUDIO_BUFFER_SIZE ((MAX_AUDIO_FRAME_SIZE * 3) / 2)
 
 static const int VIDEO_SIZE = 256;
-static const int VIDEO_SIZE_SCALE = 768;
+static const int VIDEO_SIZE_SCALE = 512;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
 static const int MAX_QUEUE_PACKETS = 20;
@@ -176,20 +178,12 @@ int video_decode_video_frame( AVPacket *packet ) {
 int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buffer_size ) {
 	static AVPacket packet;
 	int used, data_size;
-	AVFrame *decoded_frame = NULL;
-	int got_frame = 0;
-	data_size = buffer_size;
+
 	for(;;) {
 		while( audio_packet.size > 0 ) {
-			if (!decoded_frame) {
-		            if (!(decoded_frame = avcodec_alloc_frame())) {
-		                fprintf(stderr, "out of memory\n");
-		                exit(1);
-		            }
-		        } else
-           			 avcodec_get_frame_defaults(decoded_frame);
-
-			used = avcodec_decode_audio4(context, decoded_frame , &got_frame , &audio_packet);
+			data_size = buffer_size;
+			used = avcodec_decode_audio3( context, (int16_t *)audio_buffer, &data_size, 
+					  &audio_packet);
 			if( used < 0 ) {
 				/* if error, skip frame */
 				audio_packet.size = 0;
@@ -197,24 +191,19 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 			}
 			audio_packet.data += used;
 			audio_packet.size -= used;
+			
 			if( data_size <= 0 ) {
-				// No data yet, get more frames //
+				/* No data yet, get more frames */
 				continue;
 			}
 			
 			audio_clock += (double)data_size /
 				(double)(format_context->streams[audio_stream]->codec->sample_rate *
 				(2 * format_context->streams[audio_stream]->codec->channels));
+			
 			/* We have data, return it and come back for more later */
 			return data_size;
-
-		        if (got_frame) {
-        	   	     data_size = av_samples_get_buffer_size(NULL, context->channels,
-                    				       decoded_frame->nb_samples,
-                                                       context->sample_fmt, 1);
-        		}	
 		}
-
 		if( packet.data )
 			av_free_packet( &packet );
 
@@ -252,10 +241,11 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 			}
 			audio_buffer_index = 0;
 		}
+
 		used = audio_buffer_size - audio_buffer_index;
 		if( used > length )
 			used = length;
-				
+			
 		memcpy( stream, (uint8_t *)audio_buffer + audio_buffer_index, used );
 		length -= used;
 		stream += used;
@@ -270,15 +260,14 @@ void video_release_buffer( struct AVCodecContext *c, AVFrame *f ) {
 }
 
 int video_reader_thread( void *data ) {
-
 	static AVPacket packet;
-  	
+
 	if( !format_context || !video_codec_context || !video_buffer )
 		return -1;
 
 	reader_running = 1;
 
-	while(!stop)  {
+	while( !stop ) {
 		if( video_queue.frames >= MAX_QUEUE_FRAMES || audio_queue.packets >= MAX_QUEUE_PACKETS ) {
 			SDL_Delay( QUEUE_FULL_DELAY );
 		}
@@ -293,12 +282,10 @@ int video_reader_thread( void *data ) {
 				else {
 					av_free_packet( &packet );
 				}
-			} else {
+			}
+			else {
 				av_seek_frame( format_context, -1, 0, AVSEEK_FLAG_BACKWARD|AVSEEK_FLAG_BYTE );
 			}
-			// Video end - avoid ugly loop -  
-			if(video_queue.frames == 0)
-				return -1;
 		}
 	}
 
@@ -308,6 +295,7 @@ int video_reader_thread( void *data ) {
 
 int video_open( const char *filename ) {
 	int i = -1;
+	
 	format_context = NULL;
 	video_codec_context = NULL;
 	video_stream = -1;
@@ -324,7 +312,12 @@ int video_open( const char *filename ) {
 	if( !filename )
 		return -1;
 
+//	const AVIOInterruptCB int_cb = { video_stopped, NULL };
+
+//	format_context->interrupt_callback=int_cb;
 	if( avformat_open_input( &format_context, filename, NULL, 0 ) != 0 ) {	
+//	if( av_open_input_file( &format_context, filename, NULL, 0, NULL ) != 0 ) {
+//	if( avio_open( &format_context->pb, filename, NULL ) != 0 ){
 		fprintf( stderr, "Warning: Error opening video file '%s'\n", filename );
 		return -1;
 	}
@@ -356,6 +349,7 @@ int video_open( const char *filename ) {
 		return -1;
 	}
 	if( avcodec_open2( video_codec_context, video_codec, NULL ) != 0 ) {
+//	if( avcodec_open( video_codec_context, video_codec ) != 0 ) {
 		fprintf( stderr, "Warning: Couldn't open video codec '%s' for '%s'\n", video_codec->name, filename );
 		return -1;
 	}
@@ -368,6 +362,7 @@ int video_open( const char *filename ) {
 		fprintf( stderr, "Warning: Couldn't allocate buffer for video '%s'\n", filename );
 		return -1;
 	}
+
 	avpicture_fill( (AVPicture*)conv_frame, video_buffer, CONV_FORMAT, VIDEO_SIZE, VIDEO_SIZE );
 
 	if( audio_codec_context ) {
@@ -377,26 +372,24 @@ int video_open( const char *filename ) {
 			audio_codec_context = NULL;
 		}
 		else {
+//			if( avcodec_open( audio_codec_context, audio_codec ) != 0 ) {
 			if( avcodec_open2( audio_codec_context, audio_codec, NULL ) != 0 ) {
 				fprintf( stderr, "Warning: Couldn't open audio codec '%s' for '%s'\n", audio_codec->name, filename );
 				audio_codec_context = NULL;
 			}
 			else {
-				fprintf(stderr, "fred audio bug here \n" );
-				// if problem comment this part problem
-				audio_codec_context = NULL;
-				/*
 				SDL_AudioSpec desired;
+				
 				desired.freq = audio_codec_context->sample_rate;
 				desired.format = AUDIO_S16SYS;
 				desired.channels = audio_codec_context->channels;
 				desired.silence = 0;
 				desired.samples = SAMPLES;
-				// Fred this call is the problem
 				desired.callback = video_audio_callback;
 				desired.userdata = audio_codec_context;
+
 				sound_close_mixer();
-		
+
 				if( SDL_OpenAudio( &desired, &audio_spec ) < 0 ) {
 					fprintf( stderr, "Warning: Couldn't open audio for video: %s\n", SDL_GetError() );
 					audio_codec_context = NULL;
@@ -407,7 +400,6 @@ int video_open( const char *filename ) {
 					audio_running = 1;
 					SDL_PauseAudio( 0 );
 				}
-				*/
 			}
 		}
 	}
@@ -426,6 +418,7 @@ int video_open( const char *filename ) {
 		fprintf( stderr, "Warning: Couldn't start video reader thread\n" );
 		return -1;
 	}
+	
 	return 0;
 }
 
@@ -471,6 +464,7 @@ struct texture *video_get_frame( void ) {
 	static AVFrame *frame = NULL;
 	GLenum error = GL_NO_ERROR;
 	double clock = video_master_clock();
+
 	if( frame && frame->opaque && *(double*)(frame->opaque) ) {
 		if( got_texture && *(double*)(frame->opaque) > clock + FUDGE_FACTOR ) {
 			/* Reuse current frame */
