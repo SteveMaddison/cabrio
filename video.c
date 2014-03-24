@@ -15,7 +15,7 @@
 
 #define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)
 static const int VIDEO_SIZE = 256;
-static const int VIDEO_SIZE_SCALE = 512;
+static const int VIDEO_SIZE_SCALE = 768;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
 static const int MAX_QUEUE_PACKETS = 20;
@@ -260,6 +260,7 @@ int video_reader_thread( void *data ) {
 		return -1;
 
 	reader_running = 1;
+	int stop_sound = 0;
 
 	while( !stop ) {
 		if( video_queue.frames >= MAX_QUEUE_FRAMES || audio_queue.packets >= MAX_QUEUE_PACKETS ) {
@@ -270,8 +271,13 @@ int video_reader_thread( void *data ) {
 				if( packet.stream_index == video_stream ) {
 					video_decode_video_frame( &packet );
 				}
-				else if( packet.stream_index == audio_stream && audio_codec_context ) {
-					packet_queue_put( &audio_queue, &packet );
+				else if(packet.stream_index == audio_stream && audio_codec_context){ 
+					if (stop_sound != 1) {
+						packet_queue_put( &audio_queue, &packet );
+                              		} else {
+						audio_queue.packets = 0;
+						packet_queue_put( &audio_queue, &packet );
+					}
 				}
 				else {
 					av_free_packet( &packet );
@@ -279,6 +285,8 @@ int video_reader_thread( void *data ) {
 			}
 			else {
 				av_seek_frame( format_context, -1, 0, AVSEEK_FLAG_BACKWARD|AVSEEK_FLAG_BYTE );
+				stop_sound = 1;
+                                fprintf(stderr, "stop_sound %d\n", stop_sound );
 			}
 		}
 	}
