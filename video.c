@@ -172,12 +172,11 @@ int video_decode_video_frame( AVPacket *packet ) {
 int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buffer_size ) {
 	static AVPacket packet;
 	int used, data_size;
-
 	for(;;) {
 		while( audio_packet.size > 0 ) {
 			data_size = buffer_size;
-			used = avcodec_decode_audio3( context, (int16_t *)audio_buffer, &data_size, 
-					  &audio_packet);
+			used = avcodec_decode_audio3( context, (int16_t *)audio_buffer, &data_size,
+				&audio_packet);
 			if( used < 0 ) {
 				/* if error, skip frame */
 				audio_packet.size = 0;
@@ -194,7 +193,6 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 			audio_clock += (double)data_size /
 				(double)(format_context->streams[audio_stream]->codec->sample_rate *
 				(2 * format_context->streams[audio_stream]->codec->channels));
-			
 			/* We have data, return it and come back for more later */
 			return data_size;
 		}
@@ -221,7 +219,7 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 	AVCodecContext *context = (AVCodecContext*)userdata;
 	int used, audio_size;
-
+	
 	while( length > 0 ) {
 		if(audio_buffer_index >= audio_buffer_size) {
 			/* We have already sent all our data; get more */
@@ -261,6 +259,7 @@ int video_reader_thread( void *data ) {
 
 	reader_running = 1;
 	int stop_sound = 0;
+	int value;
 
 	while( !stop ) {
 		if( video_queue.frames >= MAX_QUEUE_FRAMES || audio_queue.packets >= MAX_QUEUE_PACKETS ) {
@@ -268,23 +267,20 @@ int video_reader_thread( void *data ) {
 		}
 		else {
 			if( av_read_frame( format_context, &packet ) >= 0 ) {
-				if( packet.stream_index == video_stream ) {
+				value = packet.stream_index;
+				if( value == video_stream ) { 
 					video_decode_video_frame( &packet );
 				}
-				else if(packet.stream_index == audio_stream && audio_codec_context){ 
-					if (stop_sound != 1) {
-						packet_queue_put( &audio_queue, &packet );
-                              		} else {
-						audio_queue.packets = 0;
-						packet_queue_put( &audio_queue, &packet );
-					}
-				}
-				else {
+				if (stop_sound != 1){ 
+					packet_queue_put( &audio_queue, &packet );
+				} else {
+					packet_queue_put( &audio_queue, &packet );
+				}  
+				if (( value != video_stream ) && (value != audio_stream && audio_codec_context))
 					av_free_packet( &packet );
-				}
-			}
-			else {
-				av_seek_frame( format_context, -1, 0, AVSEEK_FLAG_BACKWARD|AVSEEK_FLAG_BYTE );
+			} else {
+				av_seek_frame( format_context, -1, 0, 0 );
+				// TODO headhache fuze - second loop -
 				stop_sound = 1;
                                 fprintf(stderr, "stop_sound %d\n", stop_sound );
 			}
