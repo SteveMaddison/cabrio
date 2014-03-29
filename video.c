@@ -274,6 +274,7 @@ int video_reader_thread( void *data ) {
 				if (stop_sound != 1){ 
 					packet_queue_put( &audio_queue, &packet );
 				} else {
+					// something here but why ? //
 					packet_queue_put( &audio_queue, &packet );
 				}  
 				if (( value != video_stream ) && (value != audio_stream && audio_codec_context))
