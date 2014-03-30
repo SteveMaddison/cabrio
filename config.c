@@ -117,6 +117,7 @@ static const char *tag_game_images_image			=       "image";
 static const char *tag_game_video					=     "video";
 static const char *tag_iface						= "interface";
 static const char *tag_iface_full_screen			= 	"full-screen";
+static const char *tag_iface_video_loop				= 	"video-loop";
 static const char *tag_iface_screen					=   "screen";
 static const char *tag_iface_screen_hflip			=     "flip-horizontal";
 static const char *tag_iface_screen_vflip			=     "flip-vertical";
@@ -1572,6 +1573,10 @@ int config_read_interface( xmlNode *node ) {
 			if( strcmp( (char*)node->name, tag_iface_full_screen ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.full_screen );
 			}
+			else if( strcmp( (char*)node->name, tag_iface_video_loop ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.video_loop );
+                        }
+	
 			else if( strcmp( (char*)node->name, tag_iface_screen ) == 0 ) {
 				config_read_interface_screen( node->children );
 			}
@@ -1704,6 +1709,10 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
 			else if( strcmp( (char*)node->name, tag_iface_full_screen ) == 0 ) {
 				/* Ignore */
 			}
+                        else if( strcmp( (char*)node->name, tag_iface_video_loop ) == 0 ) {
+                                /* Ignore */
+                        }
+
 			else if( strcmp( (char*)node->name, tag_iface_screen ) == 0 ) {
 				/* Ignore */
 			}
@@ -1958,6 +1967,7 @@ int config_write_interface( xmlNodePtr root ) {
 	int i;
 	xmlNodePtr interface = xmlNewNode( NULL, (xmlChar*)tag_iface );
 	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_full_screen, config_write_boolean( config.iface.full_screen ) );
+	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_video_loop, config_write_boolean( config.iface.video_loop ) );
 	
 	xmlNodePtr screen = xmlNewNode( NULL, (xmlChar*)tag_iface_screen );
 	xmlNewChild( screen, NULL, (xmlChar*)tag_width, config_write_numeric( config.iface.screen_width ) );
@@ -2182,6 +2192,7 @@ int config_new( void ) {
 		config.platforms = NULL;
 
 		config.iface.full_screen = 0;
+		config.iface.video_loop = 0;
 		config.iface.screen_width = 640;
 		config.iface.screen_height = 480;
 		config.iface.screen_rotation = 0;

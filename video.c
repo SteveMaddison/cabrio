@@ -254,6 +254,8 @@ void video_release_buffer( struct AVCodecContext *c, AVFrame *f ) {
 int video_reader_thread( void *data ) {
 	static AVPacket packet;
 
+	const struct config *config = config_get();
+
 	if( !format_context || !video_codec_context || !video_buffer )
 		return -1;
 
@@ -280,10 +282,13 @@ int video_reader_thread( void *data ) {
 				if (( value != video_stream ) && (value != audio_stream && audio_codec_context))
 					av_free_packet( &packet );
 			} else {
+				// stop video loop
+                                if(!config->iface.video_loop) 
+                                	stop = 1;
 				av_seek_frame( format_context, -1, 0, 0 );
-				// TODO headhache fuze - second loop -
+				// TODO find a way to just stop sound - headhache fuze - second loop -
 				stop_sound = 1;
-                                fprintf(stderr, "stop_sound %d\n", stop_sound );
+                         	// debug fprintf(stderr, "stop_sound %d\n", stop_sound );
 			}
 		}
 	}
