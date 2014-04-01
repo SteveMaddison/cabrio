@@ -206,6 +206,7 @@ struct config_labels {
 
 struct config_iface {
 	int full_screen;
+	int video_loop;
 	int screen_width;
 	int screen_height;
 	int screen_rotation;

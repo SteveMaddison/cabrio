@@ -1,0 +1,109 @@
+bg.c:	if( config->iface.theme.background_image[0] != '\0' ) {
+bg.c:		location_get_theme_path( config->iface.theme.background_image , filename );
+bg.c:			fprintf( stderr, "Warning: couldn't create background texture from '%s'\n", config->iface.theme.background_image );
+bg.c:	alpha = 1.0 - (GLfloat)(config->iface.theme.background_transparency)/100;
+bg.c:	if( config->iface.frame_rate )
+bg.c:		angle_step = (GLfloat)config->iface.theme.background_rotation/((GLfloat)config->iface.frame_rate*20);
+bg.c:		angle_step = (GLfloat)config->iface.theme.background_rotation/1000;
+event.c:		events[i].device_type = config->iface.controls[i].device_type;
+event.c:		events[i].device_id = config->iface.controls[i].device_id;
+event.c:		events[i].control_type = config->iface.controls[i].control_type;
+event.c:		events[i].control_id = config->iface.controls[i].control_id;
+event.c:		events[i].value = config->iface.controls[i].value;
+font.c:	if( config->iface.theme.font_size > 0 )
+font.c:		size = config->iface.theme.font_size;
+font.c:	col.r = config->iface.theme.font_rgb.red;
+font.c:	col.g = config->iface.theme.font_rgb.green;
+font.c:	col.b = config->iface.theme.font_rgb.blue;
+font.c:	if( config->iface.theme.font_file && *config->iface.theme.font_file ) {
+font.c:		font = TTF_OpenFont( config->iface.theme.font_file, size );
+font.c:			fprintf( stderr, "Error: Couldn't load font '%s': %s\n", config->iface.theme.font_file, TTF_GetError() );
+game_sel.c:		if( config->orientation == CONFIG_PORTRAIT ) {
+game_sel.c:				(tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step)) * x_scale * xfactor,
+game_sel.c:				(tile->pos[Y] + config->offset2 + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * y_scale * xfactor,
+game_sel.c:				-((tile->pos[Y] + config->offset2 + (((dest->pos[Y]-tile->pos[Y])/steps)*step)) * x_scale * xfactor),
+game_sel.c:				-((tile->pos[X] + config->offset1 + (((dest->pos[X]-tile->pos[X])/steps)*step)) * y_scale * xfactor),
+hint.c:	location_get_theme_path( config->iface.theme.hints.image_arrow, filename );
+hint.c:	location_get_theme_path( config->iface.theme.hints.image_back, filename );
+hint.c:	location_get_theme_path( config->iface.theme.hints.image_select, filename );
+hint.c:	if(!( text_select_message = font_create_texture( config->iface.labels.label_select ) ))
+hint.c:	if(!( text_back_message = font_create_texture( config->iface.labels.label_back ) ))
+hint.c:	if( config->iface.frame_rate )
+hint.c:		alpha_step = (GLfloat)config->iface.frame_rate/6000;
+hint.c:	GLfloat size = (BUTTON_SIZE/2) * config->size * xfactor;
+hint.c:	glTranslatef( (config->offset2 + (position * config->size)) * xfactor, config->offset1 * yfactor, DEPTH );
+hint.c:	GLfloat tx = ((message->width*FONT_SCALE)/2) * config->size * xfactor;
+hint.c:	GLfloat ty = ((message->height*FONT_SCALE)/2) * config->size * xfactor;
+hint.c:	glTranslatef( (config->offset2 + (position * config->size)) * xfactor, config->offset1 * yfactor, DEPTH );
+menu.c:	if( config->iface.frame_rate )
+menu.c:		steps = config->iface.frame_rate;
+menu.c:	zoom = (GLfloat)config->iface.theme.menu.zoom;
+menu.c:	spacing = (GLfloat)config->iface.theme.menu.spacing;
+menu.c:		if( config->iface.theme.menu.orientation == CONFIG_LANDSCAPE )
+menu.c:			spacing = (GLfloat)config->iface.theme.menu.item_width * ITEM_SCALE * zoom * SPACING_FACTOR;
+menu.c:			spacing = (GLfloat)config->iface.theme.menu.item_height * ITEM_SCALE * zoom * SPACING_FACTOR;
+menu.c:	min_alpha = 1.0 - (GLfloat)(config->iface.theme.menu.transparency)/100;
+menu.c:	menu_item_add( config->iface.labels.label_all, MENU_ALL, NULL );
+menu.c:	if( platform_count() > 1 || config->iface.prune_menus == 0 ) {
+menu.c:		menu_item_add( config->iface.labels.label_platform, MENU_PLATFORM, NULL );
+menu.c:			if( category->value_count > 1 || config->iface.prune_menus == 0 )
+menu.c:	if( menu_items > config->iface.theme.menu.max_visible )
+menu.c:		items_visible = config->iface.theme.menu.max_visible;
+menu.c:					if( config->iface.theme.menu.orientation == CONFIG_LANDSCAPE ) {
+menu.c:						tile->x = (offset + config->iface.theme.menu.offset1);
+menu.c:						tile->y = config->iface.theme.menu.offset2;
+menu.c:						tile->x = -config->iface.theme.menu.offset2 * ogl_aspect_ratio();
+menu.c:						tile->y = -(offset + config->iface.theme.menu.offset1);
+menu.c:	for( i = 0 ; i < ((config->iface.theme.menu.max_visible+1)/2) ; i++ ) {
+menu.c:	arrow_retreat.size = config->iface.theme.menu.item_height * ITEM_SCALE * 1.5;
+menu.c:	arrow_advance.size = config->iface.theme.menu.item_height * ITEM_SCALE * 1.5;
+menu.c:	if( config->iface.theme.menu.orientation == CONFIG_LANDSCAPE ) {
+menu.c:		arrow_retreat.x = tile_start->x - (config->iface.theme.menu.item_width * ITEM_SCALE);
+menu.c:		arrow_advance.x = tile_end->x + (config->iface.theme.menu.item_width * ITEM_SCALE);
+menu.c:		arrow_retreat.y = tile_start->y + (config->iface.theme.menu.item_height * ITEM_SCALE);
+menu.c:		arrow_advance.y = tile_end->y - (config->iface.theme.menu.item_height * ITEM_SCALE);
+menu.c:				mx = ((config->item_width * ITEM_SCALE)/2) * xfactor * item_zoom;
+menu.c:				my = ((config->item_height * ITEM_SCALE)/2) * xfactor * item_zoom;
+menu.c:				tx = ((GLfloat)tile->item->message->width * (config->font_scale * FONT_SCALE)) * xfactor * item_zoom;
+menu.c:				if( tx > mx * (1.0 - ((GLfloat)config->border/100)) )
+menu.c:					tx = mx * (1.0 - ((GLfloat)config->border/100));
+menu.c:				ty = ((GLfloat)tile->item->message->height * (config->font_scale * FONT_SCALE)) * xfactor * item_zoom;
+menu.c:				if( ty > my * (1.0 - ((GLfloat)config->border/100)) )
+menu.c:					ty = my * (1.0 - ((GLfloat)config->border/100));
+ogl.c:	if( config->iface.gfx_quality > CONFIG_LOW )
+ogl.c:	gluPerspective( 45.0, (GLfloat)config->iface.screen_width/(GLfloat)config->iface.screen_height, 0.1, 100.0 );
+ogl.c:	width = config->iface.screen_width;
+ogl.c:	height = config->iface.screen_height;
+ogl.c:	if( config->iface.screen_hflip )
+ogl.c:	if( config->iface.screen_vflip )
+ogl.c:	ogl_screen_rotate( config->iface.screen_rotation );	
+sdl_ogl.c:	while( x > config->iface.gfx_max_width )
+sdl_ogl.c:	while( y > config->iface.gfx_max_height )
+sdl_ogl.c:		if( config->iface.gfx_quality != CONFIG_HIGH )
+sdl_wrapper.c:	if( config->iface.full_screen )
+sdl_wrapper.c:	screen = SDL_SetVideoMode( config->iface.screen_width, config->iface.screen_height, SDL_SCREEN_BPP, mode );
+sdl_wrapper.c:	frame_rate = config->iface.frame_rate;
+snap.c:	if( config->iface.frame_rate ) {
+snap.c:		noise_skip = config->iface.frame_rate / 10;
+snap.c:		steps = config->iface.frame_rate / 4;
+snap.c:	scale = config->iface.theme.snap.size * SCALE_FACTOR;
+snap.c:	platform_scale = config->iface.theme.snap.size * PLATFORM_SIZE;
+snap.c:	if( config->iface.theme.snap.offset1 > 0 )
+snap.c:		if( config->fix_aspect_ratio ) {
+snap.c:		hide_offset = (((hidden_offset - config->offset1) / (GLfloat)steps) * (GLfloat)step);
+snap.c:				glTranslatef( (hidden_offset - hide_offset) * xfactor, config->offset2 * yfactor, DEPTH );
+snap.c:				glTranslatef( config->offset2 * xfactor, (hidden_offset - hide_offset) * yfactor, DEPTH );
+snap.c:				glTranslatef( (config->offset1 + hide_offset) * xfactor, config->offset2 * yfactor, DEPTH );
+snap.c:				glTranslatef( config->offset2 * xfactor, (config->offset1 + hide_offset) * yfactor, DEPTH );
+snap.c:		glRotatef( config->angle_x, 1.0, 0.0, 0.0 );
+snap.c:		glRotatef( config->angle_y, 0.0, 1.0, 0.0 );
+snap.c:		glRotatef( config->angle_z, 0.0, 0.0, 1.0 );
+snap.c:		if( config->platform_icons && platform_count() > 1 && platform_texture ) {
+snap.c:			glRotatef( -config->angle_z, 0.0, 0.0, 1.0 );
+submenu.c:	item_width = config->item_width * ITEM_SCALE;
+submenu.c:	item_height = config->item_height * ITEM_SCALE;
+submenu.c:	font_scale = config->font_scale * FONT_SCALE;
+submenu.c:	arrow_retreat.y = (menu_tile_selected()->y + config->offset1 );
+submenu.c:	arrow_advance.y = (menu_tile_selected()->y + config->offset1 );
+submenu.c:		glTranslatef( (menu_tile_selected()->x + config->offset2 ) * xfactor, (menu_tile_selected()->y + config->offset1) * yfactor, -6 );
+video.c:				if(!config->iface.full_screen)

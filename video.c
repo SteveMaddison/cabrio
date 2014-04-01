@@ -15,10 +15,12 @@
 
 #define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)
 static const int VIDEO_SIZE = 256;
+static const int VIDEO_SIZE_SCALE = 768;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
 static const int MAX_QUEUE_PACKETS = 20;
 static const int QUEUE_FULL_DELAY = 10;
+static const GLfloat VIDEO_SCALE = 0.005;
 static const int MAX_QUEUE_FRAMES = 30;
 static const int SAMPLES = 1024;
 static const float FUDGE_FACTOR = 0.02;
@@ -73,8 +75,6 @@ int video_init( void ) {
 	packet_queue_init( &audio_queue );
 	frame_queue_init( &video_queue );
 
-	url_set_interrupt_cb( video_stopped );
-	
 	return 0;
 }
 
@@ -109,7 +109,7 @@ void video_close( void ) {
 	audio_codec_context = NULL;
 	
 	if( format_context )
-		av_close_input_file( format_context );
+		avformat_close_input( &format_context );
 	format_context = NULL;
 
 	if( video_buffer )
@@ -172,12 +172,12 @@ int video_decode_video_frame( AVPacket *packet ) {
 int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buffer_size ) {
 	static AVPacket packet;
 	int used, data_size;
-
 	for(;;) {
 		while( audio_packet.size > 0 ) {
 			data_size = buffer_size;
-			used = avcodec_decode_audio3( context, (int16_t *)audio_buffer, &data_size, 
-					  &audio_packet);
+			// Todo depreciated //
+			used = avcodec_decode_audio3( context, (int16_t *)audio_buffer, &data_size,
+				&audio_packet);
 			if( used < 0 ) {
 				/* if error, skip frame */
 				audio_packet.size = 0;
@@ -194,7 +194,6 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 			audio_clock += (double)data_size /
 				(double)(format_context->streams[audio_stream]->codec->sample_rate *
 				(2 * format_context->streams[audio_stream]->codec->channels));
-			
 			/* We have data, return it and come back for more later */
 			return data_size;
 		}
@@ -221,7 +220,7 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 	AVCodecContext *context = (AVCodecContext*)userdata;
 	int used, audio_size;
-
+	
 	while( length > 0 ) {
 		if(audio_buffer_index >= audio_buffer_size) {
 			/* We have already sent all our data; get more */
@@ -256,10 +255,14 @@ void video_release_buffer( struct AVCodecContext *c, AVFrame *f ) {
 int video_reader_thread( void *data ) {
 	static AVPacket packet;
 
+	const struct config *config = config_get();
+
 	if( !format_context || !video_codec_context || !video_buffer )
 		return -1;
 
 	reader_running = 1;
+	int stop_sound = 0;
+	int value;
 
 	while( !stop ) {
 		if( video_queue.frames >= MAX_QUEUE_FRAMES || audio_queue.packets >= MAX_QUEUE_PACKETS ) {
@@ -267,18 +270,25 @@ int video_reader_thread( void *data ) {
 		}
 		else {
 			if( av_read_frame( format_context, &packet ) >= 0 ) {
-				if( packet.stream_index == video_stream ) {
+				value = packet.stream_index;
+				if( value == video_stream ) { 
 					video_decode_video_frame( &packet );
 				}
-				else if( packet.stream_index == audio_stream && audio_codec_context ) {
+				if (stop_sound != 1){ 
 					packet_queue_put( &audio_queue, &packet );
-				}
-				else {
+				} else {
+					// something here but why ? //
+					packet_queue_put( &audio_queue, &packet );
+				}  
+				if (( value != video_stream ) && (value != audio_stream && audio_codec_context))
 					av_free_packet( &packet );
-				}
-			}
-			else {
-				av_seek_frame( format_context, -1, 0, AVSEEK_FLAG_BACKWARD|AVSEEK_FLAG_BYTE );
+			} else {
+				// stop video loop
+                                if(!config->iface.video_loop) 
+                                	stop = 1;
+				av_seek_frame( format_context, -1, 0, 0 );
+				// TODO find a way to just stop sound - headhache fuze - second loop -
+				stop_sound = 1;
 			}
 		}
 	}
@@ -304,13 +314,13 @@ int video_open( const char *filename ) {
 	
 	if( !filename )
 		return -1;
-		
-	if( av_open_input_file( &format_context, filename, NULL, 0, NULL ) != 0 ) {
+
+	if( avformat_open_input( &format_context, filename, NULL, 0 ) != 0 ) {	
 		fprintf( stderr, "Warning: Error opening video file '%s'\n", filename );
 		return -1;
 	}
-
-	if( av_find_stream_info( format_context ) < 0 ) {
+	
+	if( avformat_find_stream_info( format_context, NULL ) < 0 ) {
 		fprintf( stderr, "Warning: Error reading stream info from '%s'\n", filename );
 		return -1;
 	}
@@ -336,8 +346,7 @@ int video_open( const char *filename ) {
 		fprintf( stderr, "Warning: Video codec in video '%s' not supported\n", filename );
 		return -1;
 	}
-	
-	if( avcodec_open( video_codec_context, video_codec ) != 0 ) {
+	if( avcodec_open2( video_codec_context, video_codec, NULL ) != 0 ) {
 		fprintf( stderr, "Warning: Couldn't open video codec '%s' for '%s'\n", video_codec->name, filename );
 		return -1;
 	}
@@ -360,7 +369,7 @@ int video_open( const char *filename ) {
 			audio_codec_context = NULL;
 		}
 		else {
-			if( avcodec_open( audio_codec_context, audio_codec ) != 0 ) {
+			if( avcodec_open2( audio_codec_context, audio_codec, NULL ) != 0 ) {
 				fprintf( stderr, "Warning: Couldn't open audio codec '%s' for '%s'\n", audio_codec->name, filename );
 				audio_codec_context = NULL;
 			}
@@ -405,7 +414,7 @@ int video_open( const char *filename ) {
 		fprintf( stderr, "Warning: Couldn't start video reader thread\n" );
 		return -1;
 	}
-		
+
 	return 0;
 }
 
@@ -449,7 +458,6 @@ void video_clock_tick( void ) {
 
 struct texture *video_get_frame( void ) {
 	static AVFrame *frame = NULL;
-	int ret = -1;
 	GLenum error = GL_NO_ERROR;
 	double clock = video_master_clock();
 
@@ -479,7 +487,7 @@ struct texture *video_get_frame( void ) {
 	}
 	else {
 		sws_scale( scale_context, (const uint8_t **)frame->data, frame->linesize, 0,
-			VIDEO_SIZE, conv_frame->data, conv_frame->linesize );
+			VIDEO_SIZE_SCALE, conv_frame->data, conv_frame->linesize );
 		
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glBindTexture( GL_TEXTURE_2D, texture->id );
@@ -503,7 +511,6 @@ struct texture *video_get_frame( void ) {
 		}
 		else {
 			got_texture = 1;
-			ret = 0;	
 		}
 	}
 	
