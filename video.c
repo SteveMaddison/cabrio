@@ -175,6 +175,7 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 	for(;;) {
 		while( audio_packet.size > 0 ) {
 			data_size = buffer_size;
+			// Todo depreciated //
 			used = avcodec_decode_audio3( context, (int16_t *)audio_buffer, &data_size,
 				&audio_packet);
 			if( used < 0 ) {
@@ -288,7 +289,6 @@ int video_reader_thread( void *data ) {
 				av_seek_frame( format_context, -1, 0, 0 );
 				// TODO find a way to just stop sound - headhache fuze - second loop -
 				stop_sound = 1;
-                         	// debug fprintf(stderr, "stop_sound %d\n", stop_sound );
 			}
 		}
 	}
