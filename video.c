@@ -24,8 +24,6 @@ static const int SAMPLES = 1024;
 static const float FUDGE_FACTOR = 0.02;
 
 static AVFormatContext *format_context = NULL;
-int video_stopped( void *ctx );
-static const AVIOInterruptCB format_context_callback = { video_stopped, NULL };
 static AVCodecContext *video_codec_context = NULL;
 static AVCodec *video_codec = NULL;
 static AVFrame *conv_frame = NULL;
@@ -56,10 +54,6 @@ static int reader_running = 0;
 static int got_texture = 0;
 static struct texture *texture;
 
-
-int video_stopped( void *ctx ) {
-	return stop;
-}
 
 int video_init( void ) {
 	avcodec_register_all();
@@ -304,13 +298,6 @@ int video_open( const char *filename ) {
 	
 	if( !filename )
 		return -1;
-
-	format_context = avformat_alloc_context();
-	if( !format_context ) {
-		fprintf( stderr, "Warning: Error allocating format context for '%s'\n", filename );
-		return -1;
-	}
-	format_context->interrupt_callback = format_context_callback;
 
 	if( avformat_open_input( &format_context, filename, NULL, 0 ) != 0 ) {
 		fprintf( stderr, "Warning: Error opening video file '%s'\n", filename );
