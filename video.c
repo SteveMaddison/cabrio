@@ -24,6 +24,8 @@ static const int SAMPLES = 1024;
 static const float FUDGE_FACTOR = 0.02;
 
 static AVFormatContext *format_context = NULL;
+int video_stopped( void *ctx );
+static const AVIOInterruptCB format_context_callback = { video_stopped, NULL };
 static AVCodecContext *video_codec_context = NULL;
 static AVCodec *video_codec = NULL;
 static AVFrame *conv_frame = NULL;
@@ -55,7 +57,7 @@ static int got_texture = 0;
 static struct texture *texture;
 
 
-int video_stopped( void ) {
+int video_stopped( void *ctx ) {
 	return stop;
 }
 
@@ -73,8 +75,6 @@ int video_init( void ) {
 	packet_queue_init( &audio_queue );
 	frame_queue_init( &video_queue );
 
-	url_set_interrupt_cb( video_stopped );
-	
 	return 0;
 }
 
@@ -109,7 +109,7 @@ void video_close( void ) {
 	audio_codec_context = NULL;
 	
 	if( format_context )
-		av_close_input_file( format_context );
+		avformat_close_input( &format_context );
 	format_context = NULL;
 
 	if( video_buffer )
@@ -300,17 +300,24 @@ int video_open( const char *filename ) {
 	audio_buffer_size = 0;
 	audio_buffer_index = 0;
 
-    av_init_packet(&audio_packet);
+	av_init_packet(&audio_packet);
 	
 	if( !filename )
 		return -1;
-		
-	if( av_open_input_file( &format_context, filename, NULL, 0, NULL ) != 0 ) {
+
+	format_context = avformat_alloc_context();
+	if( !format_context ) {
+		fprintf( stderr, "Warning: Error allocating format context for '%s'\n", filename );
+		return -1;
+	}
+	format_context->interrupt_callback = format_context_callback;
+
+	if( avformat_open_input( &format_context, filename, NULL, 0 ) != 0 ) {
 		fprintf( stderr, "Warning: Error opening video file '%s'\n", filename );
 		return -1;
 	}
 
-	if( av_find_stream_info( format_context ) < 0 ) {
+	if( avformat_find_stream_info( format_context, NULL ) < 0 ) {
 		fprintf( stderr, "Warning: Error reading stream info from '%s'\n", filename );
 		return -1;
 	}
@@ -330,14 +337,14 @@ int video_open( const char *filename ) {
 		return -1;
 	}
 	
-    video_codec_context->release_buffer = video_release_buffer;
+	video_codec_context->release_buffer = video_release_buffer;
 	video_codec = avcodec_find_decoder( video_codec_context->codec_id );
 	if( !video_codec ) {
 		fprintf( stderr, "Warning: Video codec in video '%s' not supported\n", filename );
 		return -1;
 	}
 	
-	if( avcodec_open( video_codec_context, video_codec ) != 0 ) {
+	if( avcodec_open2( video_codec_context, video_codec, NULL ) != 0 ) {
 		fprintf( stderr, "Warning: Couldn't open video codec '%s' for '%s'\n", video_codec->name, filename );
 		return -1;
 	}
@@ -360,7 +367,7 @@ int video_open( const char *filename ) {
 			audio_codec_context = NULL;
 		}
 		else {
-			if( avcodec_open( audio_codec_context, audio_codec ) != 0 ) {
+			if( avcodec_open2( audio_codec_context, audio_codec, NULL ) != 0 ) {
 				fprintf( stderr, "Warning: Couldn't open audio codec '%s' for '%s'\n", audio_codec->name, filename );
 				audio_codec_context = NULL;
 			}
@@ -449,7 +456,6 @@ void video_clock_tick( void ) {
 
 struct texture *video_get_frame( void ) {
 	static AVFrame *frame = NULL;
-	int ret = -1;
 	GLenum error = GL_NO_ERROR;
 	double clock = video_master_clock();
 
@@ -503,7 +509,6 @@ struct texture *video_get_frame( void ) {
 		}
 		else {
 			got_texture = 1;
-			ret = 0;	
 		}
 	}
 	
