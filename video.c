@@ -56,11 +56,6 @@ static int reader_running = 0;
 static int got_texture = 0;
 static struct texture *texture;
 
-
-int video_stopped( void ) {
-	return stop;
-}
-
 int video_init( void ) {
 	avcodec_register_all();
 	av_register_all();
@@ -310,7 +305,7 @@ int video_open( const char *filename ) {
 	audio_buffer_size = 0;
 	audio_buffer_index = 0;
 
-    av_init_packet(&audio_packet);
+    	av_init_packet(&audio_packet);
 	
 	if( !filename )
 		return -1;
