@@ -10,6 +10,11 @@
 #include "emulator.h"
 #include "location.h"
 #include "lookup.h"
+#include <pwd.h>
+#include <unistd.h> 
+
+char lfilename[CONFIG_FILE_NAME_LENGTH]= ".cabrio/.lock";
+char lsave_filename[CONFIG_FILE_NAME_LENGTH];
 
 struct game *game_start = NULL;
 struct game *game_filter_start = NULL;
@@ -312,6 +317,7 @@ int game_list_create( void ) {
 		}
 		config_game = config_game->next;
 	}
+
 	game_list_unfilter();
 
 /*  if( game_start ) {
@@ -332,7 +338,7 @@ int game_list_create( void ) {
 			g = g->all_next;
 			if( g == game_start ) break;
 		}
-	}*/
+	} */
 
 	return 0;
 }
@@ -404,6 +410,21 @@ int game_list_filter_platform( struct platform *platform ) {
 int game_list_unfilter( void ) {
 	int count = 0;
 	struct game* game = game_start;
+	struct game* lockgame = game_start;
+        FILE* file = NULL;
+	struct passwd *passwd = getpwuid(getuid());
+	char lock[CONFIG_FILE_NAME_LENGTH];
+        snprintf( lsave_filename, CONFIG_FILE_NAME_LENGTH, "%s/%s", passwd->pw_dir, lfilename );
+
+        file = fopen( lsave_filename, "r" );
+        if( file == NULL ) {
+                        fprintf(stderr, "Can'load  state: %s\n", lsave_filename);
+                }
+                else {
+			fgets(lock,CONFIG_FILE_NAME_LENGTH, file);
+                        fclose( file );
+        }
+
 
 	if( game ) {
 		do {
@@ -411,10 +432,16 @@ int game_list_unfilter( void ) {
 			game->prev = game->all_prev;
 			game = game->all_next;
 			count++;
+        		if (strncmp(game->name,lock, strlen(game->name)) == 0){
+				lockgame = game;
+			}
 		} while ( game != game_start );
-	}
+	} 
 	game_filter_start = game_start;
 
+        if (lockgame) {
+	    game_filter_start = lockgame;
+	} 
 	return count;
 }
 

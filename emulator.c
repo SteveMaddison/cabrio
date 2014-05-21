@@ -21,7 +21,10 @@
 #include "event.h"
 #include "snap.h"
 #include "platform.h"
+#include <pwd.h>
 
+char filename[CONFIG_FILE_NAME_LENGTH]= ".cabrio/.lock";
+char save_filename[CONFIG_FILE_NAME_LENGTH];
 
 void pause_all( void ) {
 	sound_pause();
@@ -180,9 +183,21 @@ int emulator_exec( struct game *game ) {
 
 int emulator_run( struct game *game ) {
 	int ret = 0;
-
+	struct passwd *passwd = getpwuid(getuid());
 	pause_all();
 	sdl_free();
+	FILE* file = NULL;
+
+	snprintf( save_filename, CONFIG_FILE_NAME_LENGTH, "%s/%s", passwd->pw_dir, filename );
+ 		
+	file = fopen( save_filename, "w+" );
+        if( file == NULL ) {
+			fprintf(stderr, "Can't save state: %s\n", save_filename);
+                }
+                else {
+			fprintf(file, "%s",  game->rom_path);
+                        fclose( file );
+       	} 
 
 	emulator_exec( game );
 
