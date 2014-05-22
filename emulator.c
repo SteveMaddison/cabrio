@@ -195,7 +195,7 @@ int emulator_run( struct game *game ) {
 			fprintf(stderr, "Can't save state: %s\n", save_filename);
                 }
                 else {
-			fprintf(file, "%s",  game->rom_path);
+			fprintf(file, "%s",  game->mame);
                         fclose( file );
        	} 
 
