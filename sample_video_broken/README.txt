@@ -1,6 +1,10 @@
 This version works only with libavcodec53
 
-'avcodec_decode_audio3’ is deprecated, need review !
+But 'avcodec_decode_audio3’ still deprecated, need review !
+
+Some videos still broken
+
+Here sample good and sample bad
 
 diff /tmp/good /tmp/bad 
 2c2
