@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Cabrio
+GenericName=Front End for Emulators
+Comment=Graphical front end for video game emulators
+Exec=cabrio %f
+Categories=Game;Emulator;
