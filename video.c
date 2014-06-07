@@ -215,7 +215,7 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 	AVCodecContext *context = (AVCodecContext*)userdata;
 	int used, audio_size;
-	
+
 	while( length > 0 ) {
 		if(audio_buffer_index >= audio_buffer_size) {
 			/* We have already sent all our data; get more */
@@ -305,16 +305,16 @@ int video_open( const char *filename ) {
 	audio_buffer_size = 0;
 	audio_buffer_index = 0;
 
-    	av_init_packet(&audio_packet);
+	av_init_packet(&audio_packet);
 	
 	if( !filename )
 		return -1;
 
-	if( avformat_open_input( &format_context, filename, NULL, 0 ) != 0 ) {	
+	if( avformat_open_input( &format_context, filename, NULL, 0 ) != 0 ) {
 		fprintf( stderr, "Warning: Error opening video file '%s'\n", filename );
 		return -1;
 	}
-	
+
 	if( avformat_find_stream_info( format_context, NULL ) < 0 ) {
 		fprintf( stderr, "Warning: Error reading stream info from '%s'\n", filename );
 		return -1;
@@ -335,12 +335,13 @@ int video_open( const char *filename ) {
 		return -1;
 	}
 	
-    video_codec_context->release_buffer = video_release_buffer;
+	video_codec_context->release_buffer = video_release_buffer;
 	video_codec = avcodec_find_decoder( video_codec_context->codec_id );
 	if( !video_codec ) {
 		fprintf( stderr, "Warning: Video codec in video '%s' not supported\n", filename );
 		return -1;
 	}
+	
 	if( avcodec_open2( video_codec_context, video_codec, NULL ) != 0 ) {
 		fprintf( stderr, "Warning: Couldn't open video codec '%s' for '%s'\n", video_codec->name, filename );
 		return -1;

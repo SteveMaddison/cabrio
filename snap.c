@@ -93,7 +93,7 @@ int snap_set( struct game *game ) {
 	filename = game_media_get( game, MEDIA_VIDEO, NULL );
 	if( filename && filename[0] ) {
 		if( video_open( filename ) == 0 ) {
-			video = 1; 
+			video = 1;
 			texture = video_texture();
 		}
 	}
