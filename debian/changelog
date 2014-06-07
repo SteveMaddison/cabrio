@@ -1,3 +1,12 @@
+cabrio (0.8.3-1) unstable; urgency=low
+
+  * Fredbcode git version (commit #246)
+  * Updated some of debian standard, fixed some lintian warnings/errors
+  * Added a simple man page do debian package
+  * Cabrio using FreeSans.ttf from the system
+
+ -- Sérgio Benjamim <sergio_br2@yahoo.com.br>  Fri, 06 Jun 2014 15:00:00 +0100
+
 cabrio (0.8.2-1) unstable; urgency=low
 
   * Fixes for Ubuntu 10

@@ -39,12 +39,13 @@ clean:
 	# Add here commands to clean up after the build process.
 	$(MAKE) clean
 
-	dh_clean 
+	dh_clean
 
 install: build
 	dh_testdir
 	dh_testroot
-	dh_clean -k 
+	dh_prep
+	#dh_clean -k
 	dh_installdirs
 
 	# Add here commands to install the package into debian/cabrio.
@@ -52,7 +53,8 @@ install: build
 		BIN_DIR=$(CURDIR)/debian/cabrio/usr/bin \
 		DATA_DIR=$(CURDIR)/debian/cabrio/usr/share/cabrio \
 		install
-
+	#$(MAKE) -C builddir DESTDIR=$(CURDIR)/debian/cabrio install
+	rm $(CURDIR)/debian/cabrio/usr/share/cabrio/fonts/FreeSans.ttf
 
 # Build architecture-independent files here.
 binary-indep: build install
