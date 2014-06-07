@@ -28,7 +28,7 @@ void clean_up( void ) {
 	sound_free();
 	game_list_free();
 	submenu_free();
-	platform_free(); 
+	platform_free();
 	menu_free();
 	hint_free();
 	font_free();
