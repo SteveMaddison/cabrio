@@ -13,7 +13,7 @@
 static const char *event_str[] = {
 	"none",
 	"up", "down", "left", "right",
-	"select", "back", "quit"
+	"select", "back", "quit", "list1", "list2", "list3", "list4", "list5"
 };
 
 static const int AXIS_THRESHOLD = 8000;
