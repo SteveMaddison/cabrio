@@ -2166,8 +2166,13 @@ int config_new( void ) {
 			"left",  		/* EVENT_LEFT */
 			"right", 		/* EVENT_RIGHT */
 			"return",		/* EVENT_SELECT */
-			"backspace",	/* EVENT_BACK */
-			"escape"		/* EVENT_QUIT */
+			"backspace",		/* EVENT_BACK */
+			"escape",		/* EVENT_QUIT */
+			"list1",		/* EVENT_CALL LIST1 */
+			"list2",		/* EVENT_CALL LIST2 */
+			"list3",		/* EVENT_CALL LIST3 */
+			"list4",		/* EVENT_CALL LIST4 */
+			"list5",		/* EVENT_CALL LIST5 */
 		};
 
 		emulator->id = 0;
