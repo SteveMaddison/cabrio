@@ -326,9 +326,9 @@ int config_read_percentage( char *name, char *value, int *target ) {
 	return 0;
 }
 
-int config_read_rgb( char *name, char *value, struct config_rgb *rgb ) {
+int config_read_rgb( const char *name, const char *value, struct config_rgb *rgb ) {
 	char *pos = value;
-	char hex[3];
+	char hex[3] = {0};
 	
 	if( strlen( value ) != 6 ) {
 		fprintf( stderr, "Warning: Element %s requires RGB value (rrggbb)\n", name );
