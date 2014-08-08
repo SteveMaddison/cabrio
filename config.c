@@ -30,6 +30,7 @@ static const char *default_submenu_texture	= "\\pixmaps\\submenu_item.png";
 static const char *default_back_texture		= "\\pixmaps\\button_blue.png";
 static const char *default_select_texture	= "\\pixmaps\\button_red.png";
 static const char *default_arrow_texture	= "\\pixmaps\\arrow.png";
+static const char *default_music		= "\\sounds\\music.mp3";
 static const char *default_sounds[] = {
 	"\\sounds\\back.wav",
 	"\\sounds\\blip.wav",
@@ -40,12 +41,13 @@ static const char *default_sounds[] = {
 static const char *default_dir 				= ".cabrio"; /* Relative to user's home */
 static const char *default_theme_dir		= "/themes";
 static const char *default_background		= "/pixmaps/default_background.jpg";
-static const char *default_font 			= "/fonts/FreeSans.ttf";
+static const char *default_font 		= "/fonts/FreeSans.ttf";
 static const char *default_menu_texture		= "/pixmaps/menu_item.png";
 static const char *default_submenu_texture	= "/pixmaps/submenu_item.png";
 static const char *default_back_texture		= "/pixmaps/button_blue.png";
 static const char *default_select_texture	= "/pixmaps/button_red.png";
 static const char *default_arrow_texture	= "/pixmaps/arrow.png";
+static const char *default_music		= "/sounds/music.mp3";
 static const char *default_sounds[] = {
 	"/sounds/back.wav",
 	"/sounds/blip.wav",
@@ -118,6 +120,8 @@ static const char *tag_game_video					= 	  "video";
 static const char *tag_iface						= "interface";
 static const char *tag_iface_full_screen			= 	"full-screen";
 static const char *tag_iface_video_loop				= 	"video-loop";
+static const char *tag_iface_video_sound			= 	"video-sound";
+static const char *tag_iface_theme_sound			= 	"theme-sound";
 static const char *tag_iface_screen					= 	"screen";
 static const char *tag_iface_screen_hflip			= 	  "flip-horizontal";
 static const char *tag_iface_screen_vflip			= 	  "flip-vertical";
@@ -1576,7 +1580,12 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, tag_iface_video_loop ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.video_loop );
                         }
-	
+			else if( strcmp( (char*)node->name, tag_iface_video_sound ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.video_sound );
+                        }
+			else if( strcmp( (char*)node->name, tag_iface_theme_sound ) == 0 ) {
+				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.theme_sound );
+                        }
 			else if( strcmp( (char*)node->name, tag_iface_screen ) == 0 ) {
 				config_read_interface_screen( node->children );
 			}
@@ -1713,6 +1722,12 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
                                 /* Ignore */
                         }
 
+                        else if( strcmp( (char*)node->name, tag_iface_theme_sound ) == 0 ) {
+                                /* Ignore */
+                        }
+                        else if( strcmp( (char*)node->name, tag_iface_video_sound ) == 0 ) {
+                                /* Ignore */
+                        }
 			else if( strcmp( (char*)node->name, tag_iface_screen ) == 0 ) {
 				/* Ignore */
 			}
@@ -1968,6 +1983,8 @@ int config_write_interface( xmlNodePtr root ) {
 	xmlNodePtr interface = xmlNewNode( NULL, (xmlChar*)tag_iface );
 	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_full_screen, config_write_boolean( config.iface.full_screen ) );
 	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_video_loop, config_write_boolean( config.iface.video_loop ) );
+	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_video_sound, config_write_boolean( config.iface.video_sound ) );
+	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_theme_sound, config_write_boolean( config.iface.theme_sound ) );
 	
 	xmlNodePtr screen = xmlNewNode( NULL, (xmlChar*)tag_iface_screen );
 	xmlNewChild( screen, NULL, (xmlChar*)tag_width, config_write_numeric( config.iface.screen_width ) );
@@ -2198,6 +2215,7 @@ int config_new( void ) {
 
 		config.iface.full_screen = 0;
 		config.iface.video_loop = 0;
+		config.iface.video_sound = 1 ;
 		config.iface.screen_width = 640;
 		config.iface.screen_height = 480;
 		config.iface.screen_rotation = 0;
@@ -2317,7 +2335,7 @@ int config_new( void ) {
 		for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
 			snprintf( default_theme.sounds[i], CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, (char*)default_sounds[i] );
 		}
-		
+		snprintf( default_theme.music, CONFIG_FILE_NAME_LENGTH, "%s%s", DATA_DIR, (char*)default_music );
 		config.themes = &default_theme;
 	}
 	return 0;

@@ -2,10 +2,16 @@ Version from "Livemamecab"
 
 - Fix ffmpeg problem -> need libavcodec and libavformat 53
 - New option "video loop" for snap
+- New option "video sound" for snap
+- New option "theme sound" music theme onf/off
 - Save selection game state at cabrio start
 
+New options needed:
 
-Cabrio
+<video-loop>false/true</video-loop>
+<video-sound>false/true</video-sound>
+<theme-sound>false</theme-sound>
+
 ======
 
 Cabrio is an emulator front-end primarily designed for use with arcade

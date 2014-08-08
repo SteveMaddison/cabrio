@@ -19,7 +19,8 @@ int sound_open_mixer( void );
 void sound_close_mixer( void );
 
 void sound_play( int s );
-
+void playmusic( void );
+void stopmusic( void );
 int sound_id( char *name );
 const char *sound_name( int s );
 

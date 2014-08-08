@@ -12,6 +12,7 @@
 #include "frame.h"
 #include "config.h"
 #include "ogl.h"
+#include <unistd.h>
 
 #define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)
 static const int VIDEO_SIZE = 256;
@@ -76,7 +77,7 @@ int video_init( void ) {
 void video_free( void ) {
 	video_close();
 
-	if( conv_frame );	
+	if( conv_frame )	
 		av_free( conv_frame );
 	conv_frame = NULL;
 }
@@ -254,11 +255,8 @@ int video_reader_thread( void *data ) {
 
 	if( !format_context || !video_codec_context || !video_buffer )
 		return -1;
-
 	reader_running = 1;
-	int stop_sound = 0;
 	int value;
-
 	while( !stop ) {
 		if( video_queue.frames >= MAX_QUEUE_FRAMES || audio_queue.packets >= MAX_QUEUE_PACKETS ) {
 			SDL_Delay( QUEUE_FULL_DELAY );
@@ -269,26 +267,26 @@ int video_reader_thread( void *data ) {
 				if( value == video_stream ) { 
 					video_decode_video_frame( &packet );
 				}
-				if (stop_sound != 1){ 
-					packet_queue_put( &audio_queue, &packet );
+				if (!config->iface.video_sound) { 
+				// Yes I know very ugly	ishould find another way ...
+					usleep( 20000 );
 				} else {
-					// something here but why ? //
 					packet_queue_put( &audio_queue, &packet );
 				}  
 				if (( value != video_stream ) && (value != audio_stream && audio_codec_context))
 					av_free_packet( &packet );
 			} else {
 				// stop video loop
-                                if(!config->iface.video_loop) 
+                                if(!config->iface.video_loop) {
                                 	stop = 1;
-				av_seek_frame( format_context, -1, 0, 0 );
-				// TODO find a way to just stop sound - headhache fuze - second loop -
-				stop_sound = 1;
+				} else {
+					av_seek_frame( format_context, -1, 0, 0 );
+				}
 			}
 		}
 	}
-
 	reader_running = 0;
+
 	return 0;
 }
 
@@ -304,6 +302,7 @@ int video_open( const char *filename ) {
 	audio_stream = -1;
 	audio_buffer_size = 0;
 	audio_buffer_index = 0;
+	const struct config *config = config_get();
 
 	av_init_packet(&audio_packet);
 	
@@ -379,19 +378,23 @@ int video_open( const char *filename ) {
 				desired.samples = SAMPLES;
 				desired.callback = video_audio_callback;
 				desired.userdata = audio_codec_context;
-
-				sound_close_mixer();
-
-				if( SDL_OpenAudio( &desired, &audio_spec ) < 0 ) {
-					fprintf( stderr, "Warning: Couldn't open audio for video: %s\n", SDL_GetError() );
-					audio_codec_context = NULL;
-				}
-				else {
-					packet_queue_flush( &audio_queue );
-					audio_open = 1;
-					audio_running = 1;
-					SDL_PauseAudio( 0 );
-				}
+				if (config->iface.video_sound) {
+					sound_close_mixer();
+					if ( SDL_OpenAudio( &desired, &audio_spec ) < 0 ) {
+						fprintf( stderr, "Warning: Couldn't open audio for video: %s\n", SDL_GetError() );
+						audio_codec_context = NULL;
+					} else {
+						packet_queue_flush( &audio_queue );
+						audio_open = 1;
+						audio_running = 1;
+						SDL_PauseAudio( 0 );
+					} 
+				} else {
+						audio_open = 1;
+						audio_running = 1;
+						SDL_PauseAudio( 0 );
+				}	
+				     
 			}
 		}
 	}
@@ -410,7 +413,6 @@ int video_open( const char *filename ) {
 		fprintf( stderr, "Warning: Couldn't start video reader thread\n" );
 		return -1;
 	}
-
 	return 0;
 }
 

@@ -1,15 +1,17 @@
 #include "sound.h"
 #include "config.h"
+#include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 
-static const int AUDIO_CHUNK_SIZE = 4096;
+static const int AUDIO_CHUNK_SIZE = 1024;
+static Mix_Music *music;
 static Mix_Chunk *sounds[NUM_SOUNDS];
 static char *names[] = { "back", "blip", "no", "select" };
 static int mixer_open = 0;
 
 int sound_open_mixer( void ) {
 	if( !mixer_open ) {
-		if( Mix_OpenAudio( 22050, AUDIO_S16SYS, 4, AUDIO_CHUNK_SIZE ) == -1 ) {
+		if( Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT,1,AUDIO_CHUNK_SIZE) == -1 ) {
 			fprintf( stderr, "Error: Unable to initialise sound: %s\n", Mix_GetError() );
 			return -1;
 		}
@@ -26,10 +28,10 @@ void sound_close_mixer( void ) {
 
 int sound_init( void ) {
 	int i;
-	
+
 	for( i = 0 ; i < NUM_SOUNDS ; i++ )
 		sounds[i] = NULL;
-	
+
 	if( sound_open_mixer() != 0 )
 		return -1;
 
@@ -45,15 +47,15 @@ int sound_init( void ) {
 
 void sound_free( void ) {
 	int i;
-	
 	for( i = 0 ; i < NUM_SOUNDS ; i++ ) {
 		if( sounds[i] ) {
 			Mix_FreeChunk( sounds[i] );
 			sounds[i] = NULL;
 		}
 	}
-
+	stopmusic();
 	sound_close_mixer();
+
 }
 
 void sound_pause( void ) {
@@ -89,3 +91,13 @@ const char *sound_name( int s ) {
 	return NULL;
 }
 
+void playmusic(void) {
+	music = Mix_LoadMUS( config_get()->iface.theme.music );
+	if (music != NULL)
+		Mix_PlayMusic(music, -1);
+}
+
+void stopmusic(void) {
+	if (music != NULL)
+		Mix_FreeMusic(music);
+}

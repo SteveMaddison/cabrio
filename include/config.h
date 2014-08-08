@@ -187,6 +187,7 @@ struct config_theme {
 	int background_transparency;
 	char sounds[NUM_SOUNDS][CONFIG_FILE_NAME_LENGTH];
 	char font_file[CONFIG_FILE_NAME_LENGTH];
+	char music[CONFIG_FILE_NAME_LENGTH];
 	int font_size;
 	struct config_rgb font_rgb;
 	struct config_menu menu;
@@ -207,6 +208,8 @@ struct config_labels {
 struct config_iface {
 	int full_screen;
 	int video_loop;
+	int video_sound;
+	int theme_sound;
 	int screen_width;
 	int screen_height;
 	int screen_rotation;
