@@ -1,7 +1,7 @@
 CC=gcc
 BIN_DIR=/usr/bin
 DATA_DIR=/usr/share/cabrio
-CFLAGS=-g -Wall -DDATA_DIR=\"$(DATA_DIR)\"
+CFLAGS=-g -Wall -Wextra -DDATA_DIR=\"$(DATA_DIR)\"
 LDFLAGS= -lGL -lSDL -lSDL_image -lSDL_gfx -lSDL_ttf -lSDL_mixer -lGLU -lxml2 \
 	-lavutil -lavformat -lavcodec -lswscale
 INCLUDES=-I./include -I/usr/include/libxml2
