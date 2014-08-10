@@ -351,13 +351,6 @@ int game_sel_event( int event ) {
 			sound_play( SOUND_BACK );
 			focus_set( FOCUS_SUBMENU );
 			break;
-//WORK IN PROGRESS 
-		case EVENT_LIST1:
-			snap_clear();
-			sound_play( SOUND_BACK );
-			focus_set( FOCUS_SUBMENU );
-			break;
-
 		default:
 			break;
 	}
@@ -378,7 +371,7 @@ int game_sel_got_focus( void ) {
 	else {
 		sound_play( SOUND_NO );
 		focus_set( FOCUS_SUBMENU );
-	}
+	} 
 	return 0;
 }
 

@@ -42,14 +42,16 @@ int event_init( void ) {
 		events[i].control_type = config->iface.controls[i].control_type;
 		events[i].control_id = config->iface.controls[i].control_id;
 		events[i].value = config->iface.controls[i].value;
-		/* printf("%s: %s%d %s%d = %d\n",
+		// debug //
+/*		printf("%s: %s%d %s%d = %d\n",
 			event_name(i),
 			device_name(events[i].device_type),
 			events[i].device_id,
 			control_name(events[i].control_type),
 			events[i].control_id,
 			events[i].value
-		); */
+		); 
+*/
 	}
 	
 	return 0;

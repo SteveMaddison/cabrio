@@ -174,6 +174,7 @@ void submenu_advance( void ) {
 			message = font_create_texture( platform->name );
 			break;
 		case( MENU_CATEGORY ):
+			fprintf( stderr, "Error: Invalid menu type for sub menu (advance,%d)\n", type );
 			category_value = category_value->next;
 			if( category_value->name )
 				message = font_create_texture( category_value->name );
@@ -343,7 +344,7 @@ void submenu_draw( void ) {
 			ty *=zoom;
 		
 			if( step-- == 1 ) {
-				/* Animation complete */
+				// Animation complete 
 				if( hide_direction == -1 )
 					visible = 1;
 				else
@@ -403,11 +404,13 @@ void submenu_draw( void ) {
 	if( focus_has() == FOCUS_SUBMENU ) {
 		hint_draw_arrow( &arrow_retreat );
 		hint_draw_arrow( &arrow_advance );
-	}
+	} 
 }
 
 int submenu_do_filter( void ) {
 	int count = 0;
+
+	count = game_list_unfilter();
 	switch( type ) {
 		case( MENU_ALL ):
 			count = game_list_unfilter();
