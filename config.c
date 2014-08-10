@@ -1193,6 +1193,7 @@ int config_read_game_selector_tile( xmlNode *node, struct config_game_sel_tile *
 			else {
 				fprintf( stderr, warn_skip, tag_theme_game_sel_tiles_tile, node->name );
 			}
+    
 		}
 		node = node->next;
 	}
@@ -1219,7 +1220,7 @@ int config_read_game_selector_tiles( xmlNode *node, struct config_game_sel *game
 				fprintf( stderr, warn_skip, tag_theme_game_sel_tiles, node->name );	
 			}
 		}
-		node = node->next;
+   		node = node->next; 
 	}
 	return 0;	
 }
@@ -1255,6 +1256,7 @@ int config_read_game_selector( xmlNode *node, struct config_game_sel *game_sel )
 			else {
 				fprintf( stderr, warn_skip, tag_theme_game_sel, node->name );	
 			}
+	    
 		}
 		node = node->next;
 	}
@@ -1680,6 +1682,7 @@ int config_read_theme( xmlNode *node, struct config_theme *theme ) {
 				fprintf( stderr, warn_skip, tag_themes_theme, node->name );	
 			}
 		}
+
 		node = node->next;
 	}
 	return 0;

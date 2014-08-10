@@ -172,28 +172,30 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 
 	for(;;) {
 		while (audio_packet.size > 0) {
-		int got_frame = 0;
+
 		data_size = buffer_size;
-		used = avcodec_decode_audio4( context, frame, &got_frame,  &packet);
+		used = avcodec_decode_audio4( context, frame, &data_size,  &packet);
 		if( used < 0 ) {
 			/* if error, skip frame */
+			fprintf(stderr, "Error while decoding\n");
 			audio_packet.size = 0;
 			break;
 		}
 		audio_packet.data += used;
 		audio_packet.size -= used;
-			
 
-		 if (got_frame) {
+		if( data_size <= 0 ) {
+		/* No data yet, get more frames */
+			continue;
+		}
+						
+
 		/* if a frame has been decoded, output it */
 			data_size = av_samples_get_buffer_size(NULL, context->channels,frame->nb_samples,context->sample_fmt, 1);
-			if( data_size < 0 ) {
- 				/* This should not occur, checking just for paranoia */
-				fprintf(stderr, "Failed to calculate data size\n");
-				exit(1);
-			}	
-		}
-			fprintf(stderr, "data_size %d\n", data_size);
+
+			audio_clock += (double)data_size /
+				(double)(format_context->streams[audio_stream]->codec->sample_rate *
+				(2 * format_context->streams[audio_stream]->codec->channels));
 			return data_size;
 		}
 
@@ -227,6 +229,7 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 		if(audio_buffer_index >= audio_buffer_size) {
 			/* We have already sent all our data; get more */
 			audio_size = video_decode_audio_frame( context, audio_buffer, AUDIO_BUFFER_SIZE );
+			fprintf(stderr, "Audio_size %d\n",audio_size );
 			if( audio_size < 0 ) {
 				/* If error, output silence */
 				audio_buffer_size = SAMPLES;

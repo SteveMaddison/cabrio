@@ -252,6 +252,7 @@ int game_list_create( void ) {
 					}
 				}
 				else {
+					free( image );
 					fprintf( stderr, "Warning: Couldn't allocate game image object for '%s'\n", game->name );
 				}
 			}
@@ -339,7 +340,6 @@ int game_list_create( void ) {
 			if( g == game_start ) break;
 		}
 	} */
-
 	return 0;
 }
 
