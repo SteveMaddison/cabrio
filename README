@@ -16,6 +16,14 @@ New options needed:
 
 ======
 
+TODO: HELP NEEDED !
+
+- Fix sound problem with libavcodec54
+- Fix memory leak with xmlNodeGetContent (config.c) see valgrind --leak-check=full  ./cabrio 
+- Conclude: one list = one button: new event LIST1 was already added 
+
+======
+
 Cabrio is an emulator front-end primarily designed for use with arcade
 cabinets. It features a simple graphical interface which is easy to use
 with limited controls (e.g. a joystick).
