@@ -204,7 +204,7 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 		}
 #endif /* LIBAVCODEC_VERSION_MAJOR > 53 */
 // Libavcodec53
-#if LIBAVCODEC_VERSION_MAJOR < 53
+#if LIBAVCODEC_VERSION_MAJOR <= 53
 
 		data_size = buffer_size;
 		// Todo depreciated //
@@ -230,6 +230,7 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 		return data_size;
 		}
 
+#endif /* LIBAVCODEC_VERSION_MAJOR < 53 */
 		if( packet.data )
 			av_free_packet( &packet );
 
@@ -247,7 +248,6 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 		if( packet.pts != AV_NOPTS_VALUE ) {
 			audio_clock = packet.pts * av_q2d( format_context->streams[audio_stream]->time_base );
 		}
-#endif /* LIBAVCODEC_VERSION_MAJOR < 53 */
 	}
 }
 
