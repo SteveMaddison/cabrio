@@ -174,7 +174,6 @@ void submenu_advance( void ) {
 			message = font_create_texture( platform->name );
 			break;
 		case( MENU_CATEGORY ):
-			fprintf( stderr, "Error: Invalid menu type for sub menu (advance,%d)\n", type );
 			category_value = category_value->next;
 			if( category_value->name )
 				message = font_create_texture( category_value->name );

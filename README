@@ -9,8 +9,10 @@ Version from "Livemamecab"
 New options needed:
 
 <video-loop>false/true</video-loop>
-<video-sound>false/true</video-sound>
+<video-sound>false/true</video-sound> *
 <theme-sound>false</theme-sound>
+
+* Now works with libavcodec54 but without (libavcodec53 is needed), sorry 
 
 ======
 

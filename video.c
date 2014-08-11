@@ -168,15 +168,19 @@ int video_decode_video_frame( AVPacket *packet ) {
 int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buffer_size ) {
 	static AVPacket packet;
 	int used, data_size;
-	AVFrame * frame = avcodec_alloc_frame ();
 
+#if LIBAVCODEC_VERSION_MAJOR > 53
+// 	Libavcodec54
+	AVFrame * frame = avcodec_alloc_frame ();
+#endif /* LIBAVCODEC_VERSION_MAJOR > 53 */
 	for(;;) {
 		while (audio_packet.size > 0) {
-
+#if LIBAVCODEC_VERSION_MAJOR > 53
+// Work in progress Libavcodec54 no sound ...
 		data_size = buffer_size;
 		used = avcodec_decode_audio4( context, frame, &data_size,  &packet);
 		if( used < 0 ) {
-			/* if error, skip frame */
+			// if error, skip frame //
 			fprintf(stderr, "Error while decoding\n");
 			audio_packet.size = 0;
 			break;
@@ -185,12 +189,12 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 		audio_packet.size -= used;
 
 		if( data_size <= 0 ) {
-		/* No data yet, get more frames */
+		// No data yet, get more frames //
 			continue;
 		}
 						
 
-		/* if a frame has been decoded, output it */
+		// if a frame has been decoded, output it //
 			data_size = av_samples_get_buffer_size(NULL, context->channels,frame->nb_samples,context->sample_fmt, 1);
 
 			audio_clock += (double)data_size /
@@ -198,8 +202,33 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 				(2 * format_context->streams[audio_stream]->codec->channels));
 			return data_size;
 		}
+#endif /* LIBAVCODEC_VERSION_MAJOR > 53 */
+// Libavcodec53
+#if LIBAVCODEC_VERSION_MAJOR < 53
 
-
+		data_size = buffer_size;
+		// Todo depreciated //
+		used = avcodec_decode_audio3( context, (int16_t *)audio_buffer, &data_size,
+			&audio_packet);
+		if( used < 0 ) {
+			// if error, skip frame //
+			audio_packet.size = 0;
+			break;
+		}
+		audio_packet.data += used;
+		audio_packet.size -= used;
+			
+		if( data_size <= 0 ) {
+			// No data yet, get more frames //
+			continue;
+		}
+			
+		audio_clock += (double)data_size /
+			(double)(format_context->streams[audio_stream]->codec->sample_rate *
+			(2 * format_context->streams[audio_stream]->codec->channels));
+		// We have data, return it and come back for more later //
+		return data_size;
+		}
 
 		if( packet.data )
 			av_free_packet( &packet );
@@ -218,6 +247,7 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 		if( packet.pts != AV_NOPTS_VALUE ) {
 			audio_clock = packet.pts * av_q2d( format_context->streams[audio_stream]->time_base );
 		}
+#endif /* LIBAVCODEC_VERSION_MAJOR < 53 */
 	}
 }
 

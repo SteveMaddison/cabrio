@@ -12,6 +12,7 @@
 #include "submenu.h"
 #include "snap.h"
 #include "media.h"
+#include "category.h"
 
 static const GLfloat IMAGE_SCALE = 0.005;
 static const int MAX_STEPS = 25;
@@ -350,6 +351,11 @@ int game_sel_event( int event ) {
 			snap_clear();
 			sound_play( SOUND_BACK );
 			focus_set( FOCUS_SUBMENU );
+			break;
+		case EVENT_LIST1:
+			snap_clear();
+			sound_play( SOUND_BACK );
+			game_sel_skip_back();
 			break;
 		default:
 			break;
