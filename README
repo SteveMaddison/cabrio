@@ -1,6 +1,6 @@
 Version from "Livemamecab" 
 
-- Fix ffmpeg problem -> need libavcodec and libavformat 53
+- Fix ffmpeg problem -> but libavcodec and libavformat 53 are needed 
 - New option "video loop" for snap
 - New option "video sound" for snap
 - New option "theme sound" music theme onf/off
@@ -12,7 +12,7 @@ New options needed:
 <video-sound>false/true</video-sound> *
 <theme-sound>false</theme-sound>
 
-* Now works with libavcodec54 but without (libavcodec53 is needed), sorry 
+* Now works with libavcodec54 but without sound (libavcodec53 is needed), sorry 
 
 ======
 
