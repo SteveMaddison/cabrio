@@ -92,7 +92,9 @@ const char *sound_name( int s ) {
 }
 
 void playmusic(void) {
-	music = Mix_LoadMUS( config_get()->iface.theme.music );
+	if (!music) 
+		music = Mix_LoadMUS( config_get()->iface.theme.music );
+
 	if (music != NULL)
 		Mix_PlayMusic(music, -1);
 }
