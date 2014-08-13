@@ -85,15 +85,17 @@ void video_free( void ) {
 void video_close( void ) {
 	int timeout = 10;
 	stop = 1;
+	const struct config *config = config_get();
 
 	packet_queue_flush( &audio_queue );
 	frame_queue_flush( &video_queue );
 
 	while( (reader_running || audio_running) && timeout-- )
 		SDL_Delay( 10 );
-
-	if( audio_open )
-		SDL_CloseAudio();
+	if (config->iface.video_sound) {
+		if( audio_open )
+			SDL_CloseAudio();
+	}
 	audio_open = 0;
 
 	if( video_codec_context )
@@ -259,7 +261,6 @@ void video_audio_callback( void *userdata, Uint8 *stream, int length ) {
 		if(audio_buffer_index >= audio_buffer_size) {
 			/* We have already sent all our data; get more */
 			audio_size = video_decode_audio_frame( context, audio_buffer, AUDIO_BUFFER_SIZE );
-			fprintf(stderr, "Audio_size %d\n",audio_size );
 			if( audio_size < 0 ) {
 				/* If error, output silence */
 				audio_buffer_size = SAMPLES;
@@ -317,7 +318,8 @@ int video_reader_thread( void *data ) {
 			} else {
 				// stop video loop
                                 if(!config->iface.video_loop) {
-                                	stop = 1;
+					stop = 1;
+					video_close();
 				} else {
 					av_seek_frame( format_context, -1, 0, 0 );
 				}
@@ -325,13 +327,13 @@ int video_reader_thread( void *data ) {
 		}
 	}
 	reader_running = 0;
-
 	return 0;
 }
 
 int video_open( const char *filename ) {
 	int i = -1;
 	
+	const struct config *config = config_get();
 	format_context = NULL;
 	video_codec_context = NULL;
 	video_stream = -1;
@@ -341,7 +343,6 @@ int video_open( const char *filename ) {
 	audio_stream = -1;
 	audio_buffer_size = 0;
 	audio_buffer_index = 0;
-	const struct config *config = config_get();
 
 	av_init_packet(&audio_packet);
 	
