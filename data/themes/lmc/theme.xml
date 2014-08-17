@@ -1,0 +1,144 @@
+<cabrio-config>
+  <themes>
+    <theme>
+      <name>lmc</name>
+      <background>
+        <image-file>background.jpg</image-file>
+        <transparency>0%</transparency>
+        <rotation>0</rotation>
+      </background>
+      
+      <font>
+        <size>30</size>
+      </font>
+      
+      <menu>
+        <image-file>menu-item.png</image-file>
+        <items-visible>3</items-visible>
+        <primary-offset>1.1</primary-offset>
+        <secondary-offset>-1.95</secondary-offset>
+        <font-scale>0.7</font-scale>
+        <border>10%</border>
+      </menu>
+      
+      
+      <submenu>
+        <image-file>submenu-item.png</image-file>
+      </submenu>
+      
+      
+      <hints>
+        <pulse>true</pulse>
+        <primary-offset>2.05</primary-offset>
+        <secondary-offset>0</secondary-offset>
+        <size>0.9</size>
+        <spacing>4.5</spacing>
+      </hints>
+      
+      <snap>
+        <primary-offset>0.8</primary-offset>
+        <secondary-offset>0</secondary-offset>
+        <size>1.1</size>
+        <x-angle>0</x-angle>
+        <y-angle>5</y-angle>
+        <z-angle>5</z-angle>
+      </snap>
+      
+      
+      
+      <game-selector>
+        <selected>5</selected>
+        <tile-size>0.7</tile-size>
+        <orientation>landscape</orientation>
+        <primary-offset>-1.0</primary-offset>
+        <tiles>
+          <tile>
+            <order>0</order>
+            <x-position>1.5</x-position>
+            <y-position>4</y-position>
+            <z-position>-0.5</z-position>
+            <x-angle>-90</x-angle>
+            <transparency>100%</transparency>
+          </tile>
+          <tile>
+            <order>1</order>
+            <x-position>1.0</x-position>
+            <y-position>2.6</y-position>
+            <z-position>-0.4</z-position>
+            <x-angle>-90</x-angle>
+            <transparency>80%</transparency>
+          </tile>
+          <tile>
+            <order>2</order>
+            <x-position>0.6</x-position>
+            <y-position>2.3</y-position>
+            <z-position>-0.3</z-position>
+            <x-angle>-80</x-angle>
+            <transparency>60%</transparency>
+          </tile>
+          <tile>
+            <order>3</order>
+            <x-position>0.3</x-position>
+            <y-position>2.0</y-position>
+            <z-position>-0.2</z-position>
+            <x-angle>-75</x-angle>
+          </tile>
+          <tile>
+            <order>4</order>
+            <x-position>0.1</x-position>
+            <y-position>1.7</y-position>
+            <z-position>-0.1</z-position>
+            <x-angle>-70</x-angle>
+          </tile>
+          <tile>
+            <order>5</order>
+            <x-position>0</x-position>
+            <y-position>0</y-position>
+            <z-position>1.7</z-position>
+          </tile>
+          <tile>
+            <order>6</order>
+            <x-position>0.1</x-position>
+            <y-position>-1.7</y-position>
+            <z-position>-0.1</z-position>
+            <x-angle>70</x-angle>
+          </tile>
+          <tile>
+            <order>7</order>
+            <x-position>0.3</x-position>
+            <y-position>-2.0</y-position>
+            <z-position>-0.2</z-position>
+            <x-angle>75</x-angle>
+          </tile>
+          <tile>
+            <order>8</order>
+            <x-position>0.6</x-position>
+            <y-position>-2.3</y-position>
+            <z-position>-0.3</z-position>
+            <x-angle>80</x-angle>
+            <transparency>60%</transparency>
+          </tile>
+          <tile>
+            <order>9</order>
+            <x-position>1.0</x-position>
+            <y-position>-2.6</y-position>
+            <z-position>-0.4</z-position>
+            <x-angle>90</x-angle>
+            <transparency>80%</transparency>
+          </tile>
+          <tile>
+            <order>10</order>
+            <x-position>1.5</x-position>
+            <y-position>-4</y-position>
+            <z-position>-0.5</z-position>
+            <x-angle>90</x-angle>
+            <transparency>100%</transparency>
+          </tile>
+        </tiles>
+      </game-selector>
+      
+      
+    </theme>
+  </themes>
+</cabrio-config>
+
