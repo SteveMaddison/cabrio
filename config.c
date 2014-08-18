@@ -122,6 +122,7 @@ static const char *tag_iface_full_screen			= 	"full-screen";
 static const char *tag_iface_video_loop				= 	"video-loop";
 static const char *tag_iface_video_sound			= 	"video-sound";
 static const char *tag_iface_theme_sound			= 	"theme-sound";
+static const char *tag_iface_music_volume			= 	"music-volume";
 static const char *tag_iface_screen					= 	"screen";
 static const char *tag_iface_screen_hflip			= 	  "flip-horizontal";
 static const char *tag_iface_screen_vflip			= 	  "flip-vertical";
@@ -1585,6 +1586,9 @@ int config_read_interface( xmlNode *node ) {
 			else if( strcmp( (char*)node->name, tag_iface_video_sound ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.video_sound );
                         }
+			else if( strcmp( (char*)node->name, tag_iface_music_volume ) == 0 ) {
+				config_read_integer( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.music_volume );
+                        }
 			else if( strcmp( (char*)node->name, tag_iface_theme_sound ) == 0 ) {
 				config_read_boolean( (char*)node->name, (char*)xmlNodeGetContent(node), &config.iface.theme_sound );
                         }
@@ -1724,7 +1728,9 @@ int config_read_interface_theme( xmlNode *node, struct config_theme *theme ) {
                         else if( strcmp( (char*)node->name, tag_iface_video_loop ) == 0 ) {
                                 /* Ignore */
                         }
-
+                        else if( strcmp( (char*)node->name, tag_iface_music_volume ) == 0 ) {
+                                /* Ignore */
+                        }
                         else if( strcmp( (char*)node->name, tag_iface_theme_sound ) == 0 ) {
                                 /* Ignore */
                         }
@@ -1986,6 +1992,7 @@ int config_write_interface( xmlNodePtr root ) {
 	xmlNodePtr interface = xmlNewNode( NULL, (xmlChar*)tag_iface );
 	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_full_screen, config_write_boolean( config.iface.full_screen ) );
 	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_video_loop, config_write_boolean( config.iface.video_loop ) );
+	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_music_volume, config_write_boolean( config.iface.music_volume ) );
 	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_video_sound, config_write_boolean( config.iface.video_sound ) );
 	xmlNewChild( interface, NULL, (xmlChar*)tag_iface_theme_sound, config_write_boolean( config.iface.theme_sound ) );
 	

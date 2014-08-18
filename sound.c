@@ -4,7 +4,6 @@
 #include <SDL/SDL_mixer.h>
 
 static const int AUDIO_CHUNK_SIZE = 1024;
-static Mix_Music *music;
 static Mix_Chunk *sounds[NUM_SOUNDS];
 static char *names[] = { "back", "blip", "no", "select" };
 static int mixer_open = 0;
@@ -92,11 +91,12 @@ const char *sound_name( int s ) {
 }
 
 void playmusic(void) {
-	if (!music) 
+	if (!music)
 		music = Mix_LoadMUS( config_get()->iface.theme.music );
-
 	if (music != NULL)
-		Mix_PlayMusic(music, -1);
+		Mix_PlayMusic(music, 0);
+	if ( config_get()->iface.music_volume > 0 && config_get()->iface.music_volume <= 128 )
+		Mix_VolumeMusic(config_get()->iface.music_volume);
 }
 
 void stopmusic(void) {

@@ -51,12 +51,11 @@ SDL_AudioSpec audio_spec;
 static int audio_open = 0;
 
 static SDL_Thread *reader_thread = NULL;
-static int stop = 0;
 static int audio_running = 0;
-static int reader_running = 0;
 static int got_texture = 0;
 static struct texture *texture;
-
+static int stop = 0;
+int reader_running = 0;
 int video_init( void ) {
 	avcodec_register_all();
 	av_register_all();
@@ -290,7 +289,6 @@ void video_release_buffer( struct AVCodecContext *c, AVFrame *f ) {
 
 int video_reader_thread( void *data ) {
 	static AVPacket packet;
-
 	const struct config *config = config_get();
 
 	if( !format_context || !video_codec_context || !video_buffer )
@@ -397,6 +395,9 @@ int video_open( const char *filename ) {
 
 	avpicture_fill( (AVPicture*)conv_frame, video_buffer, CONV_FORMAT, VIDEO_SIZE, VIDEO_SIZE );
 
+     	if (music){
+        	Mix_HaltMusic();
+	} 
 	if( audio_codec_context ) {
 		audio_codec = avcodec_find_decoder( audio_codec_context->codec_id );
 		if( !audio_codec ) {

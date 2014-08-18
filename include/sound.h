@@ -23,5 +23,6 @@ void playmusic( void );
 void stopmusic( void );
 int sound_id( char *name );
 const char *sound_name( int s );
+Mix_Music *music;
 
 #endif

@@ -4,6 +4,7 @@ Version from "Livemamecab"
 - New option "video loop" for snap
 - New option "video sound" for snap
 - New option "theme sound" music theme onf/off
+- New option "theme sound" volume (1 min -> 128 Max)  
 - Save selection game state at cabrio start
 
 New options needed:
@@ -11,6 +12,7 @@ New options needed:
 <video-loop>false/true</video-loop>
 <video-sound>false/true</video-sound> *
 <theme-sound>false</theme-sound>
+<music-volume>50</music-volume>
 
 * Now works with libavcodec54 but without sound (libavcodec53 is needed), sorry 
 
@@ -69,3 +71,6 @@ Astronomy, Heidelberg). http://hubblesite.org/
 
 Default font "FreeSans.ttf" courtesy of the GNU FreeFont project:
 http://www.gnu.org/software/freefont/
+
+Music Theme: Happy Arcade Tune 	
+Author: rezoner from http://opengameart.org

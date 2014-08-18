@@ -142,7 +142,7 @@ int main( int argc, char *arvg[] ) {
 		submenu_draw();
 		game_sel_draw();
 		sdl_swap();
-		if (Mix_PlayingMusic() != 1 && config_get()->iface.theme_sound) {
+		if (Mix_PlayingMusic() != 1 && config_get()->iface.theme_sound && reader_running == 0) {
 			playmusic();
 		}
 
