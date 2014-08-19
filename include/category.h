@@ -27,6 +27,6 @@ struct category *category_first( void );
 struct category *category_get( const char *name );
 struct category_value *category_get_value( struct category *category, const char *name );
 int category_value_add_unknown( struct category *category );
-
+char *list_choice[5];
 #endif
 

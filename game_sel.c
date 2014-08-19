@@ -13,6 +13,7 @@
 #include "snap.h"
 #include "media.h"
 #include "category.h"
+#include "game.h"
 
 static const GLfloat IMAGE_SCALE = 0.005;
 static const int MAX_STEPS = 25;
@@ -353,9 +354,42 @@ int game_sel_event( int event ) {
 			focus_set( FOCUS_SUBMENU );
 			break;
 		case EVENT_LIST1:
-			snap_clear();
-			sound_play( SOUND_BACK );
-			game_sel_skip_back();
+			snap_clear();	
+			sound_play( SOUND_SELECT );
+			game_list_filter_category( "Lists" , list_choice[0]);
+			game_sel_got_focus();
+			break;
+
+		case EVENT_LIST2:
+			snap_clear();	
+			sound_play( SOUND_SELECT );
+			sound_play( SOUND_SELECT );
+			game_list_filter_category( "Lists" , list_choice[1]);
+			game_sel_got_focus();
+			break;
+
+		case EVENT_LIST3:
+			snap_clear();	
+			sound_play( SOUND_SELECT );
+			sound_play( SOUND_SELECT );
+			game_list_filter_category( "Lists" , list_choice[2]);
+			game_sel_got_focus();
+			break;
+
+		case EVENT_LIST4:
+			snap_clear();	
+			sound_play( SOUND_SELECT );
+			sound_play( SOUND_SELECT );
+			game_list_filter_category( "Lists" , list_choice[3]);
+			game_sel_got_focus();
+			break;
+
+		case EVENT_LIST5:
+			snap_clear();	
+			sound_play( SOUND_SELECT );
+			sound_play( SOUND_SELECT );
+			game_list_filter_category( "Lists" , list_choice[4]);
+			game_sel_got_focus();
 			break;
 		default:
 			break;

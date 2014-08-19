@@ -27,6 +27,7 @@ static const int MAX_STEPS = 100;
 static struct category *prev_category = NULL;
 static struct category *category = NULL;
 static struct category_value *category_value = NULL;
+
 static struct platform *platform = NULL;
 static struct texture *message = NULL;
 static struct arrow arrow_retreat;

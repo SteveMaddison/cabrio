@@ -347,7 +347,6 @@ int game_list_filter_category( char *name, char *value ) {
 	int count = 0;
 	struct game *game = game_start;
 	struct game_category *category = NULL;
-	
 	game_filter_start = NULL;
 	if( game && game->categories ) {
 		do {

@@ -62,6 +62,7 @@ int category_value_add( struct category *category, char *name ) {
 	struct category_value *search = category->values;
 	struct category_value *after = category->values;
 	struct category_value *category_value = malloc( sizeof(struct category_value) );
+	int i = 0;
 
 	if( search ) {
 		do {
@@ -74,6 +75,13 @@ int category_value_add( struct category *category, char *name ) {
 	if( category_value ) {
 		memset( category_value, 0, sizeof(struct category_value) );		
 		category_value->name = name;
+		while( i < 4) {		
+			if (!list_choice[i]) { 
+					list_choice[i]=name;
+					break;
+			}
+		i++;
+		}
 	
 		if( after ) {
 			after = after->prev;
@@ -160,7 +168,6 @@ void catgeory_dump( void ) {
 		printf("Category: %s (%d)\n", category->name, category->value_count );
 		struct category_value *value = category->values;
 		while( value ) {
-			printf("  Value: %s\n", value->name );
 			value = value->next;
 			if( value == category->values ) break;
 		}
