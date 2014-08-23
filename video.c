@@ -395,7 +395,7 @@ int video_open( const char *filename ) {
 
 	avpicture_fill( (AVPicture*)conv_frame, video_buffer, CONV_FORMAT, VIDEO_SIZE, VIDEO_SIZE );
 
-     	if (music){
+     	if (music && config->iface.video_sound){
         	Mix_HaltMusic();
 	} 
 	if( audio_codec_context ) {
