@@ -137,15 +137,14 @@ int main( int argc, char *arvg[] ) {
 		ogl_clear();
 		bg_draw();
 		snap_draw();
-		hint_draw();
+		if (!config_get()->iface.hide_buttons)
+			hint_draw();
 		menu_draw();
 		submenu_draw();
 		game_sel_draw();
 		sdl_swap();
-		if (Mix_PlayingMusic() != 1 && config_get()->iface.theme_sound && reader_running == 0) {
+		if (Mix_PlayingMusic() != 1 && config_get()->iface.theme_sound && reader_running == 0) 
 			playmusic();
-		}
-
 		if (( event = event_poll() )) {
 			if( supress_wait == 0 ) {
 				if( event == EVENT_QUIT ) {

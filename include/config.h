@@ -208,6 +208,7 @@ struct config_labels {
 struct config_iface {
 	int full_screen;
 	int video_loop;
+	int hide_buttons;
 	int music_volume;
 	int video_sound;
 	int theme_sound;

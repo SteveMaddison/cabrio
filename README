@@ -6,15 +6,18 @@ Version from "Livemamecab"
 - New option "theme sound" music theme onf/off
 - New option "theme sound" volume (1 min -> 128 Max)  
 - New option direct switch to list 
+- New option hide buttons 
 - Save selection game at cabrio start 
 
 New options:
 
 <video-loop>false/true</video-loop>
 <video-sound>false/true</video-sound> *
-<theme-sound>false</theme-sound>
+<theme-sound>false/true</theme-sound>
 <music-volume>50</music-volume>
+<hide-buttons>false/true</hide-buttons>
 
+Option direct list:
 Example: keyboard touch "a" to directly switch to the first list and "b" for the second (max 5 lists)
 <event>
 <name>list1</name>
