@@ -184,6 +184,10 @@ int emulator_exec( struct game *game ) {
 int emulator_run( struct game *game ) {
 	int ret = 0;
 	struct passwd *passwd = getpwuid(getuid());
+	if (music){
+		Mix_HaltMusic();
+		music = NULL;
+	}
 	pause_all();
 	sdl_free();
 	FILE* file = NULL;
