@@ -1,4 +1,4 @@
-Version from "Livemamecab" 
+Version from "Livemamecab" https://github.com/fredbcode/livemamecab
 
 - Fix ffmpeg problem -> but libavcodec and libavformat 53 are needed 
 - New option "video loop" for snap
