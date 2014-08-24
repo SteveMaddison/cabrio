@@ -1,3 +1,10 @@
+cabrio (0.8.3-2) UNRELEASED; urgency=low
+
+  * Updated to latest Fredbcode git version (commit #246)
+    + Fix libavcodec54: but no video sound.
+
+ -- Sérgio Benjamim <sergio_br2@yahoo.com.br>  Sun, 10 Aug 2014 22:57:00 -0300
+
 cabrio (0.8.3-1) unstable; urgency=low
 
   * Fredbcode git version (commit #246)
@@ -19,4 +26,3 @@ cabrio (0.8.1-1) unstable; urgency=low
   * Initial release
 
  -- Steve Maddison <steve@cabrio-fe.org>  Sun, 29 Nov 2009 17:11:18 +0100
-

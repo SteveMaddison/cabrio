@@ -13,8 +13,12 @@ Copyright:
 
 License:
 
-    GNU General Public License
+    Licensed under the terms of the GNU General Public License version 2
 
-The Debian packaging is (C) 2009, Steve Maddison <steve@cabrio-fe.org> and
-is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
+The Debian packaging is:
 
+    Copyright (C) 2009 Steve Maddison <steve@cabrio-fe.org>
+    Copyright (C) 2014 Sergio Benjamim (sergio-br2) <sergio_br2@yahoo.com.br>
+
+and is licensed under the GPL version 2,
+see `/usr/share/common-licenses/GPL-2'.

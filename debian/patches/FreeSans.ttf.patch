@@ -1,26 +1,13 @@
-Description: <short summary of the patch>
- TODO: Put a short summary on the line above and replace this paragraph
- with a longer explanation of this change. Complete the meta-information
- with other relevant fields (see below for details). To make it easier, the
- information below has been extracted from the changelog. Adjust it or drop
- it.
- .
- cabrio (0.8.3-1) unstable; urgency=low
- .
-   * Fredbcode git version (commit #246)
-   * Updated some of debian standard, fixed some lintian warnings/errors
-   * Added a simple man page do debian package
-   * Cabrio using FreeSans.ttf from the system
-Author: Sérgio Benjamim <sergio_br2@yahoo.com.br>
-
---- cabrio-0.8.3.orig/config.c
-+++ cabrio-0.8.3/config.c
-@@ -40,7 +40,8 @@ static const char *default_sounds[] = {
+Index: cabrio_sergio/config.c
+===================================================================
+--- cabrio_sergio.orig/config.c	2014-08-11 00:17:02.000000000 -0300
++++ cabrio_sergio/config.c	2014-08-11 00:20:58.035230094 -0300
+@@ -41,7 +41,8 @@
  static const char *default_dir 				= ".cabrio"; /* Relative to user's home */
  static const char *default_theme_dir		= "/themes";
  static const char *default_background		= "/pixmaps/default_background.jpg";
--static const char *default_font 			= "/fonts/FreeSans.ttf";
-+//static const char *default_font 			= "/fonts/FreeSans.ttf";
+-static const char *default_font 		= "/fonts/FreeSans.ttf";
++//static const char *default_font 		= "/fonts/FreeSans.ttf";
 +static const char *default_font 			= "/../fonts/truetype/freefont/FreeSans.ttf"; // FreeSans.ttf is in /usr/share/fonts/truetype/freefont/FreeSans.ttf
  static const char *default_menu_texture		= "/pixmaps/menu_item.png";
  static const char *default_submenu_texture	= "/pixmaps/submenu_item.png";
