@@ -1,0 +1,11 @@
+*.o
+cabrio
+
+.bzr
+.bzrignore
+.pc
+
+debian/cabrio.debhelper.log
+debian/cabrio.substvars
+debian/cabrio
+debian/files
