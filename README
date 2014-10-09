@@ -17,6 +17,8 @@ New options:
 <music-volume>50</music-volume>
 <hide-buttons>false/true</hide-buttons>
 
+Put your music here /usr/share/cabrio/sounds/music.mp3
+
 Option direct list:
 Example: keyboard touch "a" to directly switch to the first list and "b" for the second (max 5 lists)
 <event>
