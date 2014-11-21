@@ -179,7 +179,6 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 	for(;;) {
 		while (audio_packet.size > 0) {
 #if LIBAVCODEC_VERSION_MAJOR > 53
-// Work in progress Libavcodec54 no sound ...
 		used = avcodec_decode_audio4( context, frame, &data_size, &audio_packet);
 		if( used < 0 ) {
 			// if error, skip frame //
