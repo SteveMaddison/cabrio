@@ -14,9 +14,9 @@
 #include "ogl.h"
 #include <unistd.h>
 
-#define AUDIO_BUFFER_SIZE ((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2)
+#define AUDIO_BUFFER_SIZE ((192000 * 3) / 2)
 static const int VIDEO_SIZE = 256;
-static const int VIDEO_SIZE_SCALE = 768;
+static const int VIDEO_SIZE_SCALE = 512;
 static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
 static const int MAX_QUEUE_PACKETS = 20;
@@ -172,14 +172,15 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 
 #if LIBAVCODEC_VERSION_MAJOR > 53
 // 	Libavcodec54
+	int plane_size;
+	int sampleIndex, channelIndex;
 	AVFrame * frame = avcodec_alloc_frame ();
 #endif /* LIBAVCODEC_VERSION_MAJOR > 53 */
 	for(;;) {
 		while (audio_packet.size > 0) {
 #if LIBAVCODEC_VERSION_MAJOR > 53
 // Work in progress Libavcodec54 no sound ...
-		data_size = buffer_size;
-		used = avcodec_decode_audio4( context, frame, &data_size,  &packet);
+		used = avcodec_decode_audio4( context, frame, &data_size, &audio_packet);
 		if( used < 0 ) {
 			// if error, skip frame //
 			fprintf(stderr, "Error while decoding\n");
@@ -188,7 +189,8 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 		}
 		audio_packet.data += used;
 		audio_packet.size -= used;
-
+		audio_packet.dts = AV_NOPTS_VALUE;
+		audio_packet.pts = AV_NOPTS_VALUE;
 		if( data_size <= 0 ) {
 		// No data yet, get more frames //
 			continue;
@@ -196,13 +198,40 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 						
 
 		// if a frame has been decoded, output it //
-			data_size = av_samples_get_buffer_size(NULL, context->channels,frame->nb_samples,context->sample_fmt, 1);
-
+			data_size = av_samples_get_buffer_size(&plane_size, context->channels,frame->nb_samples, context->sample_fmt, 1);
 			audio_clock += (double)data_size /
 				(double)(format_context->streams[audio_stream]->codec->sample_rate *
-				(2 * format_context->streams[audio_stream]->codec->channels));
-			return data_size;
+				(sizeof(float) * format_context->streams[audio_stream]->codec->channels));
+
+			// We need to convert the decoded frame to the right format (AUDIO_S16SYS)
+			// It may be a better idea to use dedicated function rather than manualy performing 
+			// the conversion.
+			data_size = 0;
+			if (context->sample_fmt == AV_SAMPLE_FMT_FLTP) {
+				uint16_t* buffer16 = (uint16_t*)buffer;			
+				for (sampleIndex = 0; sampleIndex < frame->nb_samples; sampleIndex++) {
+					for (channelIndex = 0; channelIndex < context->channels; channelIndex++) {
+						float* extended_data = (float*)(frame->extended_data[channelIndex]);
+						float sample = extended_data[sampleIndex];
+
+
+						if (sample < -1.0f) {
+							sample = -1.0f;
+						} else if (sample > 1.0f) {
+							sample = 1.0f;
+						}
+						buffer16[(sampleIndex * context->channels + channelIndex)] = (int16_t)(sample * 32767.0f);
+					 }
+				  }
+
+				  data_size = context->channels * frame->nb_samples * sizeof(int16_t);
+			}
+ 
+			av_free(frame);
+			return data_size; 
 		}
+
+
 #endif /* LIBAVCODEC_VERSION_MAJOR > 53 */
 // Libavcodec53
 #if LIBAVCODEC_VERSION_MAJOR <= 53
@@ -236,18 +265,18 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 			av_free_packet( &packet );
 
 		if( stop ) {
+			av_free(frame);
 			audio_running = 0;
 			return -1;
 		}
 
-		if( packet_queue_get( &audio_queue, &packet, 1 ) < 0 )
+		if( packet_queue_get( &audio_queue, &audio_packet, 1 ) < 0 ) {
+			av_free(frame);
 			return -1;
+		}
+		if( audio_packet.pts != AV_NOPTS_VALUE ) {
+			audio_clock = audio_packet.pts * av_q2d( format_context->streams[audio_stream]->time_base );
 
-		audio_packet.data = packet.data;
-		audio_packet.size = packet.size;
-
-		if( packet.pts != AV_NOPTS_VALUE ) {
-			audio_clock = packet.pts * av_q2d( format_context->streams[audio_stream]->time_base );
 		}
 	}
 }

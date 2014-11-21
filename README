@@ -1,6 +1,6 @@
 Version from "Livemamecab" https://github.com/fredbcode/livemamecab
 
-- Fix ffmpeg problem -> but libavcodec and libavformat 53 are needed 
+- Fix ffmpeg problem, should works with libavcodec53/54/55 fixed by f.dorin
 - New option "video loop" for snap
 - New option "video sound" for snap
 - New option "theme sound" music theme onf/off
@@ -12,7 +12,7 @@ Version from "Livemamecab" https://github.com/fredbcode/livemamecab
 New options:
 
 <video-loop>false/true</video-loop>
-<video-sound>false/true</video-sound> *
+<video-sound>false/true</video-sound> 
 <theme-sound>false/true</theme-sound>
 <music-volume>50</music-volume>
 <hide-buttons>false/true</hide-buttons>
@@ -38,13 +38,11 @@ Example: keyboard touch "a" to directly switch to the first list and "b" for the
 </device>
 </event>
 
-* Now works with libavcodec54 but without sound (libavcodec53 is needed), sorry 
 
 ======
 
 TODO: HELP NEEDED !
 
-- Fix sound problem with libavcodec54
 - Fix memory leak with xmlNodeGetContent (config.c) see valgrind --leak-check=full  ./cabrio 
 
 ======
@@ -71,6 +69,10 @@ Compile the program by running 'make' in this directory. Install by running
 can be edited in the Makefile).
 
 See http://www.cabrio-fe.org/support/compile.html for more information.
+
+Debian/Ubuntu:
+
+apt-get install gcc make libc6-dev libavcodec-dev libavutil-dev libavformat-dev libsdl1.2-dev libsdl-image1.2-dev libsdl-gfx1.2-dev  libsdl-mixer1.2-dev libsdl-ttf2.0-dev libswscale-dev libxml2-dev zlib1g-dev
 
 
 Configuration
