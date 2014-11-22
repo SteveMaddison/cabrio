@@ -169,7 +169,7 @@ int video_decode_video_frame( AVPacket *packet ) {
 int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buffer_size ) {
 	static AVPacket packet;
 	int used, data_size;
-
+	int i;
 #if LIBAVCODEC_VERSION_MAJOR > 53
 // 	Libavcodec54
 	int plane_size;
@@ -207,7 +207,7 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 			// the conversion.
 			data_size = 0;
 			if (context->sample_fmt == AV_SAMPLE_FMT_FLTP) {
-				uint16_t* buffer16 = (uint16_t*)buffer;			
+				int16_t* buffer16 = (int16_t*)buffer;			
 				for (sampleIndex = 0; sampleIndex < frame->nb_samples; sampleIndex++) {
 					for (channelIndex = 0; channelIndex < context->channels; channelIndex++) {
 						float* extended_data = (float*)(frame->extended_data[channelIndex]);
@@ -224,6 +224,23 @@ int video_decode_audio_frame( AVCodecContext *context, uint8_t *buffer, int buff
 				  }
 
 				  data_size = context->channels * frame->nb_samples * sizeof(int16_t);
+			}
+			else if (context->sample_fmt == AV_SAMPLE_FMT_S16P) {
+				// Note : planar size is in frame->linesize[0] for all plans
+				// as they must have the same size.
+				int16_t* buffer16 = (int16_t*) buffer;
+				for (channelIndex = 0; channelIndex < context->channels; channelIndex++) {
+					int16_t* extended_data = (int16_t*)(frame->data[channelIndex]);
+					for (i = 0; i < frame->linesize[0] / 2; i++) {
+						int16_t sample = extended_data[i];
+						buffer16[channelIndex + i * 2] = sample;
+					}
+				}
+				data_size = context->channels * frame->linesize[0];
+			} 
+			else
+			{
+				data_size = -1;
 			}
  
 			av_free(frame);
