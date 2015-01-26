@@ -54,8 +54,6 @@ int resume_all( void ) {
 		return -6;
 	if( submenu_resume() != 0 )
 		return -7;
-	if( game_list_resume() != 0 )
-		return -8;
 	sound_resume();
 	if( snap_resume() != 0 )
 		return -9;
