@@ -28,6 +28,108 @@ struct game *game_first( void ) {
 	return game_filter_start;
 }
 
+
+// This function expects list_start to point to the start of the list
+struct game *game_list_sort_nr_games( struct game *list_start, int nr_games )
+{
+
+  // 1 game list
+  if ( nr_games == 1 )
+    return list_start;
+
+  //Define left list
+  struct game *left = list_start;
+
+  // Define right list
+  struct game *right = list_start;
+  int i;
+  for ( i = 1; i <= nr_games/2; i++ ) // Find the start of the 2nd half
+    right = right->all_next;
+  right->all_prev->all_next = NULL; // Disconnect the left list
+  right->all_prev           = NULL; // Disconnect the right list
+
+  // Sort the lists
+  left  = game_list_sort_nr_games( left,  nr_games/2 );
+  right = game_list_sort_nr_games( right, nr_games-nr_games/2 );
+
+  // Merge the sorted lists
+  struct game *result;
+
+  // Determine the start of the merged list
+  if ( strcasecmp( left->name, right->name ) < 0 ) // left < right
+  {
+    result = left;
+    left   = left->all_next;
+  }
+  else
+  {
+    result = right;
+    right  = right->all_next;
+  }
+
+  // Merge the rest of the sorted lists
+  struct game *loop_game = result;
+  while ( left != NULL || right != NULL )
+  {
+    if ( right == NULL || (left != NULL && (strcasecmp( left->name, right->name ) < 0)) )
+    {
+      loop_game->all_next = left;
+      left->all_prev      = loop_game;
+      loop_game           = loop_game->all_next;
+      left                = left->all_next;
+    }
+    else
+    {
+      loop_game->all_next = right;
+      right->all_prev     = loop_game;
+      loop_game           = loop_game->all_next;
+      right               = right->all_next;
+    }
+  }
+
+  // Return the sorted list
+  return result;
+
+}
+
+
+struct game *game_list_sort( struct game *list_start )
+{
+
+  struct game *loop_game;
+  int   nr_games  = 0;
+
+  // Check for empty list
+  if ( list_start == NULL )
+    return NULL;
+
+  // Disconnect the start and end of the list
+  list_start->all_prev->all_next = NULL;
+  list_start->all_prev           = NULL;
+
+  // Count number of games in the list
+  for ( loop_game = list_start; loop_game != NULL; loop_game = loop_game->all_next )
+  {
+    nr_games++;
+  }
+
+  // Sort the list
+  struct game *result_game = game_list_sort_nr_games( list_start, nr_games );
+
+  // Reconnect the start and end of the list
+  loop_game = result_game;
+  while ( loop_game->all_next )
+    loop_game = loop_game->all_next;
+  loop_game->all_next   = result_game;
+  result_game->all_prev = loop_game;
+
+  // Return the sorted list
+  return result_game;
+
+}
+
+
+
 void game_add( struct game *game, struct game *after ) {
 	if( after == NULL ) {
 		game->all_prev = game;
@@ -163,7 +265,7 @@ int game_add_category( struct game *game, char *name, char *value ) {
 
 int game_list_create( void ) {
 	struct game *game = NULL;
-	struct game *prev = NULL;
+	struct game *last = NULL;
 	struct config_game *config_game = config_get()->games;
 	
 	if( !config_game )
@@ -300,25 +402,15 @@ int game_list_create( void ) {
 				} while( category != category_first() );
 			}			
 			
-			/* insert into list (sort by name) */
-			prev = game_start;
-			if( game_start ) {
-				prev = game_start->all_prev;
-				while( strcasecmp( prev->name, game->name ) > 0 ) {
-					prev = prev->all_prev;
-					if( prev == game_start->all_prev ) break;
-				}
-			}
-			game_add( game, prev );
-			if( !game_start || strcasecmp( game->name, game_start->name ) < 0 ) {
-				game_start = game;
-			}
-			game->next = game->all_next;
-			game->prev = game->all_prev;
+			/* insert into list */
+                        game_add( game, last );
+                        if ( !game_start )
+                          game_start = game;
+                        last       = game;
 		}
 		config_game = config_game->next;
 	}
-
+	game_start = game_list_sort( game_start );
 	game_list_unfilter();
 
 /*  if( game_start ) {
