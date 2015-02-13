@@ -51,6 +51,10 @@ int main( int argc, char *arvg[] ) {
 	int config_status = 0;
 	int event;
 
+
+	// Initialise pseudo random generator   
+	srand( time( NULL ) );
+    
 #ifdef __WIN32__
 	freopen( "cabrio.out", "w", stdout );
 	freopen( "cabrio.err", "w", stderr );
