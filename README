@@ -1,5 +1,6 @@
 Version from "Livemamecab" https://github.com/fredbcode/livemamecab
 
+- Added <music> tag to themes, allowing selection of background music.
 - Fixed memory leaks in XML configuration functions by Pieter Hulshoff
 - Improved handling of long game lists by Pieter Hulshoff 
 - Fix ffmpeg problem, should works with libavcodec53/54/55 fixed by f.dorin
