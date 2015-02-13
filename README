@@ -21,7 +21,7 @@ New options:
 <hide-buttons>false/true</hide-buttons>
 
 Put your music here /usr/share/cabrio/sounds/music.mp3
-You can also use the tag <music> placed within the <theme> tag of a theme XML file.
+You can also use the tag <music> placed within the <theme> tag (in a theme XML file).
 A directory indication will cause a random music file to be selected from that directory. 
 In your theme file:
 
