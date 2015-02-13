@@ -150,6 +150,7 @@ static const char *tag_theme_menu_border			= 	  "border";
 static const char *tag_theme_submenu				= 	"submenu";
 static const char *tag_theme_submenu_item_width		= 	  "item-width";
 static const char *tag_theme_submenu_item_height	= 	  "item-height";
+static const char *tag_theme_music				= 	"music";
 static const char *tag_theme_background				= 	"background";
 static const char *tag_theme_font					= 	"font";
 static const char *tag_theme_font_file				= 	  "font-file";
@@ -1863,6 +1864,11 @@ int config_read_theme( xmlNode *node, struct config_theme *theme ) {
 				strncpy( theme->name, content, CONFIG_NAME_LENGTH );
 				free( content );
 			}
+			else if( strcmp( (char*)node->name, tag_theme_music ) == 0 ) {
+				char *content = (char *)xmlNodeGetContent(node);
+				strncpy( theme->music, content, CONFIG_FILE_NAME_LENGTH );
+				free( content );
+                        }
 			else if( strcmp( (char*)node->name, tag_theme_background ) == 0 ) {
 				config_read_theme_background( node->children, theme );
 			}
