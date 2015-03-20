@@ -1,7 +1,7 @@
 #ifndef _FRAME_H_
 #define _FRAME_H_ 1
 
-#include <SDL/SDL_mutex.h>
+#include <SDL2/SDL_mutex.h>
 #include "video.h"
 
 struct frame_list {

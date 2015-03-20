@@ -1,6 +1,6 @@
-#include <SDL/SDL_gfxPrimitives.h>
-#include <SDL/SDL_rotozoom.h>
-#include <SDL/SDL_image.h>
+#include <SDL2/SDL2_gfxPrimitives.h>
+#include <SDL2/SDL2_rotozoom.h>
+#include <SDL2/SDL_image.h>
 #include "sdl_ogl.h"
 #include "config.h"
 
@@ -11,13 +11,23 @@ unsigned int next_power_of_two( unsigned int x ) {
         return 1<<i;
 }
 
+SDL_Surface *display_format_alpha(SDL_Surface *surface) {
+	SDL_PixelFormat *format;
+	SDL_Surface *converted;
+
+	format = SDL_AllocFormat( SDL_PIXELFORMAT_ARGB8888 );
+	converted = SDL_ConvertSurface( surface, format, 0 );
+	SDL_FreeFormat( format );
+	return converted;
+}
+
 SDL_Surface *sdl_load_image( const char *filename ) {
 	SDL_Surface* load = NULL;
 	SDL_Surface* conv = NULL;
 	
 	load = IMG_Load( filename );
 	if( load != NULL ) {
-		conv = SDL_DisplayFormatAlpha( load );
+		conv = display_format_alpha( load );
 		SDL_FreeSurface( load );
 	}
 	else {
@@ -71,7 +81,7 @@ SDL_Surface *resize( SDL_Surface *surface ) {
 	    } while( (dx & (dx-1)) != 0 && (dy & (dy-1)) != 0 );
 		
 		tmp = zoomSurface( surface, sx, sy, 0 );
-		resized = SDL_DisplayFormatAlpha( tmp );
+		resized = display_format_alpha( tmp );
 		SDL_FreeSurface( tmp );
 	}
 	

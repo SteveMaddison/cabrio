@@ -1,4 +1,4 @@
-#include <SDL/SDL_ttf.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 #include "config.h"
 #include "font.h"

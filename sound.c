@@ -2,8 +2,8 @@
 #include <fnmatch.h>
 #include "sound.h"
 #include "config.h"
-#include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 
 static const int AUDIO_CHUNK_SIZE = 1024;
 static Mix_Chunk *sounds[NUM_SOUNDS];

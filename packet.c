@@ -1,4 +1,4 @@
-#include <SDL/SDL_mutex.h>
+#include <SDL2/SDL_mutex.h>
 #include "packet.h"
 
 

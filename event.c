@@ -6,7 +6,7 @@
 #include "game_sel.h"
 #include "focus.h"
 #include "sdl_wrapper.h"
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #define MAX_JOYSTICKS 8
 
@@ -196,7 +196,7 @@ int event_probe( int timeout, struct event *event ) {
 		switch( sdl_event.type ) {
 			case SDL_KEYDOWN:
 				event->device_type = DEV_KEYBOARD;
-				event->device_id = sdl_event.key.which;
+				//event->device_id = sdl_event.key.which;
 				event->value = sdl_event.key.keysym.sym;
 				return 1;
 			case SDL_JOYAXISMOTION:
