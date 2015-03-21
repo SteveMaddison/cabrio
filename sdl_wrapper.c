@@ -65,6 +65,8 @@ int sdl_init( void ) {
 void sdl_free( void ) {
 	SDL_FreeSurface( screen );
 	screen = NULL;
+	SDL_GL_DeleteContext( glcontext );
+	glcontext = NULL;
 	SDL_DestroyWindow( window );
 	window = NULL;
 	SDL_Quit();
