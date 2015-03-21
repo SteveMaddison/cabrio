@@ -48,13 +48,6 @@ Example: keyboard touch "a" to directly switch to the first list and "b" for the
 </device>
 </event>
 
-
-======
-
-TODO: HELP NEEDED !
-
-- Fix memory leak with xmlNodeGetContent (config.c) see valgrind --leak-check=full  ./cabrio 
-
 ======
 
 Cabrio is an emulator front-end primarily designed for use with arcade
