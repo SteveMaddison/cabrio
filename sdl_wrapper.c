@@ -23,17 +23,21 @@ static int frame_rate = 0;
 int sdl_init( void ) {
 	int mode = SDL_SWSURFACE|SDL_WINDOW_OPENGL;
 	const struct config *config = config_get();
+	SDL_DisplayMode res;
 	
 	if( SDL_Init(SDL_INIT_EVERYTHING) < 0 ) {
 		fprintf(stderr, "Error: Unable to initialise SDL: %s\n", SDL_GetError());
 		return 1;
 	}
-	
+
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-	
-	if( config->iface.full_screen )
+
+	SDL_GetDesktopDisplayMode(0, &res);
+	if( config->iface.full_screen ) {
 		mode |= SDL_WINDOW_FULLSCREEN; // maybe use SDL_WINDOW_FULLSCREEN_DESKTOP ?
+		config_resolution_overwrite( res.w, res.h );
+	}
 	window = SDL_CreateWindow( title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, config->iface.screen_width, config->iface.screen_height, mode );
 	if( window == NULL ) {
 		fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
