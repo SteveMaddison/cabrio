@@ -2759,7 +2759,9 @@ int config_open( const char *filename ) {
 	return created;
 }
 
-void config_resolution_overwrite( int w, int h ){
+void config_resolution_overwrite( int w, int h ) {
 	config.iface.screen_width = w;
 	config.iface.screen_height = h;
+	
+	return;
 }

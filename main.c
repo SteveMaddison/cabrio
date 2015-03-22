@@ -20,8 +20,8 @@
 
 static int supress_wait = 0;
 
-void supress( void ) {
-	supress_wait = config_get()->iface.frame_rate / 5;
+void supress( int frame_rate ) {
+	supress_wait = frame_rate / 5;
 }
 
 void clean_up( void ) {
@@ -47,6 +47,7 @@ void bail( void ) {
 }
 
 int main( int argc, char *arvg[] ) {
+	const struct config *config_m = config_get();
 	int quit = 0;
 	int config_status = 0;
 	int event;
@@ -132,7 +133,7 @@ int main( int argc, char *arvg[] ) {
 	
 	event_flush();
 
-	if( !config_get()->iface.theme.menu.auto_hide )
+	if( !config_m->iface.theme.menu.auto_hide )
 		menu_show();
 		
 	focus_set( FOCUS_GAMESEL );
@@ -141,13 +142,13 @@ int main( int argc, char *arvg[] ) {
 		ogl_clear();
 		bg_draw();
 		snap_draw();
-		if (!config_get()->iface.hide_buttons)
+		if (!config_m->iface.hide_buttons)
 			hint_draw();
 		menu_draw();
 		submenu_draw();
 		game_sel_draw();
 		sdl_swap();
-		if (Mix_PlayingMusic() != 1 && config_get()->iface.theme_sound && reader_running == 0) 
+		if (Mix_PlayingMusic() != 1 && config_m->iface.theme_sound && reader_running == 0) 
 			playmusic();
 		if (( event = event_poll() )) {
 			if( supress_wait == 0 ) {
@@ -155,7 +156,7 @@ int main( int argc, char *arvg[] ) {
 					quit = 1;
 				}
 				else {
-					supress();
+					supress( config_m->iface.frame_rate );
 					event_process( event );
 				}
 			}
@@ -163,7 +164,7 @@ int main( int argc, char *arvg[] ) {
 		if( supress_wait > 0 )
 			supress_wait--;
 		
-		sdl_frame_delay();
+		sdl_frame_delay( config_m->iface.frame_rate );
 	}
 	clean_up();
 	return 0;
