@@ -14,7 +14,7 @@ static SDL_Surface *screen = NULL;
 static SDL_Window *window = NULL;
 static SDL_GLContext *glcontext = NULL;
 
-static const int SDL_SCREEN_BPP = 32;
+//static const int SDL_SCREEN_BPP = 32;
 static const int MAX_FRAME_RATE = 100;
 static const char *title = "Cabrio";
 static FPSmanager manager;

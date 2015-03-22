@@ -64,7 +64,7 @@ SDL_Surface *resize( SDL_Surface *surface ) {
 			zoomSurfaceSize( surface->w, surface->h, sx, sy, &dx, &dy );
 			if( (dx & (dx-1)) != 0 ) {
 				if( (dx & (dx-1)) == 1 ) {
-					sx =- 0.001;
+					sx -= 0.001;
 				}
 				else {
 					sx += 0.001;
@@ -72,7 +72,7 @@ SDL_Surface *resize( SDL_Surface *surface ) {
 			}
 			if( (dy & (dy-1)) != 0 ) {
 				if( (dy & (dy-1)) == 1 ) {
-					sy =- 0.001;
+					sy -= 0.001;
 				}
 				else {
 					sy += 0.001;
