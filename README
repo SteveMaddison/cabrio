@@ -1,3 +1,5 @@
+TODO: HELP NEEDED ! - Link a theme for each list - 
+
 Version from "Livemamecab" https://github.com/fredbcode/livemamecab
 
 - Added <music> tag to themes, allowing selection of background music by Pieter Hulshoff
@@ -26,7 +28,6 @@ You can also use the tag <music> placed within the <theme> tag (in a theme XML f
 A directory indication will cause a random music file to be selected from that directory. 
 In your theme file:
 
-<theme>
 <name>lmc</name>
 <music>/path/music/</music>
 
