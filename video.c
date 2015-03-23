@@ -4,8 +4,8 @@
  * and a tutorial by Martin Bohme (boehme@inb.uni-luebeckREMOVETHIS.de)
  */
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_audio.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
 #include "video.h"
 #include "sound.h"
 #include "packet.h"
@@ -21,7 +21,7 @@ static const int CONV_FORMAT = PIX_FMT_RGB24;
 static const int VIDEO_BPP = 3;
 static const int MAX_QUEUE_PACKETS = 20;
 static const int QUEUE_FULL_DELAY = 10;
-static const GLfloat VIDEO_SCALE = 0.005;
+//static const GLfloat VIDEO_SCALE = 0.005;
 static const int MAX_QUEUE_FRAMES = 30;
 static const int SAMPLES = 1024;
 static const float FUDGE_FACTOR = 0.02;
@@ -494,7 +494,7 @@ int video_open( const char *filename ) {
 	got_texture = 0;
 	
 	stop = 0;
-	reader_thread = SDL_CreateThread( video_reader_thread, NULL );
+	reader_thread = SDL_CreateThread( video_reader_thread, NULL, NULL );
 	if( !reader_thread ) {
 		fprintf( stderr, "Warning: Couldn't start video reader thread\n" );
 		return -1;

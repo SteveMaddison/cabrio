@@ -20,8 +20,8 @@
 
 static int supress_wait = 0;
 
-void supress( void ) {
-	supress_wait = config_get()->iface.frame_rate / 5;
+void supress( int frame_rate ) {
+	supress_wait = frame_rate / 5;
 }
 
 void clean_up( void ) {
@@ -47,14 +47,15 @@ void bail( void ) {
 }
 
 int main( int argc, char *arvg[] ) {
+	const struct config *config_m = config_get();
 	int quit = 0;
 	int config_status = 0;
-	int event;
+	int event = EVENT_SELECT;
 
 
 	// Initialise pseudo random generator   
 	srand( time( NULL ) );
-    
+
 #ifdef __WIN32__
 	freopen( "cabrio.out", "w", stdout );
 	freopen( "cabrio.err", "w", stderr );
@@ -69,7 +70,7 @@ int main( int argc, char *arvg[] ) {
 
 	if( ogl_init() != 0 )
 		bail();
-	
+
 	/* Clear the screen as soon as we can. This avoids graphics
 	 * glitches which can occur with some SDL implementations. */
 	ogl_clear();
@@ -117,7 +118,7 @@ int main( int argc, char *arvg[] ) {
 
 	if( snap_init() != 0 )
 		bail();
-	
+
 	if( game_list_create() != 0 )
 		bail();
 
@@ -129,43 +130,45 @@ int main( int argc, char *arvg[] ) {
 
 	sound_init();
 	video_init();
-	
+
 	event_flush();
 
-	if( !config_get()->iface.theme.menu.auto_hide )
+	if( !config_m->iface.theme.menu.auto_hide )
 		menu_show();
-		
+
 	focus_set( FOCUS_GAMESEL );
 
 	while( !quit ) {
+		if( event == EVENT_SELECT ) {
+			event_set_filter();
+			event = EVENT_NONE;
+		}
 		ogl_clear();
 		bg_draw();
 		snap_draw();
-		if (!config_get()->iface.hide_buttons)
+		if (!config_m->iface.hide_buttons)
 			hint_draw();
 		menu_draw();
 		submenu_draw();
 		game_sel_draw();
 		sdl_swap();
-		if (Mix_PlayingMusic() != 1 && config_get()->iface.theme_sound && reader_running == 0) 
+		if (Mix_PlayingMusic() != 1 && config_m->iface.theme_sound && reader_running == 0) 
 			playmusic();
-		if (( event = event_poll() )) {
+		if (( event = event_poll( event ) )) {
 			if( supress_wait == 0 ) {
 				if( event == EVENT_QUIT ) {
 					quit = 1;
 				}
 				else {
-					supress();
+					supress( config_m->iface.frame_rate );
 					event_process( event );
 				}
 			}
 		}
 		if( supress_wait > 0 )
 			supress_wait--;
-		
-		sdl_frame_delay();
+		sdl_frame_delay( config_m->iface.frame_rate );
 	}
 	clean_up();
 	return 0;
 }
-

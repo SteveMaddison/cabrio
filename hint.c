@@ -8,7 +8,7 @@
 #define ORIENT_LEFT		0
 #define ORIENT_RIGHT	1
 
-static const GLfloat ARROW_SIZE = 1.0;
+//static const GLfloat ARROW_SIZE = 1.0;
 static const GLfloat BUTTON_SIZE = 0.75;
 static const GLfloat ALPHA_MIN = 0.5;
 static const GLfloat ALPHA_STEP_SIZE = 0.02;
