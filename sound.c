@@ -1,7 +1,9 @@
+#include <dirent.h>
+#include <fnmatch.h>
 #include "sound.h"
 #include "config.h"
-#include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 
 static const int AUDIO_CHUNK_SIZE = 1024;
 static Mix_Chunk *sounds[NUM_SOUNDS];
@@ -91,12 +93,48 @@ const char *sound_name( int s ) {
 }
 
 void playmusic(void) {
-	if (!music)
-		music = Mix_LoadMUS( config_get()->iface.theme.music );
-	if (music != NULL)
-		Mix_PlayMusic(music, 0);
-	if ( config_get()->iface.music_volume > 0 && config_get()->iface.music_volume <= 128 )
-		Mix_VolumeMusic(config_get()->iface.music_volume);
+#ifdef __WIN32__
+  static const char dir_separator = '\\';
+#else
+  static const char dir_separator = '/';
+#endif
+  if (!music)
+    free( music );
+  if ( config_get()->iface.theme.music[strlen(config_get()->iface.theme.music)-1] == dir_separator )
+  {
+    DIR           *dir     = opendir( config_get()->iface.theme.music );
+    struct dirent *e;
+    int           nr_music = 0;
+    if ( dir != NULL )
+    {
+      while ( ( e = readdir( dir )) != NULL )
+        if ( (fnmatch( "*.mp3", e->d_name, 0) == 0) ||  
+             (fnmatch( "*.ogg", e->d_name, 0) == 0) )
+          nr_music++;
+      if ( nr_music > 0 )
+      {
+        int sel_music = rand( )%nr_music;
+        closedir( dir );
+        dir = opendir( config_get()->iface.theme.music );
+        e   = readdir( dir );
+        while ( sel_music > 0 )
+        {
+          e = readdir( dir );
+          sel_music--;
+        }
+        char music_name[CONFIG_FILE_NAME_LENGTH];
+        snprintf( music_name, CONFIG_FILE_NAME_LENGTH, "%s%s", config_get()->iface.theme.music, e->d_name );
+        music = Mix_LoadMUS( music_name );
+      }
+      closedir( dir );
+    }
+  }
+  else
+    music = Mix_LoadMUS( config_get()->iface.theme.music );
+  if (music != NULL)
+    Mix_PlayMusic(music, 0);
+  if ( config_get()->iface.music_volume > 0 && config_get()->iface.music_volume <= 128 )
+    Mix_VolumeMusic(config_get()->iface.music_volume);
 }
 
 void stopmusic(void) {

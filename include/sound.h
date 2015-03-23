@@ -1,7 +1,7 @@
 #ifndef _SOUND_H_
 #define _SOUND_H_ 1
 
-#include <SDL/SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 
 enum sound_t {
 	SOUND_BACK,

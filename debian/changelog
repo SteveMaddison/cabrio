@@ -1,3 +1,10 @@
+cabrio (0.8.3-3) UNRELEASED; urgency=low
+
+  * Updated to latest Fredbcode git version
+    + SDL2 support.
+
+ -- Sérgio Benjamim <sergio_br2@yahoo.com.br>  Sun, 22 Mar 2015 00:30:00 -0300
+
 cabrio (0.8.3-2) UNRELEASED; urgency=low
 
   * Updated to latest Fredbcode git version (commit #246)

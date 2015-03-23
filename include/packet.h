@@ -1,7 +1,7 @@
 #ifndef _PACKET_H_
 #define _PACKET_H_ 1
 
-#include <SDL/SDL_mutex.h>
+#include <SDL2/SDL_mutex.h>
 #include "video.h"
 
 struct packet_queue {

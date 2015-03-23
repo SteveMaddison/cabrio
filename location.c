@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <unistd.h>
 #include "location.h"
 #include "config.h"
 
@@ -172,8 +173,7 @@ int location_get_match( const char *type, const char *filename, char *path ) {
 	struct location *location = location_get_first( type );
 	char search[CONFIG_FILE_NAME_LENGTH];
 	char *pos = NULL;
-	DIR *dir = NULL;
-	struct dirent *dentry;
+	char check_path[CONFIG_FILE_NAME_LENGTH];
 	int found = 0;
 
 	if( type && filename ) {
@@ -194,19 +194,55 @@ int location_get_match( const char *type, const char *filename, char *path ) {
 			strcat( search, "." );
 
 		while( location && !found ) {
-			if( (dir = opendir( location->directory )) ) {
-				while( (dentry = readdir( dir )) ) {
 #ifdef __WIN32__
-					if( strncasecmp( dentry->d_name, search, strlen(search) ) == 0 ) {
-						snprintf( path, CONFIG_FILE_NAME_LENGTH, "%s\\%s", location->directory, dentry->d_name );
+			snprintf( check_path, CONFIG_FILE_NAME_LENGTH, "%s\\%spng", location->directory, search );
 #else
-					if( strncasecmp( dentry->d_name, search, strlen(search) ) == 0 ) {
-						snprintf( path, CONFIG_FILE_NAME_LENGTH, "%s/%s", location->directory, dentry->d_name );
+			snprintf( check_path, CONFIG_FILE_NAME_LENGTH, "%s/%spng", location->directory, search );
 #endif
-						found++;
-					}
-				}
-				closedir( dir );
+			if ( access( check_path, 0 ) == 0 )
+			{
+				strcpy( path, check_path );
+				found++;
+			}
+#ifdef __WIN32__
+			snprintf( check_path, CONFIG_FILE_NAME_LENGTH, "%s\\%sjpg", location->directory, search );
+#else
+			snprintf( check_path, CONFIG_FILE_NAME_LENGTH, "%s/%sjpg", location->directory, search );
+#endif
+			if ( access( check_path, 0 ) == 0 )
+			{
+				strcpy( path, check_path );
+				found++;
+			}
+#ifdef __WIN32__
+			snprintf( check_path, CONFIG_FILE_NAME_LENGTH, "%s\\%smp3", location->directory, search );
+#else
+			snprintf( check_path, CONFIG_FILE_NAME_LENGTH, "%s/%smp3", location->directory, search );
+#endif
+			if ( access( check_path, 0 ) == 0 )
+			{
+				strcpy( path, check_path );
+				found++;
+			}
+#ifdef __WIN32__
+			snprintf( check_path, CONFIG_FILE_NAME_LENGTH, "%s\\%sflv", location->directory, search );
+#else
+			snprintf( check_path, CONFIG_FILE_NAME_LENGTH, "%s/%sflv", location->directory, search );
+#endif
+			if ( access( check_path, 0 ) == 0 )
+			{
+				strcpy( path, check_path );
+				found++;
+			}
+#ifdef __WIN32__
+			snprintf( check_path, CONFIG_FILE_NAME_LENGTH, "%s\\%smp4", location->directory, search );
+#else
+			snprintf( check_path, CONFIG_FILE_NAME_LENGTH, "%s/%smp4", location->directory, search );
+#endif
+			if ( access( check_path, 0 ) == 0 )
+			{
+				strcpy( path, check_path );
+				found++;
 			}
 			location = location->next;
 		}

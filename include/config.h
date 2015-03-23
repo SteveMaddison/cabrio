@@ -258,5 +258,7 @@ int config_write( void );
 int config_update( void );
 struct config_image_type *config_image_type( char *name );
 
+void config_resolution_overwrite( int w, int h );
+
 #endif
 
