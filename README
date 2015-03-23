@@ -33,6 +33,7 @@ In your theme file:
 
 Option direct list:
 Example: keyboard touch "a" to directly switch to the first list and "b" for the second (max 5 lists)
+
 <event>
 <name>list1</name>
 <value>a</value>
