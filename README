@@ -22,6 +22,9 @@ New options:
 <theme-sound>false/true</theme-sound>
 <music-volume>50</music-volume>
 <hide-buttons>false/true</hide-buttons>
+<concat-path>false/true</concat-path>
+
+Option for music:
 
 Put your music here /usr/share/cabrio/sounds/music.mp3
 You can also use the tag <music> placed within the <theme> tag (in a theme XML file).
@@ -31,7 +34,8 @@ In your theme file:
 <name>lmc</name>
 <music>/path/music/</music>
 
-Option direct list:
+Option for direct list:
+
 Example: keyboard touch "a" to directly switch to the first list and "b" for the second (max 5 lists)
 
 <event>
@@ -50,6 +54,43 @@ Example: keyboard touch "a" to directly switch to the first list and "b" for the
   <id>0</id>
 </device>
 </event>
+
+Option to use full path for roms:
+
+You can use directory tag to indicate a rom folder, so you don't need to use
+full path in the rom-image tag. But some emulators have problem with this, 
+because they need the full path instead Cabrio default approach: it first go
+to the directory, and then executes the emulator. So you can use concat-path
+tag, it will join both directory and rom-image in one string only:
+
+<emulators>
+  <emulator>
+    <name>MAME</name>
+    <display-name>MAME</display-name>
+    <executable>retroarch</executable>
+    <platform>Arcade</platform>
+    <directory>/home/your-user/Path/to/your/ROMs/</directory>
+    <concat-path>true</concat-path>
+    <params>
+      <param>
+        <name>-L</name>
+      </param>
+      <param>
+        <name>/usr/lib/libretro/mame_libretro.so</name>
+      </param>
+    </params>
+  </emulator>
+</emulators>
+[...]
+<game>
+  <name>After Burner II</name>
+  <platform>Arcade</platform>
+  <rom-image>aburner2.zip</rom-image>
+</game>
+
+This results:
+
+retroarch -L /usr/lib/libretro/mame_libretro.so /home/your-user/Path/to/your/ROMs/aburner2.zip
 
 ======
 
