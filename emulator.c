@@ -59,7 +59,7 @@ int resume_all( void ) {
 		return -9;
 	if( game_sel_resume() != 0 )
 		return -10;
-	
+
 	return 0;
 }
 
@@ -69,6 +69,7 @@ int emulator_exec( struct game *game ) {
 	int i = 0;
 	int count = 0;
 	char current_dir[CONFIG_FILE_NAME_LENGTH];
+
 #ifdef __WIN32__
 	PROCESS_INFORMATION pi;
 	STARTUPINFO si;
@@ -89,7 +90,7 @@ int emulator_exec( struct game *game ) {
 			if( param->value && *param->value && count < CONFIG_MAX_PARAMS - 2 )
 				params[count++] = param->value;
 			param = param->next;
-		}		
+		}
 		param = game->params;
 		while( param ) {
 			if( param->name && *param->name && count < CONFIG_MAX_PARAMS - 2 )
@@ -97,32 +98,41 @@ int emulator_exec( struct game *game ) {
 			if( param->value && *param->value && count < CONFIG_MAX_PARAMS - 2 )
 				params[count++] = param->value;
 			param = param->next;
-		}		
+		}
 	}
 	else {
-		fprintf(stderr, "Error: No suitable emulator found in configuration\n");
+		fprintf( stderr, "Error: No suitable emulator found in configuration\n" );
 		return -1;
 	}
-	
+
 	if( game && game->rom_path && game->rom_path[0] ) {
-		params[count++] = game->rom_path;
+		/* If <concat-path> true, concatenates directory and rom string  */
+		if ( game->emulator->concat_path ) {
+			char tmp[CONFIG_FILE_NAME_LENGTH];
+			strcpy( tmp, (game->emulator->directory) );
+			strcat( tmp, (game->rom_path) );
+			params[count++] = tmp;
+		}
+		else
+			params[count++] = game->rom_path;
 	}
 	else {
-		fprintf(stderr, "Error: No ROM image specified for game\n");
-		return -1;		
+		fprintf( stderr, "Error: No ROM image specified for game\n" );
+		return -1;
 	}
-	
-	/* If emulator provided a directory, go to it. */
-	if( game->emulator->directory[0] ) {
+
+	/* If emulator provided a directory and if it didn't concatenate with rom_path, go to it. */
+	if( game->emulator->directory[0] && game->emulator->concat_path == 0 ) {
 		getcwd( current_dir, CONFIG_FILE_NAME_LENGTH-1 );
 		chdir( game->emulator->directory );
+		printf( "Changing directory to %s\n", game->emulator->directory );
 	}
-	
+
 #ifdef __unix__
 	/* Terminate param list */
 	params[count] = NULL;
 
-	printf( "Executing: %s", game->emulator->executable );
+	printf( "Executing: " );
 	for( i = 0 ; i < count ; i++ ) {
 		printf( " %s", params[i] );
 	}
@@ -130,10 +140,10 @@ int emulator_exec( struct game *game ) {
 
 	pid_t pid = fork();
 	if (pid == 0) {
-		if( execvp( game->emulator->executable, params ) != 0 ) {
-			fprintf( stderr, "Error: Couldn't execute emulator '%s': %s\n", game->emulator->executable, strerror(errno) );
+		if( execvp( params[0], params ) != 0 ) {
+			fprintf( stderr, "Error: Couldn't execute emulator '%s': %s\n", params[0], strerror( errno ) );
 			exit( 1 );
-		}	
+		}
 	}
 	else if (pid < 0) {
 		fprintf(stderr, "Error: failed to fork\n");
@@ -141,6 +151,7 @@ int emulator_exec( struct game *game ) {
 	}
 	wait( NULL );
 #endif
+
 #ifdef __WIN32__
 	memset( &pi, 0, sizeof(PROCESS_INFORMATION));
 	memset( &si, 0, sizeof(STARTUPINFO));
@@ -159,7 +170,7 @@ int emulator_exec( struct game *game ) {
 		}
 	}
 	printf( "Executing: %s\n", cmdline );
-	
+
 	if( CreateProcess( NULL, cmdline, 0, 0, 0, 0, 0, 0, &si, &pi ) ) {
 		WaitForSingleObject(pi.hProcess, INFINITE);
 	    CloseHandle(pi.hProcess);
@@ -191,7 +202,7 @@ int emulator_run( struct game *game ) {
 	FILE* file = NULL;
 
 	snprintf( save_filename, CONFIG_FILE_NAME_LENGTH, "%s/%s", passwd->pw_dir, filename );
- 		
+
 	file = fopen( save_filename, "w+" );
         if( file == NULL ) {
 			fprintf(stderr, "Can't save state: %s\n", save_filename);
@@ -199,7 +210,7 @@ int emulator_run( struct game *game ) {
                 else {
 			fprintf(file, "%s",  game->name);
                         fclose( file );
-       	} 
+       	}
 
 	emulator_exec( game );
 
@@ -216,7 +227,7 @@ int emulator_run( struct game *game ) {
 
 struct config_emulator *emulator_get_by_name( const char *name ) {
 	struct config_emulator *e = config_get()->emulators;
-	
+
 	if( name && name[0] ) {
 		while( e ) {
 			if( strcasecmp( e->name, name ) == 0 )
@@ -224,13 +235,13 @@ struct config_emulator *emulator_get_by_name( const char *name ) {
 			e = e->next;
 		}
 	}
-	
+
 	return e;
 }
 
 struct config_emulator *emulator_get_by_platform( const char *platform ) {
 	struct config_emulator *e = config_get()->emulators;
-	
+
 	if( platform && platform[0] ) {
 		while( e ) {
 			if( e->platform && e->platform->name && strcasecmp( e->platform->name, platform ) == 0 )
@@ -238,22 +249,22 @@ struct config_emulator *emulator_get_by_platform( const char *platform ) {
 			e = e->next;
 		}
 	}
-	
+
 	return e;
 }
 
 struct config_emulator *emulator_get_default( void ) {
 	struct config_emulator *e = config_get()->emulators;
-	
+
 	while( e ) {
 		if( e->is_default )
 			break;
 		e = e->next;
 	}
-	
+
 	if( !e )
 		e = config_get()->emulators;
-	
+
 	return e;
 }
 
