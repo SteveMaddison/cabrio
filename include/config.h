@@ -50,6 +50,7 @@ struct config_emulator {
 	char display_name[CONFIG_NAME_LENGTH];
 	char executable[CONFIG_FILE_NAME_LENGTH];
 	char directory[CONFIG_FILE_NAME_LENGTH];
+	int concat_path;
 	int is_default;
 	struct config_param *params;
 	struct config_platform *platform;

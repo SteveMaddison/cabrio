@@ -207,6 +207,7 @@ static const char *tag_position_y		= "y-position";
 static const char *tag_position_z		= "z-position";
 static const char *tag_order			= "order";
 static const char *tag_directory		= "directory";
+static const char *tag_concat_path		= "concat-path";
 static const char *tag_color			= "color";
 static const char *tag_match			= "match";
 static const char *tag_category			= "category";
@@ -465,6 +466,11 @@ int config_read_emulator( xmlNode *node, struct config_emulator *emulator ) {
 			else if( strcmp( (char*)node->name, tag_directory ) == 0 ) {
 				char *content = (char*)xmlNodeGetContent(node);
 				strncpy( emulator->directory, content, CONFIG_FILE_NAME_LENGTH );
+				free( content );
+			}
+			else if( strcmp( (char*)node->name, tag_concat_path ) == 0 ) {
+				char *content = (char*)xmlNodeGetContent(node);
+				config_read_boolean( (char*)node->name, content, &emulator->concat_path );
 				free( content );
 			}
 			else if( strcmp( (char*)node->name, tag_platform ) == 0 ) {
