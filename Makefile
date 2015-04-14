@@ -1,7 +1,11 @@
 CC=gcc
 BIN_DIR=/usr/bin
 DATA_DIR=/usr/share/cabrio
-CFLAGS=-g -Wall -DDATA_DIR=\"$(DATA_DIR)\"
+OPTIMIZE=-O3 -ffast-math
+ifeq ($(DEBUG), 1)
+   OPTIMIZE=-O0
+endif
+CFLAGS=-g -Wall $(OPTIMIZE) -DDATA_DIR=\"$(DATA_DIR)\"
 LDFLAGS= -lGL -lSDL2 -lSDL2_image -lSDL2_gfx -lSDL2_ttf -lSDL2_mixer -lGLU -lxml2 \
 	-lavutil -lavformat -lavcodec -lswscale
 INCLUDES=-I./include -I/usr/include/libxml2
