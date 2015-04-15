@@ -26,6 +26,7 @@ static struct event events[NUM_EVENTS];
 int event_init( void ) {
 	const struct config* config = config_get();
 	int i;
+	SDL_SetHint("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
 	
 	num_joysticks = SDL_NumJoysticks();
 	if( num_joysticks > MAX_JOYSTICKS )
@@ -110,7 +111,6 @@ void event_set_filter( void ) {
 int event_poll( int event_num ) {
 	SDL_Event sdl_event;
 	int i;
-
 	while( SDL_PollEvent( &sdl_event ) ) {
 		event_num = EVENT_NONE;
 		if( sdl_event.type == SDL_QUIT ) {
