@@ -1,6 +1,10 @@
-TODO: HELP NEEDED ! - Link a theme for each list - 
+TODO: HELP NEEDED ! 
+- Link a theme for each list - 
+- Video with some freezes ... -
 
-Version from "Livemamecab" https://github.com/fredbcode/livemamecab
+Version from "Livemamecab" https://github.com/fredbcode/livemamecab 
+Demo ISO Here http://traceroot.c.la
+Ubuntu PPA here https://launchpad.net/~sergio-br2/+archive/ubuntu/cabrio (Thanks Sergio Benjamim)
 
 - Added <music> tag to themes, allowing selection of background music by Pieter Hulshoff
 - Fixed memory leaks in XML configuration functions by Pieter Hulshoff
