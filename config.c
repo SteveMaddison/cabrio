@@ -455,7 +455,7 @@ int config_read_emulator( xmlNode *node, struct config_emulator *emulator ) {
 			}
 			else if( strcmp( (char*)node->name, tag_display_name ) == 0 ) {
 				char *content = (char*)xmlNodeGetContent(node);
-				strncpy( emulator->display_name, content, CONFIG_FILE_NAME_LENGTH );
+				strncpy( emulator->display_name, content, CONFIG_NAME_LENGTH );
 				free( content );
 			}
 			else if( strcmp( (char*)node->name, tag_emulator_executable ) == 0 ) {
