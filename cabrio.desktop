@@ -4,5 +4,5 @@ Type=Application
 Name=Cabrio
 GenericName=Front End for Emulators
 Comment=Graphical front end for video game emulators
-Exec=sh -c "SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1 cabrio"
+Exec=cabrio %f
 Categories=Game;Emulator;
