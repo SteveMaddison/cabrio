@@ -123,9 +123,10 @@ int emulator_exec( struct game *game ) {
 
 	/* If emulator provided a directory and if it didn't concatenate with rom_path, go to it. */
 	if( game->emulator->directory[0] && game->emulator->concat_path == 0 ) {
-		getcwd( current_dir, CONFIG_FILE_NAME_LENGTH-1 );
-		chdir( game->emulator->directory );
-		printf( "Changing directory to %s\n", game->emulator->directory );
+		if ( getcwd( current_dir, CONFIG_FILE_NAME_LENGTH-1 )) {
+			if (chdir( game->emulator->directory ))
+				printf( "Changing directory to %s\n", game->emulator->directory );
+		}
 	}
 
 #ifdef __unix__
@@ -184,9 +185,10 @@ int emulator_exec( struct game *game ) {
 	}
 #endif
 
-	if( game->emulator->directory[0] )
-		chdir( current_dir );
-
+	if( game->emulator->directory[0] ) {
+		if (chdir( current_dir ))
+			 fprintf( stderr, "current directory.\n");
+	}
 	return 0;
 }
 
