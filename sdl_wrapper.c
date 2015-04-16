@@ -58,6 +58,7 @@ int sdl_init( void ) {
 		return 1;
 	}
 
+	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 
