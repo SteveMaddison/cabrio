@@ -512,8 +512,8 @@ int game_list_unfilter( void ) {
                         fprintf(stderr, "Can'load  state: %s\n", lsave_filename);
                 }
                 else {
-			fgets(lock,CONFIG_FILE_NAME_LENGTH, file);
-                        fclose( file );
+			if (fgets(lock,CONFIG_FILE_NAME_LENGTH, file))
+                        	fclose( file );
         }
 
 
