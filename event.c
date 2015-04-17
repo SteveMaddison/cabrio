@@ -139,6 +139,9 @@ int event_poll( int event_num ) {
 
 						else if ( events[i].value > 0 && sdl_event.jaxis.value > AXIS_THRESHOLD )
 							return i;
+
+						else if ( sdl_event.jaxis.value < AXIS_THRESHOLD && sdl_event.jaxis.value > -AXIS_THRESHOLD )
+							return EVENT_NONE;
 						}
 					break;
 
