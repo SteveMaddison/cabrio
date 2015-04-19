@@ -17,9 +17,12 @@ static const char *event_str[] = {
 };
 
 static const int AXIS_THRESHOLD = 8000;
+static const int AXIS_THRESHOLD_PRESSED = 32000;
 static const int BALL_THRESHOLD = 10;
 static const int MOUSE_THRESHOLD = 10;
 static int num_joysticks = 0;
+static int jbutton_already_pressed = -1;
+static int jaxis_already_pressed = -1;
 static SDL_Joystick *joysticks[MAX_JOYSTICKS];
 static struct event events[NUM_EVENTS];
 
@@ -27,7 +30,7 @@ int event_init( void ) {
 	const struct config* config = config_get();
 	int i;
 	SDL_SetHint("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
-	
+
 	num_joysticks = SDL_NumJoysticks();
 	if( num_joysticks > MAX_JOYSTICKS )
 		num_joysticks = MAX_JOYSTICKS;
@@ -53,13 +56,13 @@ int event_init( void ) {
 		); 
 */
 	}
-	
+
 	return 0;
 }
 
 void event_free( void ) {
 	int i;
-	
+
 	for( i = 0 ; i < num_joysticks ; i++ ) {
 		if ( SDL_JoystickGetAttached( joysticks[i] ) ) {
 			SDL_JoystickClose( joysticks[i] );
@@ -111,18 +114,20 @@ void event_set_filter( void ) {
 int event_poll( int event_num ) {
 	SDL_Event sdl_event;
 	int i;
+
+	if( event_num == EVENT_NONE )
+		jbutton_already_pressed = -1;
+
 	while( SDL_PollEvent( &sdl_event ) ) {
-		event_num = EVENT_NONE;
-		if( sdl_event.type == SDL_QUIT ) {
-			event_num = EVENT_QUIT;
-			return event_num;
-		}
+		if( sdl_event.type == SDL_QUIT )
+			return EVENT_QUIT;
+
 		for( i = 1 ; i < NUM_EVENTS ; i++ ) {
 			switch( sdl_event.type ) {
 				case SDL_KEYDOWN:
 					if( events[i].device_type == DEV_KEYBOARD
 					&&  events[i].value == sdl_event.key.keysym.sym )
-						event_num = i;
+						return i;
 
 					break;
 
@@ -131,20 +136,43 @@ int event_poll( int event_num ) {
 					&&  events[i].control_type == CTRL_AXIS
 					&&  events[i].device_id == sdl_event.jaxis.which
 					&&  events[i].control_id == sdl_event.jaxis.axis ) {
-						if( events[i].value < 0 && sdl_event.jaxis.value < -AXIS_THRESHOLD )
-							event_num = i;
-
-						else if ( events[i].value > 0 && sdl_event.jaxis.value > AXIS_THRESHOLD )
-							event_num = i;
+						if( events[i].value < 0 && ( ( sdl_event.jaxis.value < -AXIS_THRESHOLD && jaxis_already_pressed == -1 ) || ( sdl_event.jaxis.value < -AXIS_THRESHOLD_PRESSED && jaxis_already_pressed > -1 ) ) ) {
+							jaxis_already_pressed = sdl_event.jaxis.axis;
+							return i;
 						}
+						else if( events[i].value > 0 && ( ( sdl_event.jaxis.value > AXIS_THRESHOLD && jaxis_already_pressed == -1 ) || ( sdl_event.jaxis.value > AXIS_THRESHOLD_PRESSED && jaxis_already_pressed > -1 ) ) ) {
+							jaxis_already_pressed = sdl_event.jaxis.axis;
+							return i;
+						}
+						else if( sdl_event.jaxis.value < AXIS_THRESHOLD && sdl_event.jaxis.value > -AXIS_THRESHOLD ) {
+							if( jaxis_already_pressed == sdl_event.jaxis.axis ) {
+								jaxis_already_pressed = -1;
+								return EVENT_NONE;
+							}
+							else
+								return event_num;
+						}
+					}
 					break;
 
 				case SDL_JOYBUTTONDOWN:
 					if( events[i].device_type == DEV_JOYSTICK
 					&&  events[i].control_type == CTRL_BUTTON
 					&&  events[i].device_id == sdl_event.jbutton.which
-					&&  events[i].value == sdl_event.jbutton.button )
-						event_num = i;
+					&&  events[i].value == sdl_event.jbutton.button
+					&&  jbutton_already_pressed == -1 ) {
+						jbutton_already_pressed = sdl_event.jbutton.button;
+						return i;
+					}
+					break;
+
+				case SDL_JOYBUTTONUP:
+					if( jbutton_already_pressed == sdl_event.jbutton.button ) {
+						jbutton_already_pressed = -1;
+						return EVENT_NONE;
+					}
+					else
+						return event_num;
 
 					break;
 
@@ -154,7 +182,7 @@ int event_poll( int event_num ) {
 					&&  events[i].device_id == sdl_event.jhat.which
 					&&  events[i].control_id == sdl_event.jhat.hat
 					&&  events[i].value == sdl_hat_dir_value( sdl_event.jhat.value ) )
-						event_num = i;
+						return i;
 
 					break;
 
@@ -164,16 +192,16 @@ int event_poll( int event_num ) {
 					&&  events[i].device_id == sdl_event.jball.which
 					&&  events[i].control_id == sdl_event.jball.ball ) {
 						if( events[i].value == DIR_DOWN && sdl_event.jball.yrel > BALL_THRESHOLD )
-							event_num = i;
+							return i;
 
 						else if( events[i].value == DIR_UP && sdl_event.jball.yrel < -BALL_THRESHOLD )
-							event_num = i;
+							return i;
 
 						else if( events[i].value == DIR_LEFT && sdl_event.jball.xrel < -BALL_THRESHOLD )
-							event_num = i;
+							return i;
 
 						else if( events[i].value == DIR_RIGHT && sdl_event.jball.xrel > BALL_THRESHOLD )
-							event_num = i;
+							return i;
 						}
 					break;
 
@@ -182,7 +210,7 @@ int event_poll( int event_num ) {
 					&&  events[i].control_type == CTRL_BUTTON
 					&&  events[i].device_id == sdl_event.button.which
 					&&  events[i].value == sdl_event.button.button )
-						event_num = i;
+						return i;
 
 					break;
 
@@ -191,32 +219,39 @@ int event_poll( int event_num ) {
 					&&  events[i].control_type == CTRL_AXIS
 					&&  events[i].device_id == sdl_event.motion.which ) {
 						if( events[i].value == DIR_DOWN && sdl_event.motion.yrel > MOUSE_THRESHOLD )
-							event_num = i;
+							return i;
 
 						else if( events[i].value == DIR_UP && sdl_event.motion.yrel < -MOUSE_THRESHOLD )
-							event_num = i;
+							return i;
 
 						else if( events[i].value == DIR_LEFT && sdl_event.motion.xrel < -MOUSE_THRESHOLD )
-							event_num = i;
+							return i;
 
 						else if( events[i].value == DIR_RIGHT && sdl_event.motion.xrel > MOUSE_THRESHOLD )
-							event_num = i;
+							return i;
 					}
+					break;
+
+				// Quick return in the case of events not covered above, like SDL_KEYUP
+				default:
+					return EVENT_NONE;
+
 			}
 		}
 	}
+
 	// Returns the last event happened if there is no new event in the queue
 	return event_num;
 }
 
 int event_probe( int timeout, struct event *event_p ) {
 	SDL_Event sdl_event;
-	
+
 	event_p->device_type = DEV_UNKNOWN;
 	event_p->device_id = 0;
 	event_p->control_type = CTRL_UNKNOWN;
 	event_p->control_id = 0;
-	
+
 	while( timeout > 0 ) {
 		SDL_PollEvent( &sdl_event );
 		switch( sdl_event.type ) {
