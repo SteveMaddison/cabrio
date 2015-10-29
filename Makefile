@@ -6,9 +6,20 @@ ifeq ($(DEBUG), 1)
    OPTIMIZE=-O0
 endif
 CFLAGS=-g -Wall $(OPTIMIZE) -DDATA_DIR=\"$(DATA_DIR)\"
-LDFLAGS= -lGL -lSDL2 -lSDL2_image -lSDL2_gfx -lSDL2_ttf -lSDL2_mixer -lGLU -lxml2 \
-	-lavutil -lavformat -lavcodec -lswscale
+LDFLAGS=-lGL -lSDL2 -lSDL2_image -lSDL2_gfx -lSDL2_ttf -lSDL2_mixer -lGLU -lxml2
 INCLUDES=-I./include -I/usr/include/libxml2
+
+# Works with libav 9.18 and 10.7 (buggy with this, weird behavior)
+ifneq (,$(BUNDLED_LIBAV))
+	LIBAV_PATH=libav
+	LDFLAGS+=-L./$(LIBAV_PATH)/linux/lib -lavformat -lavcodec -lavutil -lswscale -lm -lz -lpthread
+	INCLUDES+=-I./$(LIBAV_PATH)/linux/include
+	ifeq (,$(wildcard ./$(LIBAV_PATH)/linux/lib/libavformat.a))
+		TMP:=$(shell cp -f ./build_libav_linux.sh ./$(LIBAV_PATH)/ && cd $(LIBAV_PATH)/ && ./build_libav_linux.sh)
+	endif
+else
+	LDFLAGS+=-lavutil -lavformat -lavcodec -lswscale
+endif
 
 INSTALL=/usr/bin/install -c
 
