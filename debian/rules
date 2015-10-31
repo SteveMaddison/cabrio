@@ -1,30 +1,18 @@
 #!/usr/bin/make -f
-# -*- makefile -*-
-# Sample debian/rules that uses debhelper.
-# This file was originally written by Joey Hess and Craig Small.
-# As a special exception, when this file is copied by dh-make into a
-# dh-make output file, you may use that output file without restriction.
-# This special exception was added by Craig Small in version 0.37 of dh-make.
 
-# Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
-
-QUILT=QUILT_PATCHES=debian/patches quilt --quiltrc /dev/null
-PATCH := $(QUILT) push -a || [ "$$($(QUILT) applied)" = "$$(grep -v '^\#' debian/patches/series)" ]
-UNPATCH := $(QUILT) pop -a || [ "$$($(QUILT) applied 2>&1)" = "No patches applied" ]
-
-patch:
-	$(PATCH)
-	
-unpatch:
-	$(UNPATCH)
+export DEB_CXXFLAGS_MAINT_STRIP=-g -O2
+export DEB_CFLAGS_MAINT_STRIP=-g -O2
 
 %:
 	dh $@ --parallel
 
+override_dh_auto_build:
+	# Build with libav 9.18, you have to download it, see https://github.com/fredbcode/cabrio/pull/13
+	dh_auto_build -- BUNDLED_LIBAV=1
+
 override_dh_auto_install:
 	# Add here commands to install the package into debian/cabrio.
-	$(MAKE) DESTDIR=$(CURDIR)/debian/cabrio \
+	dh_auto_install -- DESTDIR=$(CURDIR)/debian/cabrio \
 		BIN_DIR=$(CURDIR)/debian/cabrio/usr/bin \
 		DATA_DIR=$(CURDIR)/debian/cabrio/usr/share/cabrio \
 		install
